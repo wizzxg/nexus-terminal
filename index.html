@@ -91,7 +91,6 @@
     <div id="toast-container"></div>
 
     <script>
-        // CRITICAL: Update this URL with your actual Render link
         const BACKEND_URL = 'https://nexus-backend-e72a.onrender.com'; 
 
         const loginSection = document.getElementById('login-section');
@@ -154,11 +153,29 @@
             const cookie = localStorage.getItem('nexusSession');
             try {
                 const response = await fetch(`${BACKEND_URL}/api/requests/ids`, { headers: { 'roblox-cookie': cookie } });
+                
+                // NEW: Actually read the error instead of blindly crashing
+                if (!response.ok) {
+                    const errData = await response.json();
+                    showToast(`Error: ${errData.error || 'Connection Failed'}`, 'error');
+                    logout(); // Kick back to login if cookie is dead
+                    return;
+                }
+
                 const ids = await response.json();
+                
+                if (ids.error) {
+                    showToast(`Roblox Error: ${ids.error}`, 'error');
+                    logout();
+                    return;
+                }
+
                 currentIds = ids;
                 countDisplay.innerText = `Total Targets: ${currentIds.length}`;
                 renderPage();
-            } catch (err) { showToast('Backend waking up... wait 30s', 'error'); }
+            } catch (err) { 
+                showToast('Network disconnected or Backend updating...', 'error'); 
+            }
         }
 
         async function exportBlocklist() {
@@ -197,14 +214,18 @@
         async function hydrateVisibleIds(pageIds) {
             const unhydrated = pageIds.filter(id => !loadedDetailsMap.has(id));
             if (unhydrated.length === 0) return;
-            const response = await fetch(`${BACKEND_URL}/api/requests/details`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userIds: unhydrated })
-            });
-            const details = await response.json();
-            details.forEach(d => loadedDetailsMap.set(d.id, d));
-            pageIds.forEach(id => updateCardVisual(id, document.getElementById(`user-${id}`)));
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/requests/details`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userIds: unhydrated })
+                });
+                const details = await response.json();
+                details.forEach(d => loadedDetailsMap.set(d.id, d));
+                pageIds.forEach(id => updateCardVisual(id, document.getElementById(`user-${id}`)));
+            } catch(e) {
+                console.error("Hydration failed");
+            }
         }
 
         function updateCardVisual(id, card) {
@@ -227,18 +248,20 @@
             const cookie = localStorage.getItem('nexusSession');
             const card = document.getElementById(`user-${userId}`);
             if (card) card.style.opacity = '0.3';
-            const response = await fetch(`${BACKEND_URL}/api/action`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'roblox-cookie': cookie },
-                body: JSON.stringify({ userId, action })
-            });
-            const result = await response.json();
-            if (result.success) {
-                if (card) card.remove();
-                currentIds = currentIds.filter(id => id !== userId);
-                countDisplay.innerText = `Total Targets: ${currentIds.length}`;
-                return true;
-            }
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/action`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'roblox-cookie': cookie },
+                    body: JSON.stringify({ userId, action })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    if (card) card.remove();
+                    currentIds = currentIds.filter(id => id !== userId);
+                    countDisplay.innerText = `Total Targets: ${currentIds.length}`;
+                    return true;
+                }
+            } catch(e) {}
             return false;
         }
 
@@ -257,7 +280,6 @@
             loadRequests();
         }
 
-        // --- NEW BLACKLIST ALL FUNCTION ---
         async function blacklistAll() {
             if (currentIds.length === 0) return;
             if (!confirm(`Hide and block ALL ${currentIds.length} loaded targets? (This does not decline them on Roblox)`)) return;
