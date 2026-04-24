@@ -19,7 +19,7 @@
         .controls-grid { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 15px; background: var(--panel); padding: 15px 25px; border-radius: 12px; border: 1px solid rgba(0, 243, 255, 0.15); box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
         .search-bar { flex: 1; min-width: 200px; padding: 10px 15px; border-radius: 6px; border: 1px solid #444; background: rgba(0,0,0,0.5); color: #fff; outline: none; transition: 0.3s; }
         .search-bar:focus { border-color: var(--neon-blue); }
-        .stats-display { font-size: 0.85rem; color: #aaa; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; }
+        .stats-display { font-size: 0.85rem; color: #aaa; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; margin-right: 10px; }
 
         #requests-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 25px; width: 100%; padding-bottom: 20px; }
         
@@ -31,14 +31,18 @@
         .names p { margin: 5px 0 0 0; font-size: 0.9rem; color: var(--neon-blue); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         
         .actions { display: flex; width: 100%; gap: 12px; }
-        button { padding: 10px 0; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; text-transform: uppercase; flex: 1; font-size: 0.85rem; letter-spacing: 1px; }
+        button { padding: 10px 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; }
+        .actions button { flex: 1; }
         button:disabled { opacity: 0.4; cursor: not-allowed; }
+        
         .btn-blue { background: rgba(0, 243, 255, 0.05); color: var(--neon-blue); border: 1px solid var(--neon-blue); }
         .btn-blue:hover:not(:disabled) { background: var(--neon-blue); color: #000; box-shadow: var(--glow); }
         .btn-red { background: rgba(255, 0, 60, 0.05); color: var(--neon-red); border: 1px solid var(--neon-red); }
         .btn-red:hover:not(:disabled) { background: var(--neon-red); color: #fff; box-shadow: 0 0 15px rgba(255, 0, 60, 0.4); }
         .btn-purple { background: rgba(181, 0, 255, 0.05); color: var(--neon-purple); border: 1px solid var(--neon-purple); }
         .btn-purple:hover:not(:disabled) { background: var(--neon-purple); color: #fff; box-shadow: 0 0 15px rgba(181, 0, 255, 0.4); }
+        .btn-orange { background: rgba(255, 102, 0, 0.05); color: #ff6600; border: 1px solid #ff6600; }
+        .btn-orange:hover:not(:disabled) { background: #ff6600; color: #000; box-shadow: 0 0 15px rgba(255, 102, 0, 0.4); }
         .btn-white { background: transparent; color: #fff; border: 1px solid #555; }
         .btn-white:hover:not(:disabled) { background: #fff; color: #000; }
 
@@ -67,31 +71,34 @@
             <div class="controls-grid">
                 <input type="text" id="search-input" class="search-bar" placeholder="Search targets..." oninput="handleFilterChange()">
                 <label class="toggle-container"><input type="checkbox" id="bot-filter-toggle" onchange="handleFilterChange()">Strict Anti-Bot Filter</label>
-                <div class="stats-display" id="request-count">Targets Found: 0</div>
-                <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
+                <div class="stats-display" id="request-count">TOTAL TARGETS: 0</div>
+                
+                <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
                     <button class="btn-blue" onclick="massActionAll('accept')" id="btn-accept-all">ACCEPT ALL</button>
                     <button class="btn-red" onclick="massActionAll('decline')" id="btn-decline-all">DECLINE ALL</button>
                     <button class="btn-purple" onclick="blacklistAll()" id="btn-blacklist-all">BLACKLIST ALL</button>
-                </div>
-                <div style="display: flex; gap: 10px;">
-                    <button class="btn-purple" onclick="exportBlocklist()">Export Blocklist</button>
-                    <button class="btn-blue" onclick="manualRefresh()">⟳ Sync</button>
-                    <button class="btn-white" onclick="logout()">Disconnect</button>
+                    <button class="btn-orange" onclick="removeAllFriends()" id="btn-remove-friends">REMOVE ALL FRIENDS</button>
+                    <button class="btn-purple" onclick="exportBlocklist()">EXPORT BLOCKLIST</button>
+                    <button class="btn-blue" onclick="manualRefresh()">⟳ SYNC</button>
+                    <button class="btn-white" onclick="logout()">DISCONNECT</button>
                 </div>
             </div>
         </div>
         <div id="requests-container"></div>
         <div class="pagination-bar">
-            <button class="btn-white" onclick="changePage(-1)" id="btn-prev">◄ Previous</button>
-            <div class="page-indicator" id="page-indicator">Page 1 of 1</div>
-            <button class="btn-white" onclick="changePage(1)" id="btn-next">Next ►</button>
+            <button class="btn-white" onclick="changePage(-1)" id="btn-prev">◄ PREVIOUS</button>
+            <div class="page-indicator" id="page-indicator">Page 1</div>
+            <button class="btn-white" onclick="changePage(1)" id="btn-next">NEXT ►</button>
         </div>
     </div>
     <div id="export-modal"><div class="modal-content"><h2>System Blocklist Data</h2><textarea id="export-textarea" readonly></textarea><button class="btn-purple" onclick="copyExportText()">Copy</button><button class="btn-white" onclick="closeModal()">Close</button></div></div>
     <div id="toast-container"></div>
 
     <script>
+        // ///////////////////////////////////////////////////////////
+        // PASTE YOUR NEW RENDER URL HERE:
         const BACKEND_URL = 'https://nexus-backend-1-771w.onrender.com'; 
+        // ///////////////////////////////////////////////////////////
 
         const loginSection = document.getElementById('login-section');
         const dashboardSection = document.getElementById('dashboard-section');
@@ -170,7 +177,7 @@
                 }
 
                 currentIds = ids;
-                countDisplay.innerText = `Total Targets: ${currentIds.length}`;
+                countDisplay.innerText = `TOTAL TARGETS: ${currentIds.length}`;
                 renderPage();
             } catch (err) { 
                 showToast('Network disconnected or Backend updating...', 'error'); 
@@ -257,7 +264,7 @@
                 if (result.success) {
                     if (card) card.remove();
                     currentIds = currentIds.filter(id => id !== userId);
-                    countDisplay.innerText = `Total Targets: ${currentIds.length}`;
+                    countDisplay.innerText = `TOTAL TARGETS: ${currentIds.length}`;
                     return true;
                 }
             } catch(e) {}
@@ -295,11 +302,64 @@
                     showToast(`Successfully blacklisted ${currentIds.length} targets.`, 'purple');
                     currentIds = [];
                     loadedDetailsMap.clear();
-                    countDisplay.innerText = `Total Targets: 0`;
+                    countDisplay.innerText = `TOTAL TARGETS: 0`;
                     renderPage();
                 }
             } catch (err) {
                 showToast("Failed to communicate with Render backend.", "error");
+            }
+        }
+
+        // --- THE MASS REMOVE ALREADY-ADDED FRIENDS FUNCTION ---
+        async function removeAllFriends() {
+            if (isProcessingMassAction) return;
+            if (!confirm(`WARNING: This will permanently unfriend EVERYONE currently on your Roblox friends list. Are you 100% sure you want to proceed?`)) return;
+
+            showToast("Fetching your current friends list...", "neon-blue");
+            const cookie = localStorage.getItem('nexusSession');
+            
+            try {
+                // Talks to the new /api/friends route on your server to get current friends
+                const response = await fetch(`${BACKEND_URL}/api/friends`, { headers: { 'roblox-cookie': cookie } });
+                const friendIds = await response.json();
+
+                if (friendIds.error) {
+                    showToast(`Failed: ${friendIds.error}`, "error");
+                    return;
+                }
+
+                if (!Array.isArray(friendIds) || friendIds.length === 0) {
+                    showToast("You currently have 0 friends to remove.", "purple");
+                    return;
+                }
+
+                if (!confirm(`Found ${friendIds.length} friends. Unfriend all of them now?`)) return;
+
+                isProcessingMassAction = true;
+                let successCount = 0;
+
+                for (let i = 0; i < friendIds.length; i++) {
+                    showToast(`Removing friend ${i + 1} of ${friendIds.length}...`);
+                    try {
+                        const res = await fetch(`${BACKEND_URL}/api/action`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'roblox-cookie': cookie },
+                            body: JSON.stringify({ userId: friendIds[i], action: 'unfriend' }) // Triggers the unfriend logic
+                        });
+                        const result = await res.json();
+                        if (result.success) successCount++;
+                    } catch (e) {}
+                    
+                    // Throttle to avoid Roblox ban
+                    await delay(250); 
+                }
+
+                isProcessingMassAction = false;
+                showToast(`Purge complete! Unfriended ${successCount} users.`, "error");
+
+            } catch (err) {
+                showToast("Failed to fetch friends list.", "error");
+                isProcessingMassAction = false;
             }
         }
 
