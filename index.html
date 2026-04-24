@@ -195,6 +195,8 @@
 
         function closeModal() { exportModal.style.display = 'none'; }
         function copyExportText() { exportTextarea.select(); document.execCommand('copy'); showToast("Copied!"); }
+        
+        // This instantly re-applies visual filters without reloading data
         function handleFilterChange() { renderPage(); }
 
         function changePage(direction) {
@@ -241,6 +243,36 @@
                 card.innerHTML = `<div class="skeleton-pfp"></div><div class="skeleton-text"></div>`;
                 return;
             }
+
+            let isVisible = true;
+
+            // 1. STRICT ANTI-BOT FILTER
+            if (filterToggle.checked) {
+                const isSameName = details.username.toLowerCase() === details.displayName.toLowerCase();
+                const accountAgeDays = (new Date() - new Date(details.created)) / (1000 * 60 * 60 * 24);
+                
+                // If names are identical OR account is newer than 3 days, flag as bot
+                if (isSameName || accountAgeDays < 3) {
+                    isVisible = false;
+                }
+            }
+
+            // 2. SEARCH BAR LOGIC
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            if (searchTerm) {
+                if (!details.username.toLowerCase().includes(searchTerm) && 
+                    !details.displayName.toLowerCase().includes(searchTerm)) {
+                    isVisible = false;
+                }
+            }
+
+            // Hide the card completely if it fails either filter
+            if (!isVisible) {
+                card.style.display = 'none';
+                return;
+            }
+
+            card.style.display = 'flex';
             card.innerHTML = `
                 <img src="${details.pfp}" class="pfp">
                 <div class="names"><h2>${details.displayName}</h2><p>@${details.username}</p></div>
@@ -310,7 +342,6 @@
             }
         }
 
-        // --- THE MASS REMOVE ALREADY-ADDED FRIENDS FUNCTION ---
         async function removeAllFriends() {
             if (isProcessingMassAction) return;
             if (!confirm(`WARNING: This will permanently unfriend EVERYONE currently on your Roblox friends list. Are you 100% sure you want to proceed?`)) return;
@@ -319,7 +350,6 @@
             const cookie = localStorage.getItem('nexusSession');
             
             try {
-                // Talks to the new /api/friends route on your server to get current friends
                 const response = await fetch(`${BACKEND_URL}/api/friends`, { headers: { 'roblox-cookie': cookie } });
                 const friendIds = await response.json();
 
@@ -344,13 +374,12 @@
                         const res = await fetch(`${BACKEND_URL}/api/action`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json', 'roblox-cookie': cookie },
-                            body: JSON.stringify({ userId: friendIds[i], action: 'unfriend' }) // Triggers the unfriend logic
+                            body: JSON.stringify({ userId: friendIds[i], action: 'unfriend' }) 
                         });
                         const result = await res.json();
                         if (result.success) successCount++;
                     } catch (e) {}
                     
-                    // Throttle to avoid Roblox ban
                     await delay(250); 
                 }
 
