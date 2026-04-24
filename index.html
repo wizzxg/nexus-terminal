@@ -154,11 +154,10 @@
             try {
                 const response = await fetch(`${BACKEND_URL}/api/requests/ids`, { headers: { 'roblox-cookie': cookie } });
                 
-                // NEW: Actually read the error instead of blindly crashing
                 if (!response.ok) {
                     const errData = await response.json();
                     showToast(`Error: ${errData.error || 'Connection Failed'}`, 'error');
-                    logout(); // Kick back to login if cookie is dead
+                    logout(); 
                     return;
                 }
 
