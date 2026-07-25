@@ -224,6 +224,24 @@ body::before{
 .toast.info{border-left-color:var(--muted)} .toast.info .toast-glyph{color:var(--muted)}
 @keyframes slideIn{from{transform:translateX(120%); opacity:0}to{transform:translateX(0); opacity:1}}
 
+/* ---------- background job progress ---------- */
+#job-progress{position:fixed; left:50%; bottom:24px; transform:translateX(-50%);
+  width:min(520px, calc(100vw - 32px)); background:var(--surface-2);
+  border:1px solid var(--line-2); border-left:3px solid var(--cyan);
+  border-radius:var(--r-md); padding:16px 18px; z-index:1200;
+  box-shadow:0 24px 60px -20px rgba(0,0,0,.9);
+  animation:jpRise .3s cubic-bezier(.2,.8,.2,1) both}
+@keyframes jpRise{from{transform:translate(-50%,20px); opacity:0}to{transform:translate(-50%,0); opacity:1}}
+.jp-head{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px}
+.jp-label{font-family:var(--mono); font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--text)}
+.jp-track{height:5px; background:var(--void); border-radius:3px; overflow:hidden}
+.jp-fill{height:100%; width:0%; background:var(--cyan); border-radius:3px; transition:width .4s ease}
+.jp-meta{margin-top:10px; font-family:var(--mono); font-size:10.5px; color:var(--muted); letter-spacing:.04em}
+#job-progress.is-error{border-left-color:var(--red)}
+#job-progress.is-error .jp-fill{background:var(--red)}
+#job-progress.is-warn{border-left-color:var(--amber)}
+#job-progress.is-warn .jp-fill{background:var(--amber)}
+
 @media (max-width:560px){
   #dashboard-section{padding:0 14px 50px}
   .deck-actions{width:100%} .deck-actions .divider{display:none}
@@ -550,19 +568,154 @@ async function handleAction(userId, action) {
   return false;
 }
 
+/* ===================== BACKGROUND JOBS ===================== */
+
+let activeJobId = null;
+let pollTimer = null;
+
+function ensureProgressBar() {
+  let bar = document.getElementById('job-progress');
+  if (bar) return bar;
+  bar = document.createElement('div');
+  bar.id = 'job-progress';
+  bar.innerHTML = `
+    <div class="jp-head">
+      <span class="jp-label" id="jp-label">Working…</span>
+      <button class="btn btn-danger" id="jp-cancel" onclick="cancelJob()">Cancel</button>
+    </div>
+    <div class="jp-track"><div class="jp-fill" id="jp-fill"></div></div>
+    <div class="jp-meta" id="jp-meta"></div>`;
+  document.body.appendChild(bar);
+  return bar;
+}
+
+function hideProgress() {
+  const bar = document.getElementById('job-progress');
+  if (bar) bar.remove();
+}
+
+function fmtEta(ms) {
+  if (!ms || ms < 1000) return '—';
+  const s = Math.round(ms / 1000);
+  return s < 60 ? `${s}s` : `${Math.floor(s / 60)}m ${s % 60}s`;
+}
+
+function renderProgress(job) {
+  const bar = ensureProgressBar();
+  bar.classList.toggle('is-error', job.status === 'aborted');
+  bar.classList.toggle('is-warn', job.status === 'cancelled');
+  document.getElementById('jp-label').innerText = `${job.action} — ${job.processed} / ${job.total}`;
+  document.getElementById('jp-fill').style.width = `${job.percent}%`;
+  document.getElementById('jp-meta').innerText =
+    `${job.succeeded} done · ${job.failed} failed · eta ${fmtEta(job.etaMs)} · ${job.paceMs ?? '—'}ms pace`;
+  const cancelBtn = document.getElementById('jp-cancel');
+  if (cancelBtn) cancelBtn.style.display = job.status === 'running' ? '' : 'none';
+}
+
+async function startJob(action, userIds) {
+  if (activeJobId) { showToast('A job is already running.', 'warn'); return; }
+  const cookie = localStorage.getItem('nexusSession');
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/jobs`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'roblox-cookie': cookie },
+      body: JSON.stringify({ action, userIds })
+    });
+    const job = await res.json();
+    if (!res.ok) { showToast(job.error || 'Could not start job.', 'error'); return; }
+    activeJobId = job.id;
+    isProcessingMassAction = true;
+    updateControls();
+    renderProgress(job);
+    pollJob();
+  } catch (e) {
+    showToast('Could not reach the backend.', 'error');
+  }
+}
+
+async function pollJob() {
+  if (!activeJobId) return;
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/jobs/${activeJobId}`);
+    const job = await res.json();
+    if (!res.ok) throw new Error(job.error);
+
+    renderProgress(job);
+
+    if (job.status === 'running') {
+      pollTimer = setTimeout(pollJob, 1000);
+      return;
+    }
+
+    activeJobId = null;
+    isProcessingMassAction = false;
+    updateControls();
+
+    if (job.status === 'done') {
+      showToast(`Finished — ${job.succeeded} succeeded, ${job.failed} failed.`, 'success');
+    } else if (job.status === 'cancelled') {
+      showToast(`Cancelled after ${job.processed}.`, 'info');
+    } else {
+      showToast(job.reason || 'Job stopped early.', 'error');
+    }
+
+    setTimeout(hideProgress, 5000);
+    loadRequests();
+  } catch (e) {
+    pollTimer = setTimeout(pollJob, 2500); // transient blip — keep trying
+  }
+}
+
+async function cancelJob() {
+  if (!activeJobId) return;
+  try {
+    await fetch(`${BACKEND_URL}/api/jobs/${activeJobId}`, { method: 'DELETE' });
+    showToast('Stopping…', 'info');
+  } catch (e) {
+    showToast('Could not cancel.', 'error');
+  }
+}
+
+async function resumeActiveJob() {
+  const cookie = localStorage.getItem('nexusSession');
+  if (!cookie) return;
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/jobs/active`, { headers: { 'roblox-cookie': cookie } });
+    const job = await res.json();
+    if (job && job.status === 'running') {
+      activeJobId = job.id;
+      isProcessingMassAction = true;
+      updateControls();
+      renderProgress(job);
+      pollJob();
+    }
+  } catch (e) { /* nothing running */ }
+}
+
+/* ===================== BULK ACTIONS ===================== */
+
 async function massActionAll(action) {
   if (isProcessingMassAction) return;
-  if (!confirm(`Execute ${action.toUpperCase()} on all ${currentIds.length} targets?`)) return;
-  isProcessingMassAction = true; updateControls();
-  showToast(`Processing ${action}…`);
-  const ids = [...currentIds];
-  for (let i = 0; i < ids.length; i++) {
-    await handleAction(ids[i], action);
-    await delay(350);
+  if (currentIds.length === 0) return;
+  if (!confirm(`${action.toUpperCase()} all ${currentIds.length} requests?\n\nThis runs in the background — you can keep using the page.`)) return;
+  startJob(action, [...currentIds]);
+}
+
+async function removeAllFriends() {
+  if (isProcessingMassAction) return;
+  if (!confirm('This will unfriend EVERYONE on your Roblox friends list. Continue?')) return;
+  const cookie = localStorage.getItem('nexusSession');
+  showToast('Fetching your friends list…');
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/friends`, { headers: { 'roblox-cookie': cookie } });
+    const friendIds = await res.json();
+    if (!res.ok) { showToast(friendIds.error || 'Could not load friends.', 'error'); return; }
+    if (!Array.isArray(friendIds) || friendIds.length === 0) { showToast('You have 0 friends to remove.', 'info'); return; }
+    if (!confirm(`Found ${friendIds.length} friends. Unfriend all of them?`)) return;
+    startJob('unfriend', friendIds);
+  } catch (e) {
+    showToast('Could not load friends.', 'error');
   }
-  isProcessingMassAction = false; updateControls();
-  showToast('Complete', 'success');
-  loadRequests();
 }
 
 async function blacklistAll() {
@@ -577,7 +730,7 @@ async function blacklistAll() {
     });
     const result = await response.json();
     if (result.success) {
-      showToast(`Blacklisted ${currentIds.length} targets`, 'purple');
+      showToast(`Blacklisted ${result.addedCount ?? currentIds.length} targets`, 'success');
       currentIds = [];
       loadedDetailsMap.clear();
       setTargetCount();
@@ -588,42 +741,8 @@ async function blacklistAll() {
   }
 }
 
-async function removeAllFriends() {
-  if (isProcessingMassAction) return;
-  if (!confirm(`WARNING: This will permanently unfriend EVERYONE currently on your Roblox friends list. Are you 100% sure you want to proceed?`)) return;
-  showToast('Fetching your current friends list…');
-  const cookie = localStorage.getItem('nexusSession');
-  try {
-    const response = await fetch(`${BACKEND_URL}/api/friends`, { headers: { 'roblox-cookie': cookie } });
-    const friendIds = await response.json();
-    if (friendIds.error) { showToast(`Failed: ${friendIds.error}`, 'error'); return; }
-    if (!Array.isArray(friendIds) || friendIds.length === 0) { showToast('You currently have 0 friends to remove.', 'info'); return; }
-    if (!confirm(`Found ${friendIds.length} friends. Unfriend all of them now?`)) return;
-
-    isProcessingMassAction = true; updateControls();
-    let successCount = 0;
-    for (let i = 0; i < friendIds.length; i++) {
-      showToast(`Removing friend ${i + 1} of ${friendIds.length}…`);
-      try {
-        const res = await fetch(`${BACKEND_URL}/api/action`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'roblox-cookie': cookie },
-          body: JSON.stringify({ userId: friendIds[i], action: 'unfriend' })
-        });
-        const result = await res.json();
-        if (result.success) successCount++;
-      } catch (e) {}
-      await delay(250);
-    }
-    isProcessingMassAction = false; updateControls();
-    showToast(`Purge complete — unfriended ${successCount} users`, 'warn');
-  } catch (err) {
-    showToast('Failed to fetch friends list.', 'error');
-    isProcessingMassAction = false; updateControls();
-  }
-}
-
 checkAuth();
+resumeActiveJob();
 </script>
 </body>
 </html>
