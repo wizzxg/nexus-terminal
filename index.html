@@ -239,6 +239,10 @@ body::before{
 .jp-meta{margin-top:10px; font-family:var(--mono); font-size:10.5px; color:var(--muted); letter-spacing:.04em}
 #job-progress.is-error{border-left-color:var(--red)}
 #job-progress.is-error .jp-fill{background:var(--red)}
+.jp-verify{margin-top:8px; font-family:var(--mono); font-size:10.5px; letter-spacing:.04em; color:var(--cyan)}
+.jp-verify.bad{color:var(--red)}
+.jp-error{margin-top:8px; font-family:var(--mono); font-size:10.5px; line-height:1.5;
+  letter-spacing:.02em; color:var(--amber); word-break:break-word}
 #job-progress.is-warn{border-left-color:var(--amber)}
 #job-progress.is-warn .jp-fill{background:var(--amber)}
 
@@ -584,7 +588,9 @@ function ensureProgressBar() {
       <button class="btn btn-danger" id="jp-cancel" onclick="cancelJob()">Cancel</button>
     </div>
     <div class="jp-track"><div class="jp-fill" id="jp-fill"></div></div>
-    <div class="jp-meta" id="jp-meta"></div>`;
+    <div class="jp-meta" id="jp-meta"></div>
+    <div class="jp-verify" id="jp-verify" style="display:none"></div>
+    <div class="jp-error" id="jp-error" style="display:none"></div>`;
   document.body.appendChild(bar);
   return bar;
 }
@@ -604,10 +610,39 @@ function renderProgress(job) {
   const bar = ensureProgressBar();
   bar.classList.toggle('is-error', job.status === 'aborted');
   bar.classList.toggle('is-warn', job.status === 'cancelled');
+
   document.getElementById('jp-label').innerText = `${job.action} — ${job.processed} / ${job.total}`;
   document.getElementById('jp-fill').style.width = `${job.percent}%`;
-  document.getElementById('jp-meta').innerText =
-    `${job.succeeded} done · ${job.failed} failed · eta ${fmtEta(job.etaMs)} · ${job.paceMs ?? '—'}ms pace`;
+
+  const bits = [`${job.succeeded} done`, `${job.failed} failed`];
+  if (job.status === 'running') bits.push(`eta ${fmtEta(job.etaMs)}`);
+  bits.push(`${job.paceMs ?? '—'}ms pace`);
+  if (job.throttles) bits.push(`${job.throttles} throttled`);
+  document.getElementById('jp-meta').innerText = bits.join(' · ');
+
+  // Ground truth for unfriend jobs — friend count straight from Roblox.
+  const verifyEl = document.getElementById('jp-verify');
+  if (job.verified && job.verified.after !== null) {
+    verifyEl.style.display = '';
+    verifyEl.innerText = `Friends ${job.verified.before} → ${job.verified.after} (${job.verified.removed} actually removed)`;
+    verifyEl.classList.toggle('bad', job.verified.removed === 0);
+  } else {
+    verifyEl.style.display = 'none';
+  }
+
+  // Why things are failing, instead of just how many.
+  const errEl = document.getElementById('jp-error');
+  const kinds = job.errorKinds && Object.keys(job.errorKinds).length
+    ? Object.entries(job.errorKinds).map(([k, n]) => `${k} ×${n}`).join(' · ')
+    : null;
+  const detail = job.reason || job.lastError;
+  if (kinds || detail) {
+    errEl.style.display = '';
+    errEl.innerText = [kinds, detail].filter(Boolean).join(' — ');
+  } else {
+    errEl.style.display = 'none';
+  }
+
   const cancelBtn = document.getElementById('jp-cancel');
   if (cancelBtn) cancelBtn.style.display = job.status === 'running' ? '' : 'none';
 }
@@ -659,7 +694,8 @@ async function pollJob() {
       showToast(job.reason || 'Job stopped early.', 'error');
     }
 
-    setTimeout(hideProgress, 5000);
+    // Leave a failed run on screen — the error text is the whole point.
+    setTimeout(hideProgress, job.status === 'done' && !job.failed ? 5000 : 30000);
     loadRequests();
   } catch (e) {
     pollTimer = setTimeout(pollJob, 2500); // transient blip — keep trying
