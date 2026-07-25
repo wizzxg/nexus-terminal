@@ -243,6 +243,8 @@ body::before{
 .jp-verify.bad{color:var(--red)}
 .jp-error{margin-top:8px; font-family:var(--mono); font-size:10.5px; line-height:1.5;
   letter-spacing:.02em; color:var(--amber); word-break:break-word}
+#job-progress.is-paused{border-left-color:var(--amber)}
+#job-progress.is-paused .jp-fill{background:var(--amber)}
 #job-progress.is-warn{border-left-color:var(--amber)}
 #job-progress.is-warn .jp-fill{background:var(--amber)}
 
@@ -611,13 +613,23 @@ function renderProgress(job) {
   bar.classList.toggle('is-error', job.status === 'aborted');
   bar.classList.toggle('is-warn', job.status === 'cancelled');
 
-  document.getElementById('jp-label').innerText = `${job.action} — ${job.processed} / ${job.total}`;
+  bar.classList.toggle('is-paused', job.status === 'paused');
+
+  const label = job.status === 'paused'
+    ? `${job.action} — paused ${job.processed} / ${job.total}`
+    : `${job.action} — ${job.processed} / ${job.total}`;
+  document.getElementById('jp-label').innerText = label;
   document.getElementById('jp-fill').style.width = `${job.percent}%`;
 
   const bits = [`${job.succeeded} done`, `${job.failed} failed`];
-  if (job.status === 'running') bits.push(`eta ${fmtEta(job.etaMs)}`);
-  bits.push(`${job.paceMs ?? '—'}ms pace`);
-  if (job.throttles) bits.push(`${job.throttles} throttled`);
+  if (job.status === 'paused' && job.resumeInMs != null) {
+    bits.push(`resuming in ${fmtEta(job.resumeInMs)}`);
+  } else if (job.status === 'running') {
+    bits.push(`eta ${fmtEta(job.etaMs)}`);
+    bits.push(`${job.paceMs ?? '—'}ms pace`);
+  }
+  if (job.rateLimited) bits.push(`${job.rateLimited} rate limited`);
+  if (job.cooldowns) bits.push(`${job.cooldowns} waits`);
   document.getElementById('jp-meta').innerText = bits.join(' · ');
 
   // Ground truth for unfriend jobs — friend count straight from Roblox.
@@ -677,8 +689,9 @@ async function pollJob() {
 
     renderProgress(job);
 
-    if (job.status === 'running') {
-      pollTimer = setTimeout(pollJob, 1000);
+    if (job.status === 'running' || job.status === 'paused') {
+      // Polling also keeps the Render instance awake through a long wait.
+      pollTimer = setTimeout(pollJob, job.status === 'paused' ? 5000 : 1000);
       return;
     }
 
@@ -718,7 +731,7 @@ async function resumeActiveJob() {
   try {
     const res = await fetch(`${BACKEND_URL}/api/jobs/active`, { headers: { 'roblox-cookie': cookie } });
     const job = await res.json();
-    if (job && job.status === 'running') {
+    if (job && (job.status === 'running' || job.status === 'paused')) {
       activeJobId = job.id;
       isProcessingMassAction = true;
       updateControls();
