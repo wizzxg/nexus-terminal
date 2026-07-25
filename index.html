@@ -629,6 +629,7 @@ function renderProgress(job) {
     bits.push(`${job.paceMs ?? '—'}ms pace`);
   }
   if (job.rateLimited) bits.push(`${job.rateLimited} rate limited`);
+  if (job.retryAfterSource) bits.push(`wait: ${job.retryAfterSource}`);
   if (job.cooldowns) bits.push(`${job.cooldowns} waits`);
   document.getElementById('jp-meta').innerText = bits.join(' · ');
 
