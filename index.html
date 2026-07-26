@@ -119,6 +119,15 @@ body::before{
 .deck-row{display:flex; align-items:center; gap:14px; padding:14px 16px; flex-wrap:wrap}
 .deck-row + .deck-row{border-top:1px solid var(--line)}
 
+/* view switch */
+.view-tabs{display:inline-flex; background:var(--void); border:1px solid var(--line-2);
+  border-radius:var(--r-sm); padding:3px; gap:3px; flex:none}
+.vtab{font-family:var(--mono); font-size:10.5px; font-weight:500; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--faint); background:transparent; border:0; border-radius:6px; padding:8px 13px; cursor:pointer;
+  transition:color .15s, background .15s; white-space:nowrap}
+.vtab:hover{color:var(--text)}
+.vtab.is-active{color:var(--cyan); background:var(--cyan-soft); box-shadow:inset 0 0 0 1px rgba(56,229,216,.3)}
+
 .search-wrap{position:relative; flex:1; min-width:210px}
 .search-wrap svg{position:absolute; left:13px; top:50%; transform:translateY(-50%); color:var(--faint)}
 #search-input{width:100%; padding:11px 14px 11px 38px; background:var(--void); color:var(--text);
@@ -174,6 +183,8 @@ body::before{
 .btn-accept:hover{background:var(--cyan); color:#04120f; border-color:var(--cyan)}
 .btn-reject{color:var(--muted)}
 .btn-reject:hover{color:var(--red); border-color:var(--red); background:var(--red-soft)}
+.btn-unblock{color:var(--violet); border-color:rgba(167,139,250,.30); background:var(--violet-soft)}
+.btn-unblock:hover{background:var(--violet); color:#120a24; border-color:var(--violet)}
 
 /* skeleton */
 .user-card.is-loading{pointer-events:none}
@@ -251,6 +262,7 @@ body::before{
 @media (max-width:560px){
   #dashboard-section{padding:0 14px 50px}
   .deck-actions{width:100%} .deck-actions .divider{display:none}
+  .view-tabs{width:100%} .vtab{flex:1}
   #requests-container{grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:12px}
 }
 @media (prefers-reduced-motion:reduce){
@@ -280,6 +292,10 @@ body::before{
   <div class="sticky-header">
     <div class="deck">
       <div class="deck-row">
+        <div class="view-tabs">
+          <button class="vtab is-active" id="vtab-requests" onclick="switchView('requests')">Friend requests</button>
+          <button class="vtab" id="vtab-blocked" onclick="switchView('blocked')">Blocked users</button>
+        </div>
         <div class="search-wrap">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
           <input type="text" id="search-input" placeholder="Search by name or username…" oninput="handleFilterChange()">
@@ -289,15 +305,23 @@ body::before{
           <span class="track"></span>
           Bot filter
         </label>
-        <div class="readout"><span id="target-num">0</span> targets</div>
+        <div class="readout"><span id="target-num">0</span> <span id="target-word">targets</span></div>
       </div>
-      <div class="deck-row deck-actions">
+
+      <div class="deck-row deck-actions" id="actions-requests">
         <button class="btn btn-primary" onclick="massActionAll('accept')" id="btn-accept-all">Accept all</button>
         <button class="btn btn-danger" onclick="massActionAll('decline')" id="btn-decline-all">Decline all</button>
         <button class="btn btn-violet" onclick="blacklistAll()" id="btn-blacklist-all">Blacklist all</button>
         <button class="btn btn-warn" onclick="removeAllFriends()" id="btn-remove-friends">Unfriend everyone</button>
         <span class="divider"></span>
         <button class="btn" onclick="exportBlocklist()">Export blocklist</button>
+        <button class="btn" onclick="manualRefresh()">↻ Sync</button>
+        <button class="btn" onclick="logout()">Disconnect</button>
+      </div>
+
+      <div class="deck-row deck-actions" id="actions-blocked" style="display:none;">
+        <button class="btn btn-violet" onclick="unblockEveryone()" id="btn-unblock-all">Unblock everyone</button>
+        <span class="divider"></span>
         <button class="btn" onclick="manualRefresh()">↻ Sync</button>
         <button class="btn" onclick="logout()">Disconnect</button>
       </div>
@@ -308,8 +332,8 @@ body::before{
 
   <div id="empty-state">
     <div class="es-glyph">◇</div>
-    <h3>No incoming requests</h3>
-    <p>Your queue is clear. New friend requests will appear here — hit Sync to check again.</p>
+    <h3 id="empty-title">No incoming requests</h3>
+    <p id="empty-body">Your queue is clear. New friend requests will appear here — hit Sync to check again.</p>
   </div>
 
   <div class="pagination-bar" id="pagination-bar" style="display:none;">
@@ -345,14 +369,39 @@ const container      = document.getElementById('requests-container');
 const searchInput    = document.getElementById('search-input');
 const filterToggle   = document.getElementById('bot-filter-toggle');
 const targetNum      = document.getElementById('target-num');
+const targetWord     = document.getElementById('target-word');
 const pageIndicator  = document.getElementById('page-indicator');
 const paginationBar  = document.getElementById('pagination-bar');
 const btnPrev        = document.getElementById('btn-prev');
 const btnNext        = document.getElementById('btn-next');
 const emptyState     = document.getElementById('empty-state');
+const emptyTitle     = document.getElementById('empty-title');
+const emptyBody      = document.getElementById('empty-body');
 const exportModal    = document.getElementById('export-modal');
 const exportTextarea = document.getElementById('export-textarea');
 
+// Everything that differs between the two lists lives here, so the render
+// path stays identical for both.
+const VIEWS = {
+  requests: {
+    word: 'targets',
+    endpoint: '/api/requests/ids',
+    actionsRow: 'actions-requests',
+    tab: 'vtab-requests',
+    emptyTitle: 'No incoming requests',
+    emptyBody: 'Your queue is clear. New friend requests will appear here — hit Sync to check again.',
+  },
+  blocked: {
+    word: 'blocked',
+    endpoint: '/api/blocked/ids',
+    actionsRow: 'actions-blocked',
+    tab: 'vtab-blocked',
+    emptyTitle: 'Nobody is blocked',
+    emptyBody: 'Your Roblox block list is empty. Anyone you block will show up here.',
+  },
+};
+
+let currentView = 'requests';
 let isProcessingMassAction = false;
 let currentIds = [];
 let loadedDetailsMap = new Map();
@@ -373,7 +422,11 @@ function showToast(message, type = '') {
   setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateX(30px)'; setTimeout(() => toast.remove(), 300); }, 3500);
 }
 
-function setTargetCount() { targetNum.innerText = currentIds.length; updateControls(); }
+function setTargetCount() {
+  targetNum.innerText = currentIds.length;
+  targetWord.innerText = VIEWS[currentView].word;
+  updateControls();
+}
 
 function updateControls() {
   const targets = currentIds.length > 0;
@@ -383,6 +436,30 @@ function updateControls() {
   set('btn-decline-all',   busy || !targets);
   set('btn-blacklist-all', busy || !targets);
   set('btn-remove-friends', busy);
+  set('btn-unblock-all',   busy || (currentView === 'blocked' && !targets));
+}
+
+/* ===================== VIEW SWITCHING ===================== */
+
+function switchView(view) {
+  if (view === currentView || !VIEWS[view]) return;
+  if (isProcessingMassAction) { showToast('Wait for the running job to finish.', 'warn'); return; }
+
+  currentView = view;
+  for (const [name, cfg] of Object.entries(VIEWS)) {
+    const on = name === view;
+    document.getElementById(cfg.tab).classList.toggle('is-active', on);
+    document.getElementById(cfg.actionsRow).style.display = on ? 'flex' : 'none';
+  }
+  emptyTitle.innerText = VIEWS[view].emptyTitle;
+  emptyBody.innerText  = VIEWS[view].emptyBody;
+
+  currentIds = [];
+  loadedDetailsMap.clear();
+  currentPage = 1;
+  setTargetCount();
+  renderPage();
+  loadList();
 }
 
 function checkAuth() {
@@ -390,7 +467,7 @@ function checkAuth() {
   if (cookie) {
     loginSection.style.display = 'none';
     dashboardSection.style.display = 'block';
-    if (currentIds.length === 0) loadRequests();
+    if (currentIds.length === 0) loadList();
   } else {
     loginSection.style.display = 'block';
     dashboardSection.style.display = 'none';
@@ -412,28 +489,35 @@ function manualRefresh() {
   if (isProcessingMassAction) return;
   showToast('Syncing with backend…');
   currentIds = []; loadedDetailsMap.clear(); currentPage = 1;
-  loadRequests();
+  loadList();
 }
 
-async function loadRequests() {
+async function loadList() {
   const cookie = localStorage.getItem('nexusSession');
+  const view = currentView;
   try {
-    const response = await fetch(`${BACKEND_URL}/api/requests/ids`, { headers: { 'roblox-cookie': cookie } });
+    const response = await fetch(`${BACKEND_URL}${VIEWS[view].endpoint}`, { headers: { 'roblox-cookie': cookie } });
     if (!response.ok) {
-      const errData = await response.json();
-      showToast(`Error: ${errData.error || 'Connection failed'}`, 'error');
-      logout();
+      const errData = await response.json().catch(() => ({}));
+      showToast(errData.error || 'Connection failed', 'error');
+      // Only a dead session justifies kicking them out. A blocked-list hiccup
+      // shouldn't wipe a working login.
+      if (response.status === 401) logout();
       return;
     }
     const ids = await response.json();
-    if (ids.error) { showToast(`Roblox error: ${ids.error}`, 'error'); logout(); return; }
-    currentIds = ids;
+    if (ids && ids.error) { showToast(`Roblox error: ${ids.error}`, 'error'); return; }
+    if (view !== currentView) return; // they switched tabs mid-flight
+    currentIds = Array.isArray(ids) ? ids : [];
     setTargetCount();
     renderPage();
   } catch (err) {
     showToast('Network disconnected or backend updating…', 'error');
   }
 }
+
+// Kept for the old name so nothing else breaks.
+const loadRequests = loadList;
 
 async function exportBlocklist() {
   try {
@@ -460,7 +544,7 @@ function renderPage() {
   if (currentPage > totalPages) currentPage = totalPages;
   if (currentPage < 1) currentPage = 1;
 
-  // empty queue
+  // empty list
   if (currentIds.length === 0) {
     container.innerHTML = '';
     container.style.display = 'none';
@@ -537,6 +621,11 @@ function updateCardVisual(id, card) {
 
   if (!isVisible) { card.style.display = 'none'; return; }
 
+  const actionsHtml = currentView === 'blocked'
+    ? `<button class="btn btn-unblock" onclick="handleAction(${id}, 'unblock')">Unblock</button>`
+    : `<button class="btn btn-accept" onclick="handleAction(${id}, 'accept')">Accept</button>
+       <button class="btn btn-reject" onclick="handleAction(${id}, 'decline')">Decline</button>`;
+
   card.style.display = 'flex';
   card.innerHTML = `
     <div class="card-reticle"></div>
@@ -545,10 +634,7 @@ function updateCardVisual(id, card) {
       <h2 title="${esc(details.displayName)}">${esc(details.displayName)}</h2>
       <p title="${esc(details.username)}">@${esc(details.username)}</p>
     </div>
-    <div class="actions">
-      <button class="btn btn-accept" onclick="handleAction(${id}, 'accept')">Accept</button>
-      <button class="btn btn-reject" onclick="handleAction(${id}, 'decline')">Decline</button>
-    </div>`;
+    <div class="actions">${actionsHtml}</div>`;
 }
 
 async function handleAction(userId, action) {
@@ -569,7 +655,10 @@ async function handleAction(userId, action) {
       if (currentIds.length === 0) renderPage();
       return true;
     }
-  } catch (e) {}
+    showToast(result.error || 'Roblox rejected that.', 'error');
+  } catch (e) {
+    showToast('Could not reach the backend.', 'error');
+  }
   if (card) card.style.opacity = '1';
   return false;
 }
@@ -621,7 +710,9 @@ function renderProgress(job) {
   document.getElementById('jp-label').innerText = label;
   document.getElementById('jp-fill').style.width = `${job.percent}%`;
 
-  const bits = [`${job.succeeded} done`, `${job.failed} failed`];
+  const bits = [`${job.succeeded} done`];
+  if (job.skipped) bits.push(`${job.skipped} already done`);
+  bits.push(`${job.failed} failed`);
   if (job.status === 'paused' && job.resumeInMs != null) {
     bits.push(`resuming in ${fmtEta(job.resumeInMs)}`);
   } else if (job.status === 'running') {
@@ -633,11 +724,12 @@ function renderProgress(job) {
   if (job.cooldowns) bits.push(`${job.cooldowns} waits`);
   document.getElementById('jp-meta').innerText = bits.join(' · ');
 
-  // Ground truth for unfriend jobs — friend count straight from Roblox.
+  // Ground truth — list size straight from Roblox, before vs after.
   const verifyEl = document.getElementById('jp-verify');
   if (job.verified && job.verified.after !== null) {
     verifyEl.style.display = '';
-    verifyEl.innerText = `Friends ${job.verified.before} → ${job.verified.after} (${job.verified.removed} actually removed)`;
+    const noun = job.verifiedLabel || 'Friends';
+    verifyEl.innerText = `${noun} ${job.verified.before} → ${job.verified.after} (${job.verified.removed} actually removed)`;
     verifyEl.classList.toggle('bad', job.verified.removed === 0);
   } else {
     verifyEl.style.display = 'none';
@@ -701,7 +793,8 @@ async function pollJob() {
     updateControls();
 
     if (job.status === 'done') {
-      showToast(`Finished — ${job.succeeded} succeeded, ${job.failed} failed.`, 'success');
+      const extra = job.skipped ? `, ${job.skipped} already done` : '';
+      showToast(`Finished — ${job.succeeded} succeeded${extra}, ${job.failed} failed.`, 'success');
     } else if (job.status === 'cancelled') {
       showToast(`Cancelled after ${job.processed}.`, 'info');
     } else {
@@ -710,7 +803,7 @@ async function pollJob() {
 
     // Leave a failed run on screen — the error text is the whole point.
     setTimeout(hideProgress, job.status === 'done' && !job.failed ? 5000 : 30000);
-    loadRequests();
+    loadList();
   } catch (e) {
     pollTimer = setTimeout(pollJob, 2500); // transient blip — keep trying
   }
@@ -765,6 +858,24 @@ async function removeAllFriends() {
     startJob('unfriend', friendIds);
   } catch (e) {
     showToast('Could not load friends.', 'error');
+  }
+}
+
+// Refetches the block list at click time so the job runs against what's
+// actually blocked right now, not whatever the page loaded ten minutes ago.
+async function unblockEveryone() {
+  if (isProcessingMassAction) return;
+  const cookie = localStorage.getItem('nexusSession');
+  showToast('Fetching your blocked list…');
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/blocked/ids`, { headers: { 'roblox-cookie': cookie } });
+    const blockedIds = await res.json();
+    if (!res.ok) { showToast(blockedIds.error || 'Could not load blocked users.', 'error'); return; }
+    if (!Array.isArray(blockedIds) || blockedIds.length === 0) { showToast('You have 0 blocked users.', 'info'); return; }
+    if (!confirm(`Found ${blockedIds.length} blocked users. Unblock all of them?\n\nThis runs in the background — you can keep using the page.`)) return;
+    startJob('unblock', blockedIds);
+  } catch (e) {
+    showToast('Could not load blocked users.', 'error');
   }
 }
 
