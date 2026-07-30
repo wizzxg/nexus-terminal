@@ -150,6 +150,20 @@ body::before{
 .toggle input:checked + .track::after{transform:translateX(18px); background:var(--cyan)}
 .toggle:hover .track{border-color:rgba(132,152,192,.35)}
 
+/* automation row */
+.deck-row.auto-row{gap:18px}
+.auto-eyebrow{font-family:var(--mono); font-size:10px; letter-spacing:.18em; text-transform:uppercase;
+  color:var(--faint); white-space:nowrap}
+.toggle.is-live{color:var(--cyan)}
+.toggle input:disabled + .track{opacity:.35}
+.toggle input:disabled ~ *{opacity:.5}
+.auto-status{display:flex; align-items:center; gap:9px; margin-left:auto;
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.06em; color:var(--faint); white-space:nowrap}
+.auto-dot{width:6px; height:6px; border-radius:50%; background:var(--faint); flex:none; transition:background .2s}
+.auto-status.is-live .auto-dot{background:var(--cyan); animation:pulse 2.4s infinite}
+.auto-status.is-live{color:var(--muted)}
+.auto-status.is-waiting .auto-dot{background:var(--amber); animation:pulse 1.6s infinite}
+
 .readout{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--faint); white-space:nowrap}
 .readout #target-num{color:var(--cyan); font-weight:700; font-size:13px}
 .readout .of-total{color:var(--faint); text-transform:none; letter-spacing:.08em}
@@ -261,6 +275,9 @@ body::before{
   letter-spacing:.02em; color:var(--amber); word-break:break-word}
 #job-progress.is-warn{border-left-color:var(--amber)}
 #job-progress.is-warn .jp-fill{background:var(--amber)}
+#job-progress.is-paused{border-left-color:var(--amber)}
+#job-progress.is-paused .jp-fill{background:var(--amber)}
+.jp-breather{color:var(--amber)}
 
 @media (max-width:560px){
   #dashboard-section{padding:0 14px 50px}
@@ -309,6 +326,21 @@ body::before{
           Bot filter
         </label>
         <div class="readout"><span id="target-num">0</span> <span id="target-word">targets</span><span class="of-total" id="target-total"></span></div>
+      </div>
+
+      <div class="deck-row auto-row">
+        <span class="auto-eyebrow">Automation</span>
+        <label class="toggle" id="auto-accept-label">
+          <input type="checkbox" id="auto-accept-toggle" onchange="toggleAutoAccept()">
+          <span class="track"></span>
+          Auto accept
+        </label>
+        <label class="toggle" id="auto-sync-label">
+          <input type="checkbox" id="auto-sync-toggle" onchange="toggleAutoSync()">
+          <span class="track"></span>
+          Auto sync
+        </label>
+        <div class="auto-status" id="auto-status"><span class="auto-dot"></span><span id="auto-status-text">Both off</span></div>
       </div>
 
       <div class="deck-row deck-actions" id="actions-requests">
@@ -371,6 +403,15 @@ const HYDRATE_CHUNK  = 500;   // ids per details request (backend fans out to 10
 const HYDRATE_LANES  = 3;     // detail requests in flight at once
 const POLL_MS        = 400;   // was 1000 — the bar now moves as fast as the job
 
+// Breather: pause this long after every N actions. Applied to accept and
+// unfriend jobs. Change these two numbers to retune it.
+const BATCH = { size: 10, pauseMs: 10000 };
+const BATCHED_ACTIONS = new Set(['accept', 'unfriend']);
+
+const AUTO_SYNC_MS        = 30000; // how often auto sync re-checks the list
+const AUTO_ACCEPT_IDLE_MS = 15000; // nothing to accept — wait, then look again
+const AUTO_ACCEPT_GAP_MS  = 3000;  // breath between finishing a batch and the next sweep
+
 const loginSection     = document.getElementById('login-section');
 const dashboardSection = document.getElementById('dashboard-section');
 const container        = document.getElementById('requests-container');
@@ -388,6 +429,10 @@ const emptyTitle       = document.getElementById('empty-title');
 const emptyBody        = document.getElementById('empty-body');
 const exportModal      = document.getElementById('export-modal');
 const exportTextarea   = document.getElementById('export-textarea');
+const autoAcceptToggle = document.getElementById('auto-accept-toggle');
+const autoSyncToggle   = document.getElementById('auto-sync-toggle');
+const autoStatus       = document.getElementById('auto-status');
+const autoStatusText   = document.getElementById('auto-status-text');
 
 // Everything that differs between the two lists lives here, so the render
 // path stays identical for both.
@@ -542,7 +587,7 @@ function manualRefresh() {
 
 /* ===================== LOADING ===================== */
 
-async function loadList({ fresh = false } = {}) {
+async function loadList({ fresh = false, quiet = false } = {}) {
   const view = currentView;
   const token = ++hydrateToken;
   const t0 = performance.now();
@@ -551,7 +596,7 @@ async function loadList({ fresh = false } = {}) {
     const response = await fetch(url, { headers: { 'roblox-cookie': session() } });
     if (!response.ok) {
       const errData = await response.json().catch(() => ({}));
-      showToast(errData.error || 'Connection failed', 'error');
+      if (!quiet) showToast(errData.error || 'Connection failed', 'error');
       // Only a dead session justifies kicking them out. A blocked-list hiccup
       // shouldn't wipe a working login.
       if (response.status === 401) logout();
@@ -565,9 +610,9 @@ async function loadList({ fresh = false } = {}) {
     render();                        // paint skeletons immediately
     hydrateAll(currentIds, token);   // fill them in behind the scenes
 
-    if (fresh) showToast(`Synced ${currentIds.length} in ${Math.round(performance.now() - t0)}ms`, 'success');
+    if (fresh && !quiet) showToast(`Synced ${currentIds.length} in ${Math.round(performance.now() - t0)}ms`, 'success');
   } catch (err) {
-    showToast('Network disconnected or backend updating…', 'error');
+    if (!quiet) showToast('Network disconnected or backend updating…', 'error');
   }
 }
 
@@ -717,6 +762,7 @@ async function handleAction(userId, action) {
 /* ===================== BACKGROUND JOBS ===================== */
 
 let activeJobId = null;
+let activeJobIsAuto = false;
 let pollTimer = null;
 
 function ensureProgressBar() {
@@ -750,23 +796,31 @@ function fmtEta(ms) {
 
 function renderProgress(job) {
   const bar = ensureProgressBar();
+  const breathing = job.status === 'running' && job.pauseInMs > 800;
+
   bar.classList.toggle('is-error', job.status === 'aborted');
   bar.classList.toggle('is-warn', job.status === 'cancelled');
+  bar.classList.toggle('is-paused', breathing);
 
-  document.getElementById('jp-label').innerText = `${job.action} — ${job.processed} / ${job.total}`;
+  const prefix = activeJobIsAuto ? 'auto ' : '';
+  document.getElementById('jp-label').innerText =
+    `${prefix}${job.action} — ${job.processed} / ${job.total}` + (breathing ? ' — breather' : '');
   document.getElementById('jp-fill').style.width = `${job.percent}%`;
 
-  const bits = [`${job.succeeded} done`];
+  const bits = [];
+  if (breathing) bits.push(`<span class="jp-breather">resuming in ${Math.ceil(job.pauseInMs / 1000)}s</span>`);
+  bits.push(`${job.succeeded} done`);
   if (job.skipped) bits.push(`${job.skipped} already done`);
   if (job.failed)  bits.push(`${job.failed} failed`);
   if (job.status === 'running') {
     bits.push(`eta ${fmtEta(job.etaMs)}`);
-    bits.push(`${job.ratePerMin || 0}/min`);
+    bits.push(`<span class="jp-rate">${job.ratePerMin || 0}/min</span>`);
     bits.push(`${job.paceMs ?? '—'}ms × ${job.concurrency ?? 1}`);
+    if (job.batchSize) bits.push(`batch ${job.batchSize}/${Math.round(job.batchPauseMs / 1000)}s`);
   }
   if (job.rateLimited) bits.push(`${job.rateLimited} throttled`);
   if (job.retries) bits.push(`${job.retries} retried`);
-  document.getElementById('jp-meta').innerHTML = bits.map((b, i) => i === 2 && job.status === 'running' ? `<span class="jp-rate">${b}</span>` : b).join(' · ');
+  document.getElementById('jp-meta').innerHTML = bits.join(' · ');
 
   // Ground truth — list size straight from Roblox, before vs after.
   const verifyEl = document.getElementById('jp-verify');
@@ -796,17 +850,19 @@ function renderProgress(job) {
   if (cancelBtn) cancelBtn.style.display = job.status === 'running' ? '' : 'none';
 }
 
-async function startJob(action, userIds) {
+async function startJob(action, userIds, { auto = false } = {}) {
   if (activeJobId) { showToast('A job is already running.', 'warn'); return; }
+  const batch = BATCHED_ACTIONS.has(action) ? { size: BATCH.size, pauseMs: BATCH.pauseMs } : false;
   try {
     const res = await fetch(`${BACKEND_URL}/api/jobs`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'roblox-cookie': session() },
-      body: JSON.stringify({ action, userIds })
+      body: JSON.stringify({ action, userIds, batch })
     });
     const job = await res.json();
     if (!res.ok) { showToast(job.error || 'Could not start job.', 'error'); return; }
     activeJobId = job.id;
+    activeJobIsAuto = auto;
     isProcessingMassAction = true;
     updateControls();
     renderProgress(job);
@@ -830,7 +886,9 @@ async function pollJob() {
       return;
     }
 
+    const wasAuto = activeJobIsAuto;
     activeJobId = null;
+    activeJobIsAuto = false;
     isProcessingMassAction = false;
     updateControls();
 
@@ -846,7 +904,20 @@ async function pollJob() {
 
     // Leave a failed run on screen — the error text is the whole point.
     setTimeout(hideProgress, job.status === 'done' && !job.failed ? 4000 : 30000);
-    loadList({ fresh: true });
+    loadList({ fresh: true, quiet: true });
+
+    if (wasAuto && autoAccept) {
+      autoAcceptTotal += job.succeeded;
+      // An abort means Roblox is refusing outright — don't loop straight back
+      // into the same wall, and don't silently keep a dead toggle lit.
+      if (job.status === 'aborted') {
+        autoAcceptToggle.checked = false;
+        toggleAutoAccept();
+      } else {
+        scheduleAutoAccept(AUTO_ACCEPT_GAP_MS);
+      }
+    }
+    renderAutoStatus();
   } catch (e) {
     pollTimer = setTimeout(pollJob, 1500); // transient blip — keep trying
   }
@@ -946,6 +1017,145 @@ async function blacklistAll() {
   }
 }
 
+/* ===================== AUTOMATION ===================== */
+
+// Two independent loops, both driven by setTimeout rather than setInterval —
+// an interval fires whether or not the previous tick finished, which is how
+// you end up with four overlapping syncs against a slow backend.
+
+let autoAccept = false;
+let autoSync = false;
+let autoAcceptTimer = null;
+let autoSyncTimer = null;
+let autoAcceptTotal = 0;
+let autoNextAt = 0;         // when the next auto-accept sweep is due
+let autoPhase = 'off';      // off | scanning | working | waiting
+
+function setAutoPhase(phase, note = '') {
+  autoPhase = phase;
+  renderAutoStatus(note);
+}
+
+function renderAutoStatus(note = '') {
+  const live = autoAccept || autoSync;
+  autoStatus.classList.toggle('is-live', live && autoPhase !== 'waiting');
+  autoStatus.classList.toggle('is-waiting', autoPhase === 'waiting');
+
+  if (!live) { autoStatusText.innerText = 'Both off'; return; }
+
+  const parts = [];
+  if (autoAccept) {
+    if (note) parts.push(note);
+    else if (autoPhase === 'working') parts.push('accepting…');
+    else if (autoPhase === 'scanning') parts.push('checking for requests…');
+    else if (autoNextAt) parts.push(`next sweep in ${Math.max(0, Math.ceil((autoNextAt - Date.now()) / 1000))}s`);
+    if (autoAcceptTotal) parts.push(`${autoAcceptTotal} accepted`);
+  }
+  if (autoSync) parts.push(`sync every ${Math.round(AUTO_SYNC_MS / 1000)}s`);
+  autoStatusText.innerText = parts.join(' · ') || 'idle';
+}
+
+// Ticks the countdown text once a second so the readout isn't frozen.
+setInterval(() => { if (autoAccept || autoSync) renderAutoStatus(); }, 1000);
+
+/* --- auto accept --- */
+
+function toggleAutoAccept() {
+  autoAccept = autoAcceptToggle.checked;
+  localStorage.setItem('nexusAutoAccept', autoAccept ? '1' : '0');
+  clearTimeout(autoAcceptTimer);
+
+  if (autoAccept) {
+    autoAcceptTotal = 0;
+    showToast(`Auto accept on — ${BATCH.size} at a time, ${BATCH.pauseMs / 1000}s between batches.`, 'success');
+    autoAcceptSweep();
+  } else {
+    autoNextAt = 0;
+    setAutoPhase('off');
+    // Off means off. A sweep already in flight gets stopped too.
+    if (activeJobId && activeJobIsAuto) { cancelJob(); showToast('Auto accept off — stopping current batch.', 'info'); }
+    else showToast('Auto accept off.', 'info');
+  }
+  renderAutoStatus();
+}
+
+function scheduleAutoAccept(ms) {
+  if (!autoAccept) return;
+  autoNextAt = Date.now() + ms;
+  setAutoPhase('waiting');
+  clearTimeout(autoAcceptTimer);
+  autoAcceptTimer = setTimeout(autoAcceptSweep, ms);
+}
+
+async function autoAcceptSweep() {
+  if (!autoAccept) return;
+  // Never fight a manual job for the one-job-per-session slot.
+  if (activeJobId) return scheduleAutoAccept(AUTO_ACCEPT_GAP_MS);
+  if (document.hidden) return scheduleAutoAccept(AUTO_ACCEPT_IDLE_MS);
+
+  autoNextAt = 0;
+  setAutoPhase('scanning');
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/requests/ids?fresh=1`, { headers: { 'roblox-cookie': session() } });
+    if (!res.ok) {
+      if (res.status === 401) { autoAcceptToggle.checked = false; toggleAutoAccept(); return; }
+      return scheduleAutoAccept(AUTO_ACCEPT_IDLE_MS);
+    }
+    const ids = await res.json();
+    if (!Array.isArray(ids) || ids.length === 0) return scheduleAutoAccept(AUTO_ACCEPT_IDLE_MS);
+
+    if (currentView === 'requests') { currentIds = ids; render(); hydrateAll(ids, hydrateToken); }
+
+    setAutoPhase('working');
+    await startJob('accept', ids, { batch: true, auto: true });
+    // pollJob hands control back via onJobFinished when the batch completes.
+  } catch (e) {
+    scheduleAutoAccept(AUTO_ACCEPT_IDLE_MS);
+  }
+}
+
+/* --- auto sync --- */
+
+function toggleAutoSync() {
+  autoSync = autoSyncToggle.checked;
+  localStorage.setItem('nexusAutoSync', autoSync ? '1' : '0');
+  clearTimeout(autoSyncTimer);
+
+  if (autoSync) {
+    showToast(`Auto sync on — every ${Math.round(AUTO_SYNC_MS / 1000)}s.`, 'success');
+    autoSyncTimer = setTimeout(autoSyncTick, AUTO_SYNC_MS);
+  } else {
+    showToast('Auto sync off.', 'info');
+  }
+  renderAutoStatus();
+}
+
+async function autoSyncTick() {
+  if (!autoSync) return;
+  // Skip while a job runs (it resyncs on completion anyway) and while the tab
+  // is in the background — no point burning requests nobody is looking at.
+  if (!isProcessingMassAction && !document.hidden && session()) {
+    await loadList({ fresh: true, quiet: true });
+  }
+  autoSyncTimer = setTimeout(autoSyncTick, AUTO_SYNC_MS);
+}
+
+// Coming back to the tab shouldn't mean waiting out a full interval.
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) return;
+  if (autoSync && !isProcessingMassAction) loadList({ fresh: true, quiet: true });
+  if (autoAccept && !activeJobId) scheduleAutoAccept(500);
+});
+
+function restoreAutomation() {
+  autoSyncToggle.checked = localStorage.getItem('nexusAutoSync') === '1';
+  autoAcceptToggle.checked = localStorage.getItem('nexusAutoAccept') === '1';
+  if (autoSyncToggle.checked) { autoSync = true; autoSyncTimer = setTimeout(autoSyncTick, AUTO_SYNC_MS); }
+  if (autoAcceptToggle.checked) { autoAccept = true; autoAcceptTotal = 0; scheduleAutoAccept(2000); }
+  if (autoAccept || autoSync) showToast('Automation resumed from last session.', 'info');
+  renderAutoStatus();
+}
+
 /* ===================== EXPORT / MODAL ===================== */
 
 async function exportBlocklist() {
@@ -970,6 +1180,7 @@ document.addEventListener('keydown', e => {
 
 checkAuth();
 resumeActiveJob();
+if (session()) restoreAutomation();
 </script>
 </body>
 </html>
