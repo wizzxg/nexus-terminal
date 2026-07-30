@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Nexus // Terminal</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://tr.rbxcdn.com">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
@@ -150,6 +152,7 @@ body::before{
 
 .readout{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--faint); white-space:nowrap}
 .readout #target-num{color:var(--cyan); font-weight:700; font-size:13px}
+.readout .of-total{color:var(--faint); text-transform:none; letter-spacing:.08em}
 
 .deck-actions{display:flex; align-items:center; gap:9px; flex-wrap:wrap}
 .deck-actions .divider{width:1px; height:22px; background:var(--line-2); margin:0 3px}
@@ -160,8 +163,9 @@ body::before{
 .user-card{position:relative; background:linear-gradient(180deg, var(--surface-2), var(--surface));
   border:1px solid var(--line); border-radius:var(--r-md); padding:22px 18px 18px;
   display:flex; flex-direction:column; align-items:center; text-align:center; overflow:hidden;
-  transition:border-color .18s, transform .12s, box-shadow .18s}
+  transition:border-color .18s, transform .12s, box-shadow .18s, opacity .12s}
 .user-card:hover{border-color:var(--line-2); transform:translateY(-3px); box-shadow:0 18px 40px -24px rgba(0,0,0,.9)}
+.user-card.is-pending{opacity:.28; pointer-events:none}
 /* corner reticle on hover */
 .card-reticle{position:absolute; inset:8px; border-radius:8px; pointer-events:none; opacity:0; transition:opacity .2s}
 .card-reticle::before,.card-reticle::after{content:""; position:absolute; width:12px; height:12px; border:1.5px solid var(--cyan)}
@@ -193,7 +197,7 @@ body::before{
   background:linear-gradient(90deg, transparent, rgba(255,255,255,.05), transparent); animation:shimmer 1.4s infinite}
 @keyframes shimmer{100%{transform:translateX(100%)}}
 .sk-pfp{width:78px; height:78px; border-radius:50%; margin-bottom:14px}
-.sk-line{height:11px; margin-bottom:9px}
+.sk-line{height:11px; margin-bottom:9px; width:80%}
 .sk-line.short{width:45%}
 
 /* empty state */
@@ -246,16 +250,15 @@ body::before{
 .jp-head{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px}
 .jp-label{font-family:var(--mono); font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--text)}
 .jp-track{height:5px; background:var(--void); border-radius:3px; overflow:hidden}
-.jp-fill{height:100%; width:0%; background:var(--cyan); border-radius:3px; transition:width .4s ease}
+.jp-fill{height:100%; width:0%; background:var(--cyan); border-radius:3px; transition:width .3s linear}
 .jp-meta{margin-top:10px; font-family:var(--mono); font-size:10.5px; color:var(--muted); letter-spacing:.04em}
+.jp-rate{color:var(--cyan)}
 #job-progress.is-error{border-left-color:var(--red)}
 #job-progress.is-error .jp-fill{background:var(--red)}
 .jp-verify{margin-top:8px; font-family:var(--mono); font-size:10.5px; letter-spacing:.04em; color:var(--cyan)}
 .jp-verify.bad{color:var(--red)}
 .jp-error{margin-top:8px; font-family:var(--mono); font-size:10.5px; line-height:1.5;
   letter-spacing:.02em; color:var(--amber); word-break:break-word}
-#job-progress.is-paused{border-left-color:var(--amber)}
-#job-progress.is-paused .jp-fill{background:var(--amber)}
 #job-progress.is-warn{border-left-color:var(--amber)}
 #job-progress.is-warn .jp-fill{background:var(--amber)}
 
@@ -305,7 +308,7 @@ body::before{
           <span class="track"></span>
           Bot filter
         </label>
-        <div class="readout"><span id="target-num">0</span> <span id="target-word">targets</span></div>
+        <div class="readout"><span id="target-num">0</span> <span id="target-word">targets</span><span class="of-total" id="target-total"></span></div>
       </div>
 
       <div class="deck-row deck-actions" id="actions-requests">
@@ -363,22 +366,28 @@ body::before{
 const BACKEND_URL = 'https://nexus-backend-1-771w.onrender.com';
 // ///////////////////////////////////////////////////////////
 
-const loginSection   = document.getElementById('login-section');
+const PAGE_SIZE      = 100;   // was 60 — fewer page flips on big lists
+const HYDRATE_CHUNK  = 500;   // ids per details request (backend fans out to 100s)
+const HYDRATE_LANES  = 3;     // detail requests in flight at once
+const POLL_MS        = 400;   // was 1000 — the bar now moves as fast as the job
+
+const loginSection     = document.getElementById('login-section');
 const dashboardSection = document.getElementById('dashboard-section');
-const container      = document.getElementById('requests-container');
-const searchInput    = document.getElementById('search-input');
-const filterToggle   = document.getElementById('bot-filter-toggle');
-const targetNum      = document.getElementById('target-num');
-const targetWord     = document.getElementById('target-word');
-const pageIndicator  = document.getElementById('page-indicator');
-const paginationBar  = document.getElementById('pagination-bar');
-const btnPrev        = document.getElementById('btn-prev');
-const btnNext        = document.getElementById('btn-next');
-const emptyState     = document.getElementById('empty-state');
-const emptyTitle     = document.getElementById('empty-title');
-const emptyBody      = document.getElementById('empty-body');
-const exportModal    = document.getElementById('export-modal');
-const exportTextarea = document.getElementById('export-textarea');
+const container        = document.getElementById('requests-container');
+const searchInput      = document.getElementById('search-input');
+const filterToggle     = document.getElementById('bot-filter-toggle');
+const targetNum        = document.getElementById('target-num');
+const targetWord       = document.getElementById('target-word');
+const targetTotal      = document.getElementById('target-total');
+const pageIndicator    = document.getElementById('page-indicator');
+const paginationBar    = document.getElementById('pagination-bar');
+const btnPrev          = document.getElementById('btn-prev');
+const btnNext          = document.getElementById('btn-next');
+const emptyState       = document.getElementById('empty-state');
+const emptyTitle       = document.getElementById('empty-title');
+const emptyBody        = document.getElementById('empty-body');
+const exportModal      = document.getElementById('export-modal');
+const exportTextarea   = document.getElementById('export-textarea');
 
 // Everything that differs between the two lists lives here, so the render
 // path stays identical for both.
@@ -404,11 +413,14 @@ const VIEWS = {
 let currentView = 'requests';
 let isProcessingMassAction = false;
 let currentIds = [];
+let visibleIds = [];
 let loadedDetailsMap = new Map();
 let currentPage = 1;
-const itemsPerPage = 60;
+let hydrateToken = 0;   // bumped on view switch so stale chunks are ignored
+let renderQueued = false;
+let searchDebounce = null;
 
-const delay = ms => new Promise(res => setTimeout(res, ms));
+const session = () => localStorage.getItem('nexusSession');
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 function showToast(message, type = '') {
@@ -422,21 +434,53 @@ function showToast(message, type = '') {
   setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateX(30px)'; setTimeout(() => toast.remove(), 300); }, 3500);
 }
 
-function setTargetCount() {
-  targetNum.innerText = currentIds.length;
-  targetWord.innerText = VIEWS[currentView].word;
-  updateControls();
-}
-
 function updateControls() {
   const targets = currentIds.length > 0;
   const busy = isProcessingMassAction;
   const set = (id, dis) => { const b = document.getElementById(id); if (b) b.disabled = dis; };
-  set('btn-accept-all',    busy || !targets);
-  set('btn-decline-all',   busy || !targets);
-  set('btn-blacklist-all', busy || !targets);
+  set('btn-accept-all',     busy || !targets);
+  set('btn-decline-all',    busy || !targets);
+  set('btn-blacklist-all',  busy || !targets);
   set('btn-remove-friends', busy);
-  set('btn-unblock-all',   busy || (currentView === 'blocked' && !targets));
+  set('btn-unblock-all',    busy || (currentView === 'blocked' && !targets));
+}
+
+/* ===================== FILTERING ===================== */
+
+// Filtering now produces a real list, and pagination runs off that list.
+// Previously every id got a DOM node and filtered-out ones were hidden with
+// display:none, so page 1 could show four cards while claiming 60.
+function computeVisible() {
+  const term = searchInput.value.toLowerCase().trim();
+  const botFilter = filterToggle.checked;
+
+  if (!term && !botFilter) { visibleIds = currentIds; return; }
+
+  visibleIds = currentIds.filter(id => {
+    const d = loadedDetailsMap.get(id);
+    if (!d) return !term; // not hydrated yet — keep it unless we're searching
+    if (botFilter) {
+      const sameName = d.username.toLowerCase() === d.displayName.toLowerCase();
+      const ageDays = (Date.now() - new Date(d.created).getTime()) / 86400000;
+      if (sameName || ageDays < 3) return false;
+    }
+    if (term) {
+      return d.username.toLowerCase().includes(term) || d.displayName.toLowerCase().includes(term);
+    }
+    return true;
+  });
+}
+
+function setTargetCount() {
+  targetNum.innerText = visibleIds.length;
+  targetWord.innerText = VIEWS[currentView].word;
+  targetTotal.innerText = visibleIds.length === currentIds.length ? '' : ` of ${currentIds.length}`;
+  updateControls();
+}
+
+function handleFilterChange() {
+  clearTimeout(searchDebounce);
+  searchDebounce = setTimeout(() => { currentPage = 1; render(); }, 120);
 }
 
 /* ===================== VIEW SWITCHING ===================== */
@@ -446,6 +490,7 @@ function switchView(view) {
   if (isProcessingMassAction) { showToast('Wait for the running job to finish.', 'warn'); return; }
 
   currentView = view;
+  hydrateToken++;
   for (const [name, cfg] of Object.entries(VIEWS)) {
     const on = name === view;
     document.getElementById(cfg.tab).classList.toggle('is-active', on);
@@ -455,18 +500,16 @@ function switchView(view) {
   emptyBody.innerText  = VIEWS[view].emptyBody;
 
   currentIds = [];
-  loadedDetailsMap.clear();
   currentPage = 1;
-  setTargetCount();
-  renderPage();
+  render();
   loadList();
 }
 
 function checkAuth() {
-  const cookie = localStorage.getItem('nexusSession');
-  if (cookie) {
+  if (session()) {
     loginSection.style.display = 'none';
     dashboardSection.style.display = 'block';
+    warmBackend();
     if (currentIds.length === 0) loadList();
   } else {
     loginSection.style.display = 'block';
@@ -474,29 +517,38 @@ function checkAuth() {
   }
 }
 
+// Wakes the Render dyno and pre-fetches the CSRF + tracking cookie, so the
+// first action you click isn't paying for a cold handshake.
+function warmBackend() {
+  fetch(`${BACKEND_URL}/api/warm`, { method: 'POST', headers: { 'roblox-cookie': session() } }).catch(() => {});
+}
+
 function saveCookie() {
   const input = document.getElementById('cookie-input').value.trim();
-  if (input) {
-    localStorage.setItem('nexusSession', input);
-    currentIds = []; loadedDetailsMap.clear(); currentPage = 1;
-    checkAuth();
-  }
+  if (!input) return;
+  localStorage.setItem('nexusSession', input);
+  currentIds = []; loadedDetailsMap.clear(); currentPage = 1;
+  checkAuth();
 }
 
 function logout() { localStorage.removeItem('nexusSession'); location.reload(); }
 
 function manualRefresh() {
   if (isProcessingMassAction) return;
-  showToast('Syncing with backend…');
-  currentIds = []; loadedDetailsMap.clear(); currentPage = 1;
-  loadList();
+  currentIds = []; currentPage = 1;
+  render();
+  loadList({ fresh: true });
 }
 
-async function loadList() {
-  const cookie = localStorage.getItem('nexusSession');
+/* ===================== LOADING ===================== */
+
+async function loadList({ fresh = false } = {}) {
   const view = currentView;
+  const token = ++hydrateToken;
+  const t0 = performance.now();
   try {
-    const response = await fetch(`${BACKEND_URL}${VIEWS[view].endpoint}`, { headers: { 'roblox-cookie': cookie } });
+    const url = `${BACKEND_URL}${VIEWS[view].endpoint}${fresh ? '?fresh=1' : ''}`;
+    const response = await fetch(url, { headers: { 'roblox-cookie': session() } });
     if (!response.ok) {
       const errData = await response.json().catch(() => ({}));
       showToast(errData.error || 'Connection failed', 'error');
@@ -507,46 +559,73 @@ async function loadList() {
     }
     const ids = await response.json();
     if (ids && ids.error) { showToast(`Roblox error: ${ids.error}`, 'error'); return; }
-    if (view !== currentView) return; // they switched tabs mid-flight
+    if (view !== currentView || token !== hydrateToken) return; // switched tabs mid-flight
+
     currentIds = Array.isArray(ids) ? ids : [];
-    setTargetCount();
-    renderPage();
+    render();                        // paint skeletons immediately
+    hydrateAll(currentIds, token);   // fill them in behind the scenes
+
+    if (fresh) showToast(`Synced ${currentIds.length} in ${Math.round(performance.now() - t0)}ms`, 'success');
   } catch (err) {
     showToast('Network disconnected or backend updating…', 'error');
   }
 }
 
-// Kept for the old name so nothing else breaks.
-const loadRequests = loadList;
+const loadRequests = loadList; // old name, kept so nothing else breaks
 
-async function exportBlocklist() {
-  try {
-    const response = await fetch(`${BACKEND_URL}/api/blocklist`);
-    const data = await response.json();
-    exportTextarea.value = data.ids.map(id => `"${id}",`).join('\n');
-    exportModal.style.display = 'flex';
-  } catch (err) { showToast('Blocklist fetch failed', 'error'); }
+// Hydrates the WHOLE list, not just the page you're looking at. Page flips and
+// search become instant, and the bot filter can actually see every account.
+// Current page goes first so what's on screen resolves immediately.
+async function hydrateAll(ids, token) {
+  const needed = ids.filter(id => !loadedDetailsMap.has(id));
+  if (needed.length === 0) return;
+
+  const onScreen = new Set(visibleIds.slice(0, PAGE_SIZE));
+  needed.sort((a, b) => (onScreen.has(b) ? 1 : 0) - (onScreen.has(a) ? 1 : 0));
+
+  const chunks = [];
+  for (let i = 0; i < needed.length; i += HYDRATE_CHUNK) chunks.push(needed.slice(i, i + HYDRATE_CHUNK));
+
+  let next = 0;
+  const lane = async () => {
+    while (next < chunks.length) {
+      if (token !== hydrateToken) return;
+      const chunk = chunks[next++];
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/requests/details`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userIds: chunk })
+        });
+        const details = await res.json();
+        if (token !== hydrateToken) return;
+        details.forEach(d => loadedDetailsMap.set(d.id, d));
+        queueRender();
+      } catch (e) { /* a missing chunk just stays a skeleton */ }
+    }
+  };
+
+  await Promise.all(Array.from({ length: HYDRATE_LANES }, lane));
 }
 
-function closeModal() { exportModal.style.display = 'none'; }
-function copyExportText() { exportTextarea.select(); document.execCommand('copy'); showToast('Copied to clipboard', 'success'); }
-
-function handleFilterChange() { renderPage(); }
-
-function changePage(direction) {
-  currentPage += direction;
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  renderPage();
+// Coalesce re-renders — three lanes landing at once shouldn't repaint 3x.
+function queueRender() {
+  if (renderQueued) return;
+  renderQueued = true;
+  requestAnimationFrame(() => { renderQueued = false; render(); });
 }
 
-function renderPage() {
-  const totalPages = Math.max(1, Math.ceil(currentIds.length / itemsPerPage));
-  if (currentPage > totalPages) currentPage = totalPages;
-  if (currentPage < 1) currentPage = 1;
+/* ===================== RENDERING ===================== */
 
-  // empty list
-  if (currentIds.length === 0) {
-    container.innerHTML = '';
+function render() {
+  computeVisible();
+  setTargetCount();
+
+  const totalPages = Math.max(1, Math.ceil(visibleIds.length / PAGE_SIZE));
+  currentPage = Math.min(Math.max(1, currentPage), totalPages);
+
+  if (visibleIds.length === 0) {
+    container.replaceChildren();
     container.style.display = 'none';
     emptyState.style.display = 'flex';
     paginationBar.style.display = 'none';
@@ -555,111 +634,83 @@ function renderPage() {
   container.style.display = 'grid';
   emptyState.style.display = 'none';
 
-  container.innerHTML = '';
-  const pageIds = currentIds.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-  pageIds.forEach(id => {
-    const card = document.createElement('div');
-    card.className = 'user-card';
-    card.id = `user-${id}`;
-    container.appendChild(card);
-    updateCardVisual(id, card);
-  });
+  const pageIds = visibleIds.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  // Build off-document, swap once. innerHTML += in a loop was forcing a
+  // reflow per card; at 100 cards that's the whole "sync feels slow" feeling.
+  const frag = document.createDocumentFragment();
+  for (const id of pageIds) frag.appendChild(buildCard(id));
+  container.replaceChildren(frag);
 
   pageIndicator.innerHTML = `PAGE <b>${String(currentPage).padStart(2,'0')}</b> / ${String(totalPages).padStart(2,'0')}`;
   btnPrev.disabled = currentPage <= 1;
   btnNext.disabled = currentPage >= totalPages;
   paginationBar.style.display = totalPages > 1 ? 'flex' : 'none';
-
-  hydrateVisibleIds(pageIds);
 }
 
-async function hydrateVisibleIds(pageIds) {
-  const unhydrated = pageIds.filter(id => !loadedDetailsMap.has(id));
-  if (unhydrated.length === 0) return;
-  try {
-    const response = await fetch(`${BACKEND_URL}/api/requests/details`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userIds: unhydrated })
-    });
-    const details = await response.json();
-    details.forEach(d => loadedDetailsMap.set(d.id, d));
-    pageIds.forEach(id => updateCardVisual(id, document.getElementById(`user-${id}`)));
-  } catch (e) {
-    console.error('Hydration failed');
-  }
-}
+function buildCard(id) {
+  const card = document.createElement('div');
+  card.className = 'user-card';
+  card.id = `user-${id}`;
 
-function updateCardVisual(id, card) {
-  if (!card) return;
-  const details = loadedDetailsMap.get(id);
-
-  if (!details) {
+  const d = loadedDetailsMap.get(id);
+  if (!d) {
     card.classList.add('is-loading');
     card.innerHTML = `<div class="sk sk-pfp"></div><div class="sk sk-line"></div><div class="sk sk-line short"></div>`;
-    return;
+    return card;
   }
-  card.classList.remove('is-loading');
-
-  let isVisible = true;
-
-  // 1. Bot filter
-  if (filterToggle.checked) {
-    const isSameName = details.username.toLowerCase() === details.displayName.toLowerCase();
-    const accountAgeDays = (new Date() - new Date(details.created)) / (1000 * 60 * 60 * 24);
-    if (isSameName || accountAgeDays < 3) isVisible = false;
-  }
-
-  // 2. Search
-  const searchTerm = searchInput.value.toLowerCase().trim();
-  if (searchTerm) {
-    if (!details.username.toLowerCase().includes(searchTerm) &&
-        !details.displayName.toLowerCase().includes(searchTerm)) {
-      isVisible = false;
-    }
-  }
-
-  if (!isVisible) { card.style.display = 'none'; return; }
 
   const actionsHtml = currentView === 'blocked'
     ? `<button class="btn btn-unblock" onclick="handleAction(${id}, 'unblock')">Unblock</button>`
     : `<button class="btn btn-accept" onclick="handleAction(${id}, 'accept')">Accept</button>
        <button class="btn btn-reject" onclick="handleAction(${id}, 'decline')">Decline</button>`;
 
-  card.style.display = 'flex';
   card.innerHTML = `
     <div class="card-reticle"></div>
-    <img src="${esc(details.pfp)}" class="pfp" alt="" loading="lazy">
+    <img src="${esc(d.pfp)}" class="pfp" alt="" loading="lazy" decoding="async">
     <div class="names">
-      <h2 title="${esc(details.displayName)}">${esc(details.displayName)}</h2>
-      <p title="${esc(details.username)}">@${esc(details.username)}</p>
+      <h2 title="${esc(d.displayName)}">${esc(d.displayName)}</h2>
+      <p title="${esc(d.username)}">@${esc(d.username)}</p>
     </div>
     <div class="actions">${actionsHtml}</div>`;
+  return card;
 }
 
+function changePage(direction) {
+  currentPage += direction;
+  render();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ===================== SINGLE ACTION ===================== */
+
+// Optimistic: the card goes the instant you click. If Roblox refuses, it comes
+// back with a toast explaining why. Waiting on a round trip before removing a
+// card is what made rapid clicking feel laggy.
 async function handleAction(userId, action) {
-  const cookie = localStorage.getItem('nexusSession');
   const card = document.getElementById(`user-${userId}`);
-  if (card) card.style.opacity = '0.3';
+  if (card) card.classList.add('is-pending');
+
+  const index = currentIds.indexOf(userId);
+  currentIds = currentIds.filter(id => id !== userId);
+  render();
+
   try {
     const response = await fetch(`${BACKEND_URL}/api/action`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'roblox-cookie': cookie },
+      headers: { 'Content-Type': 'application/json', 'roblox-cookie': session() },
       body: JSON.stringify({ userId, action })
     });
     const result = await response.json();
-    if (result.success) {
-      if (card) card.remove();
-      currentIds = currentIds.filter(id => id !== userId);
-      setTargetCount();
-      if (currentIds.length === 0) renderPage();
-      return true;
-    }
+    if (result.success) return true;
     showToast(result.error || 'Roblox rejected that.', 'error');
   } catch (e) {
     showToast('Could not reach the backend.', 'error');
   }
-  if (card) card.style.opacity = '1';
+
+  // Put it back where it was.
+  if (index >= 0 && !currentIds.includes(userId)) currentIds.splice(index, 0, userId);
+  render();
   return false;
 }
 
@@ -702,27 +753,20 @@ function renderProgress(job) {
   bar.classList.toggle('is-error', job.status === 'aborted');
   bar.classList.toggle('is-warn', job.status === 'cancelled');
 
-  bar.classList.toggle('is-paused', job.status === 'paused');
-
-  const label = job.status === 'paused'
-    ? `${job.action} — paused ${job.processed} / ${job.total}`
-    : `${job.action} — ${job.processed} / ${job.total}`;
-  document.getElementById('jp-label').innerText = label;
+  document.getElementById('jp-label').innerText = `${job.action} — ${job.processed} / ${job.total}`;
   document.getElementById('jp-fill').style.width = `${job.percent}%`;
 
   const bits = [`${job.succeeded} done`];
   if (job.skipped) bits.push(`${job.skipped} already done`);
-  bits.push(`${job.failed} failed`);
-  if (job.status === 'paused' && job.resumeInMs != null) {
-    bits.push(`resuming in ${fmtEta(job.resumeInMs)}`);
-  } else if (job.status === 'running') {
+  if (job.failed)  bits.push(`${job.failed} failed`);
+  if (job.status === 'running') {
     bits.push(`eta ${fmtEta(job.etaMs)}`);
-    bits.push(`${job.paceMs ?? '—'}ms pace`);
+    bits.push(`${job.ratePerMin || 0}/min`);
+    bits.push(`${job.paceMs ?? '—'}ms × ${job.concurrency ?? 1}`);
   }
-  if (job.rateLimited) bits.push(`${job.rateLimited} rate limited`);
-  if (job.retryAfterSource) bits.push(`wait: ${job.retryAfterSource}`);
-  if (job.cooldowns) bits.push(`${job.cooldowns} waits`);
-  document.getElementById('jp-meta').innerText = bits.join(' · ');
+  if (job.rateLimited) bits.push(`${job.rateLimited} throttled`);
+  if (job.retries) bits.push(`${job.retries} retried`);
+  document.getElementById('jp-meta').innerHTML = bits.map((b, i) => i === 2 && job.status === 'running' ? `<span class="jp-rate">${b}</span>` : b).join(' · ');
 
   // Ground truth — list size straight from Roblox, before vs after.
   const verifyEl = document.getElementById('jp-verify');
@@ -754,11 +798,10 @@ function renderProgress(job) {
 
 async function startJob(action, userIds) {
   if (activeJobId) { showToast('A job is already running.', 'warn'); return; }
-  const cookie = localStorage.getItem('nexusSession');
   try {
     const res = await fetch(`${BACKEND_URL}/api/jobs`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'roblox-cookie': cookie },
+      headers: { 'Content-Type': 'application/json', 'roblox-cookie': session() },
       body: JSON.stringify({ action, userIds })
     });
     const job = await res.json();
@@ -782,9 +825,8 @@ async function pollJob() {
 
     renderProgress(job);
 
-    if (job.status === 'running' || job.status === 'paused') {
-      // Polling also keeps the Render instance awake through a long wait.
-      pollTimer = setTimeout(pollJob, job.status === 'paused' ? 5000 : 1000);
+    if (job.status === 'running') {
+      pollTimer = setTimeout(pollJob, POLL_MS);
       return;
     }
 
@@ -792,9 +834,10 @@ async function pollJob() {
     isProcessingMassAction = false;
     updateControls();
 
+    const secs = Math.max(1, Math.round(job.elapsedMs / 1000));
     if (job.status === 'done') {
       const extra = job.skipped ? `, ${job.skipped} already done` : '';
-      showToast(`Finished — ${job.succeeded} succeeded${extra}, ${job.failed} failed.`, 'success');
+      showToast(`Finished ${job.succeeded}${extra} in ${secs}s (${job.ratePerMin}/min).`, 'success');
     } else if (job.status === 'cancelled') {
       showToast(`Cancelled after ${job.processed}.`, 'info');
     } else {
@@ -802,10 +845,10 @@ async function pollJob() {
     }
 
     // Leave a failed run on screen — the error text is the whole point.
-    setTimeout(hideProgress, job.status === 'done' && !job.failed ? 5000 : 30000);
-    loadList();
+    setTimeout(hideProgress, job.status === 'done' && !job.failed ? 4000 : 30000);
+    loadList({ fresh: true });
   } catch (e) {
-    pollTimer = setTimeout(pollJob, 2500); // transient blip — keep trying
+    pollTimer = setTimeout(pollJob, 1500); // transient blip — keep trying
   }
 }
 
@@ -820,12 +863,11 @@ async function cancelJob() {
 }
 
 async function resumeActiveJob() {
-  const cookie = localStorage.getItem('nexusSession');
-  if (!cookie) return;
+  if (!session()) return;
   try {
-    const res = await fetch(`${BACKEND_URL}/api/jobs/active`, { headers: { 'roblox-cookie': cookie } });
+    const res = await fetch(`${BACKEND_URL}/api/jobs/active`, { headers: { 'roblox-cookie': session() } });
     const job = await res.json();
-    if (job && (job.status === 'running' || job.status === 'paused')) {
+    if (job && job.status === 'running') {
       activeJobId = job.id;
       isProcessingMassAction = true;
       updateControls();
@@ -838,41 +880,44 @@ async function resumeActiveJob() {
 /* ===================== BULK ACTIONS ===================== */
 
 async function massActionAll(action) {
-  if (isProcessingMassAction) return;
-  if (currentIds.length === 0) return;
-  if (!confirm(`${action.toUpperCase()} all ${currentIds.length} requests?\n\nThis runs in the background — you can keep using the page.`)) return;
-  startJob(action, [...currentIds]);
+  if (isProcessingMassAction || visibleIds.length === 0) return;
+  // Acts on what you're actually looking at — filters included.
+  const targets = [...visibleIds];
+  const scope = targets.length === currentIds.length ? '' : ' (filtered)';
+  if (!confirm(`${action.toUpperCase()} all ${targets.length} requests${scope}?\n\nRuns in the background — you can keep using the page.`)) return;
+  startJob(action, targets);
 }
 
 async function removeAllFriends() {
   if (isProcessingMassAction) return;
-  if (!confirm('This will unfriend EVERYONE on your Roblox friends list. Continue?')) return;
-  const cookie = localStorage.getItem('nexusSession');
   showToast('Fetching your friends list…');
   try {
-    const res = await fetch(`${BACKEND_URL}/api/friends`, { headers: { 'roblox-cookie': cookie } });
+    const res = await fetch(`${BACKEND_URL}/api/friends`, { headers: { 'roblox-cookie': session() } });
     const friendIds = await res.json();
     if (!res.ok) { showToast(friendIds.error || 'Could not load friends.', 'error'); return; }
     if (!Array.isArray(friendIds) || friendIds.length === 0) { showToast('You have 0 friends to remove.', 'info'); return; }
-    if (!confirm(`Found ${friendIds.length} friends. Unfriend all of them?`)) return;
+    // One confirmation, with the real number in it.
+    if (!confirm(`Unfriend all ${friendIds.length} people on your Roblox friends list?\n\nThis cannot be undone.`)) return;
     startJob('unfriend', friendIds);
   } catch (e) {
     showToast('Could not load friends.', 'error');
   }
 }
 
-// Refetches the block list at click time so the job runs against what's
-// actually blocked right now, not whatever the page loaded ten minutes ago.
 async function unblockEveryone() {
   if (isProcessingMassAction) return;
-  const cookie = localStorage.getItem('nexusSession');
-  showToast('Fetching your blocked list…');
   try {
-    const res = await fetch(`${BACKEND_URL}/api/blocked/ids`, { headers: { 'roblox-cookie': cookie } });
-    const blockedIds = await res.json();
-    if (!res.ok) { showToast(blockedIds.error || 'Could not load blocked users.', 'error'); return; }
+    // If the Blocked tab is already loaded, use what's on screen — no reason
+    // to re-walk hundreds of pages for a list we're holding.
+    let blockedIds = (currentView === 'blocked' && currentIds.length) ? [...currentIds] : null;
+    if (!blockedIds) {
+      showToast('Fetching your blocked list…');
+      const res = await fetch(`${BACKEND_URL}/api/blocked/ids`, { headers: { 'roblox-cookie': session() } });
+      blockedIds = await res.json();
+      if (!res.ok) { showToast(blockedIds.error || 'Could not load blocked users.', 'error'); return; }
+    }
     if (!Array.isArray(blockedIds) || blockedIds.length === 0) { showToast('You have 0 blocked users.', 'info'); return; }
-    if (!confirm(`Found ${blockedIds.length} blocked users. Unblock all of them?\n\nThis runs in the background — you can keep using the page.`)) return;
+    if (!confirm(`Unblock all ${blockedIds.length} users?\n\nRuns in the background — you can keep using the page.`)) return;
     startJob('unblock', blockedIds);
   } catch (e) {
     showToast('Could not load blocked users.', 'error');
@@ -880,27 +925,48 @@ async function unblockEveryone() {
 }
 
 async function blacklistAll() {
-  if (currentIds.length === 0) return;
-  if (!confirm(`Hide and block ALL ${currentIds.length} loaded targets? (This does not decline them on Roblox)`)) return;
-  showToast('Saving all targets to blocklist…');
+  if (visibleIds.length === 0) return;
+  const targets = [...visibleIds];
+  if (!confirm(`Hide ${targets.length} targets locally? (This does not decline them on Roblox)`)) return;
   try {
     const response = await fetch(`${BACKEND_URL}/api/blocklist/add`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userIds: currentIds })
+      body: JSON.stringify({ userIds: targets })
     });
     const result = await response.json();
     if (result.success) {
-      showToast(`Blacklisted ${result.addedCount ?? currentIds.length} targets`, 'success');
-      currentIds = [];
-      loadedDetailsMap.clear();
-      setTargetCount();
-      renderPage();
+      showToast(`Blacklisted ${result.addedCount ?? targets.length} targets`, 'success');
+      const gone = new Set(targets);
+      currentIds = currentIds.filter(id => !gone.has(id));
+      render();
     }
   } catch (err) {
     showToast('Failed to communicate with backend', 'error');
   }
 }
+
+/* ===================== EXPORT / MODAL ===================== */
+
+async function exportBlocklist() {
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/blocklist`);
+    const data = await response.json();
+    exportTextarea.value = data.ids.map(id => `"${id}",`).join('\n');
+    exportModal.style.display = 'flex';
+  } catch (err) { showToast('Blocklist fetch failed', 'error'); }
+}
+
+function closeModal() { exportModal.style.display = 'none'; }
+function copyExportText() {
+  exportTextarea.select();
+  navigator.clipboard?.writeText(exportTextarea.value).catch(() => document.execCommand('copy'));
+  showToast('Copied to clipboard', 'success');
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && exportModal.style.display === 'flex') closeModal();
+});
 
 checkAuth();
 resumeActiveJob();
