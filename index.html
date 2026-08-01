@@ -405,8 +405,8 @@ const BACKEND_URL = 'https://nexus-backend-1-771w.onrender.com';
 // ///////////////////////////////////////////////////////////
 
 const PAGE_SIZE      = 100;   // was 60 — fewer page flips on big lists
-const HYDRATE_CHUNK  = 200;   // FIXED: lowered to safely prevent roblox from hitting 429 rate limit
-const HYDRATE_LANES  = 2;     // FIXED: lowered to safely prevent roblox from hitting 429 rate limit
+const HYDRATE_CHUNK  = 100;   // SAFE THRESHOLD to prevent Roblox API 429 limit
+const HYDRATE_LANES  = 3;     // Processing up to 3 chunks of 100 at a time safely
 const POLL_MS        = 400;   // was 1000 — the bar now moves as fast as the job
 
 // Breather: pause this long after every N actions. Applied to accept and
@@ -440,8 +440,6 @@ const autoSyncToggle   = document.getElementById('auto-sync-toggle');
 const autoStatus       = document.getElementById('auto-status');
 const autoStatusText   = document.getElementById('auto-status-text');
 
-// Everything that differs between the two lists lives here, so the render
-// path stays identical for both.
 const VIEWS = {
   requests: {
     word: 'targets',
@@ -467,7 +465,7 @@ let currentIds = [];
 let visibleIds = [];
 let loadedDetailsMap = new Map();
 let currentPage = 1;
-let hydrateToken = 0;   // bumped on view switch so stale chunks are ignored
+let hydrateToken = 0;   
 let renderQueued = false;
 let searchDebounce = null;
 
@@ -498,9 +496,6 @@ function updateControls() {
 
 /* ===================== FILTERING ===================== */
 
-// Filtering now produces a real list, and pagination runs off that list.
-// Previously every id got a DOM node and filtered-out ones were hidden with
-// display:none, so page 1 could show four cards while claiming 60.
 function computeVisible() {
   const term = searchInput.value.toLowerCase().trim();
   const botFilter = filterToggle.checked;
@@ -509,9 +504,11 @@ function computeVisible() {
 
   visibleIds = currentIds.filter(id => {
     const d = loadedDetailsMap.get(id);
-    if (!d) return !term; // not hydrated yet — keep it unless we're searching
+    if (!d) return !term; 
     if (botFilter) {
-      // FIXED: Safely added back sameName check to bot filter exactly how it was requested
+      // FIX: If the profile dropped, don't hide it immediately thinking it's a bot 
+      if (d.username === 'Unknown' && d.displayName === 'Unknown') return true;
+
       const sameName = d.username.toLowerCase() === d.displayName.toLowerCase();
       const ageDays = (Date.now() - new Date(d.created).getTime()) / 86400000;
       if (sameName || ageDays < 3) return false;
@@ -569,8 +566,6 @@ function checkAuth() {
   }
 }
 
-// Wakes the Render dyno and pre-fetches the CSRF + tracking cookie, so the
-// first action you click isn't paying for a cold handshake.
 function warmBackend() {
   fetch(`${BACKEND_URL}/api/warm`, { method: 'POST', headers: { 'roblox-cookie': session() } }).catch(() => {});
 }
@@ -604,18 +599,16 @@ async function loadList({ fresh = false, quiet = false } = {}) {
     if (!response.ok) {
       const errData = await response.json().catch(() => ({}));
       if (!quiet) showToast(errData.error || 'Connection failed', 'error');
-      // Only a dead session justifies kicking them out. A blocked-list hiccup
-      // shouldn't wipe a working login.
       if (response.status === 401) logout();
       return;
     }
     const ids = await response.json();
     if (ids && ids.error) { showToast(`Roblox error: ${ids.error}`, 'error'); return; }
-    if (view !== currentView || token !== hydrateToken) return; // switched tabs mid-flight
+    if (view !== currentView || token !== hydrateToken) return; 
 
     currentIds = Array.isArray(ids) ? ids : [];
-    render();                        // paint skeletons immediately
-    hydrateAll(currentIds, token);   // fill them in behind the scenes
+    render();                        
+    hydrateAll(currentIds, token);   
 
     if (fresh && !quiet) showToast(`Synced ${currentIds.length} in ${Math.round(performance.now() - t0)}ms`, 'success');
   } catch (err) {
@@ -623,17 +616,13 @@ async function loadList({ fresh = false, quiet = false } = {}) {
   }
 }
 
-const loadRequests = loadList; // old name, kept so nothing else breaks
+const loadRequests = loadList;
 
-// Hydrates the WHOLE list, not just the page you're looking at. Page flips and
-// search become instant, and the bot filter can actually see every account.
-// Current page goes first so what's on screen resolves immediately.
 async function hydrateAll(ids, token) {
   const needed = ids.filter(id => !loadedDetailsMap.has(id));
   if (needed.length === 0) return;
 
-  // FIXED: Ensure ONLY the current page gets prioritized. If this logic is broken,
-  // subsequent pages display "Unknown" for too long before getting fetched.
+  // Make sure the items directly on screen are fetched first
   const pageIds = visibleIds.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
   const onScreen = new Set(pageIds);
   needed.sort((a, b) => (onScreen.has(b) ? 1 : 0) - (onScreen.has(a) ? 1 : 0));
@@ -656,14 +645,13 @@ async function hydrateAll(ids, token) {
         if (token !== hydrateToken) return;
         details.forEach(d => loadedDetailsMap.set(d.id, d));
         queueRender();
-      } catch (e) { /* a missing chunk just stays a skeleton */ }
+      } catch (e) {}
     }
   };
 
   await Promise.all(Array.from({ length: HYDRATE_LANES }, lane));
 }
 
-// Coalesce re-renders — three lanes landing at once shouldn't repaint 3x.
 function queueRender() {
   if (renderQueued) return;
   renderQueued = true;
@@ -691,8 +679,6 @@ function render() {
 
   const pageIds = visibleIds.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
-  // Build off-document, swap once. innerHTML += in a loop was forcing a
-  // reflow per card; at 100 cards that's the whole "sync feels slow" feeling.
   const frag = document.createDocumentFragment();
   for (const id of pageIds) frag.appendChild(buildCard(id));
   container.replaceChildren(frag);
@@ -739,9 +725,6 @@ function changePage(direction) {
 
 /* ===================== SINGLE ACTION ===================== */
 
-// Optimistic: the card goes the instant you click. If Roblox refuses, it comes
-// back with a toast explaining why. Waiting on a round trip before removing a
-// card is what made rapid clicking feel laggy.
 async function handleAction(userId, action) {
   const card = document.getElementById(`user-${userId}`);
   if (card) card.classList.add('is-pending');
@@ -763,7 +746,6 @@ async function handleAction(userId, action) {
     showToast('Could not reach the backend.', 'error');
   }
 
-  // Put it back where it was.
   if (index >= 0 && !currentIds.includes(userId)) currentIds.splice(index, 0, userId);
   render();
   return false;
@@ -832,7 +814,6 @@ function renderProgress(job) {
   if (job.retries) bits.push(`${job.retries} retried`);
   document.getElementById('jp-meta').innerHTML = bits.join(' · ');
 
-  // Ground truth — list size straight from Roblox, before vs after.
   const verifyEl = document.getElementById('jp-verify');
   if (job.verified && job.verified.after !== null) {
     verifyEl.style.display = '';
@@ -843,7 +824,6 @@ function renderProgress(job) {
     verifyEl.style.display = 'none';
   }
 
-  // Why things are failing, instead of just how many.
   const errEl = document.getElementById('jp-error');
   const kinds = job.errorKinds && Object.keys(job.errorKinds).length
     ? Object.entries(job.errorKinds).map(([k, n]) => `${k} ×${n}`).join(' · ')
@@ -912,14 +892,11 @@ async function pollJob() {
       showToast(job.reason || 'Job stopped early.', 'error');
     }
 
-    // Leave a failed run on screen — the error text is the whole point.
     setTimeout(hideProgress, job.status === 'done' && !job.failed ? 4000 : 30000);
     loadList({ fresh: true, quiet: true });
 
     if (wasAuto && autoAccept) {
       autoAcceptTotal += job.succeeded;
-      // An abort means Roblox is refusing outright — don't loop straight back
-      // into the same wall, and don't silently keep a dead toggle lit.
       if (job.status === 'aborted') {
         autoAcceptToggle.checked = false;
         toggleAutoAccept();
@@ -929,7 +906,7 @@ async function pollJob() {
     }
     renderAutoStatus();
   } catch (e) {
-    pollTimer = setTimeout(pollJob, 1500); // transient blip — keep trying
+    pollTimer = setTimeout(pollJob, 1500); 
   }
 }
 
@@ -955,14 +932,13 @@ async function resumeActiveJob() {
       renderProgress(job);
       pollJob();
     }
-  } catch (e) { /* nothing running */ }
+  } catch (e) {}
 }
 
 /* ===================== BULK ACTIONS ===================== */
 
 async function massActionAll(action) {
   if (isProcessingMassAction || visibleIds.length === 0) return;
-  // Acts on what you're actually looking at — filters included.
   const targets = [...visibleIds];
   const scope = targets.length === currentIds.length ? '' : ' (filtered)';
   if (!confirm(`${action.toUpperCase()} all ${targets.length} requests${scope}?\n\nRuns in the background — you can keep using the page.`)) return;
@@ -977,7 +953,6 @@ async function removeAllFriends() {
     const friendIds = await res.json();
     if (!res.ok) { showToast(friendIds.error || 'Could not load friends.', 'error'); return; }
     if (!Array.isArray(friendIds) || friendIds.length === 0) { showToast('You have 0 friends to remove.', 'info'); return; }
-    // One confirmation, with the real number in it.
     if (!confirm(`Unfriend all ${friendIds.length} people on your Roblox friends list?\n\nThis cannot be undone.`)) return;
     startJob('unfriend', friendIds);
   } catch (e) {
@@ -988,8 +963,6 @@ async function removeAllFriends() {
 async function unblockEveryone() {
   if (isProcessingMassAction) return;
   try {
-    // If the Blocked tab is already loaded, use what's on screen — no reason
-    // to re-walk hundreds of pages for a list we're holding.
     let blockedIds = (currentView === 'blocked' && currentIds.length) ? [...currentIds] : null;
     if (!blockedIds) {
       showToast('Fetching your blocked list…');
@@ -1029,17 +1002,13 @@ async function blacklistAll() {
 
 /* ===================== AUTOMATION ===================== */
 
-// Two independent loops, both driven by setTimeout rather than setInterval —
-// an interval fires whether or not the previous tick finished, which is how
-// you end up with four overlapping syncs against a slow backend.
-
 let autoAccept = false;
 let autoSync = false;
 let autoAcceptTimer = null;
 let autoSyncTimer = null;
 let autoAcceptTotal = 0;
-let autoNextAt = 0;         // when the next auto-accept sweep is due
-let autoPhase = 'off';      // off | scanning | working | waiting
+let autoNextAt = 0;         
+let autoPhase = 'off';      
 
 function setAutoPhase(phase, note = '') {
   autoPhase = phase;
@@ -1065,7 +1034,6 @@ function renderAutoStatus(note = '') {
   autoStatusText.innerText = parts.join(' · ') || 'idle';
 }
 
-// Ticks the countdown text once a second so the readout isn't frozen.
 setInterval(() => { if (autoAccept || autoSync) renderAutoStatus(); }, 1000);
 
 /* --- auto accept --- */
@@ -1082,7 +1050,6 @@ function toggleAutoAccept() {
   } else {
     autoNextAt = 0;
     setAutoPhase('off');
-    // Off means off. A sweep already in flight gets stopped too.
     if (activeJobId && activeJobIsAuto) { cancelJob(); showToast('Auto accept off — stopping current batch.', 'info'); }
     else showToast('Auto accept off.', 'info');
   }
@@ -1099,7 +1066,6 @@ function scheduleAutoAccept(ms) {
 
 async function autoAcceptSweep() {
   if (!autoAccept) return;
-  // Never fight a manual job for the one-job-per-session slot.
   if (activeJobId) return scheduleAutoAccept(AUTO_ACCEPT_GAP_MS);
   if (document.hidden) return scheduleAutoAccept(AUTO_ACCEPT_IDLE_MS);
 
@@ -1118,7 +1084,6 @@ async function autoAcceptSweep() {
 
     setAutoPhase('working');
     await startJob('accept', ids, { batch: true, auto: true });
-    // pollJob hands control back via onJobFinished when the batch completes.
   } catch (e) {
     scheduleAutoAccept(AUTO_ACCEPT_IDLE_MS);
   }
@@ -1142,15 +1107,12 @@ function toggleAutoSync() {
 
 async function autoSyncTick() {
   if (!autoSync) return;
-  // Skip while a job runs (it resyncs on completion anyway) and while the tab
-  // is in the background — no point burning requests nobody is looking at.
   if (!isProcessingMassAction && !document.hidden && session()) {
     await loadList({ fresh: true, quiet: true });
   }
   autoSyncTimer = setTimeout(autoSyncTick, AUTO_SYNC_MS);
 }
 
-// Coming back to the tab shouldn't mean waiting out a full interval.
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) return;
   if (autoSync && !isProcessingMassAction) loadList({ fresh: true, quiet: true });
@@ -1208,10 +1170,8 @@ async function removeLastBlacklisted() {
       showToast(`Removed ${result.removedCount} users from the blocklist.`, 'success');
       countInput.value = '';
       
-      // Instantly refresh the textarea so you can see they are gone
       exportBlocklist(); 
       
-      // If we are looking at the requests tab, refresh it so the newly unblacklisted people reappear
       if (currentView === 'requests') {
         manualRefresh();
       }
