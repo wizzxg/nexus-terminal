@@ -383,9 +383,15 @@ body::before{
     <h2>Blocklist export</h2>
     <p class="m-sub">Comma-separated user IDs currently on your blocklist.</p>
     <textarea id="export-textarea" readonly></textarea>
-    <div class="modal-actions">
-      <button class="btn" onclick="closeModal()">Close</button>
-      <button class="btn btn-primary" onclick="copyExportText()">Copy to clipboard</button>
+    <div class="modal-actions" style="justify-content: space-between; align-items: center;">
+      <div style="display:flex; gap:10px;">
+        <input type="number" id="pop-blocklist-input" placeholder="Amount" min="1" style="width: 85px; padding: 8px 12px; background: var(--void); color: var(--cyan); border: 1px solid var(--line-2); border-radius: var(--r-sm); font-family: var(--mono); font-size: 12px; outline: none;">
+        <button class="btn btn-danger" onclick="removeLastBlacklisted()">Clear Last</button>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <button class="btn" onclick="closeModal()">Close</button>
+        <button class="btn btn-primary" onclick="copyExportText()">Copy</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1172,6 +1178,45 @@ function copyExportText() {
   exportTextarea.select();
   navigator.clipboard?.writeText(exportTextarea.value).catch(() => document.execCommand('copy'));
   showToast('Copied to clipboard', 'success');
+}
+
+async function removeLastBlacklisted() {
+  const countInput = document.getElementById('pop-blocklist-input');
+  const count = parseInt(countInput.value, 10);
+  
+  if (!count || count <= 0) {
+    showToast('Enter a valid number to remove.', 'warn');
+    return;
+  }
+  
+  if (!confirm(`Are you sure you want to un-blacklist the last ${count} added users?`)) return;
+
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/blocklist/remove-last`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ count })
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      showToast(`Removed ${result.removedCount} users from the blocklist.`, 'success');
+      countInput.value = '';
+      
+      // Instantly refresh the textarea so you can see they are gone
+      exportBlocklist(); 
+      
+      // If we are looking at the requests tab, refresh it so the newly unblacklisted people reappear
+      if (currentView === 'requests') {
+        manualRefresh();
+      }
+    } else {
+      showToast(result.error || 'Failed to remove users.', 'error');
+    }
+  } catch (err) {
+    showToast('Failed to communicate with backend.', 'error');
+  }
 }
 
 document.addEventListener('keydown', e => {
