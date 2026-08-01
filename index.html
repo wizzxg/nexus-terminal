@@ -511,9 +511,10 @@ function computeVisible() {
     const d = loadedDetailsMap.get(id);
     if (!d) return !term; // not hydrated yet — keep it unless we're searching
     if (botFilter) {
-      const sameName = d.username.toLowerCase() === d.displayName.toLowerCase();
+      // Relaxed bot check: ONLY flag accounts created under 3 days ago.
+      // Many users have identical names, so matching display and username is not a valid bot check.
       const ageDays = (Date.now() - new Date(d.created).getTime()) / 86400000;
-      if (sameName || ageDays < 3) return false;
+      if (ageDays < 3) return false;
     }
     if (term) {
       return d.username.toLowerCase().includes(term) || d.displayName.toLowerCase().includes(term);
@@ -631,7 +632,9 @@ async function hydrateAll(ids, token) {
   const needed = ids.filter(id => !loadedDetailsMap.has(id));
   if (needed.length === 0) return;
 
-  const onScreen = new Set(visibleIds.slice(0, PAGE_SIZE));
+  // IMPORTANT FIX: Sort by the full list of visible IDs instead of just what is on the first page,
+  // so next pages get hydrated immediately instead of staying "Unknown".
+  const onScreen = new Set(visibleIds); 
   needed.sort((a, b) => (onScreen.has(b) ? 1 : 0) - (onScreen.has(a) ? 1 : 0));
 
   const chunks = [];
