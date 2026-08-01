@@ -404,19 +404,19 @@ body::before{
 const BACKEND_URL = 'https://nexus-backend-1-771w.onrender.com';
 // ///////////////////////////////////////////////////////////
 
-const PAGE_SIZE      = 100;   // was 60 — fewer page flips on big lists
-const HYDRATE_CHUNK  = 100;   // SAFE THRESHOLD to prevent Roblox API 429 limit
-const HYDRATE_LANES  = 3;     // Processing up to 3 chunks of 100 at a time safely
-const POLL_MS        = 400;   // was 1000 — the bar now moves as fast as the job
+const PAGE_SIZE      = 100;   
+const HYDRATE_CHUNK  = 100;   // Safe Roblox Limit
+const HYDRATE_LANES  = 1;     // STRICT SEQUENTIAL PROCESSING - Protects against 429
+const POLL_MS        = 400;   
 
 // Breather: pause this long after every N actions. Applied to accept and
 // unfriend jobs. Change these two numbers to retune it.
 const BATCH = { size: 10, pauseMs: 10000 };
 const BATCHED_ACTIONS = new Set(['accept', 'unfriend']);
 
-const AUTO_SYNC_MS        = 30000; // how often auto sync re-checks the list
-const AUTO_ACCEPT_IDLE_MS = 15000; // nothing to accept — wait, then look again
-const AUTO_ACCEPT_GAP_MS  = 3000;  // breath between finishing a batch and the next sweep
+const AUTO_SYNC_MS        = 30000; 
+const AUTO_ACCEPT_IDLE_MS = 15000; 
+const AUTO_ACCEPT_GAP_MS  = 3000;  
 
 const loginSection     = document.getElementById('login-section');
 const dashboardSection = document.getElementById('dashboard-section');
@@ -505,14 +505,17 @@ function computeVisible() {
   visibleIds = currentIds.filter(id => {
     const d = loadedDetailsMap.get(id);
     if (!d) return !term; 
+    
     if (botFilter) {
-      // FIX: If the profile dropped, don't hide it immediately thinking it's a bot 
+      // FIXED: Safely bypass the bot filter for profiles that haven't fully loaded yet.
+      // This stops the filter from accidentally hiding everyone if the internet hiccups.
       if (d.username === 'Unknown' && d.displayName === 'Unknown') return true;
 
       const sameName = d.username.toLowerCase() === d.displayName.toLowerCase();
       const ageDays = (Date.now() - new Date(d.created).getTime()) / 86400000;
-      if (sameName || ageDays < 3) return false;
+      if (sameName || ageDays < 3) return false; // Hides them if they are a bot
     }
+    
     if (term) {
       return d.username.toLowerCase().includes(term) || d.displayName.toLowerCase().includes(term);
     }
@@ -622,7 +625,6 @@ async function hydrateAll(ids, token) {
   const needed = ids.filter(id => !loadedDetailsMap.has(id));
   if (needed.length === 0) return;
 
-  // Make sure the items directly on screen are fetched first
   const pageIds = visibleIds.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
   const onScreen = new Set(pageIds);
   needed.sort((a, b) => (onScreen.has(b) ? 1 : 0) - (onScreen.has(a) ? 1 : 0));
@@ -641,11 +643,15 @@ async function hydrateAll(ids, token) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userIds: chunk })
         });
+        
+        // Failsafe so the frontend doesn't crash if the request fails
+        if (!res.ok) throw new Error('Hydration fetch blocked by rate limit'); 
+        
         const details = await res.json();
         if (token !== hydrateToken) return;
         details.forEach(d => loadedDetailsMap.set(d.id, d));
         queueRender();
-      } catch (e) {}
+      } catch (e) { }
     }
   };
 
