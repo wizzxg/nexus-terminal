@@ -520,6 +520,12 @@ function mm2BadgeHtml(id) {
     return `<span class="mm2-badge mm2-loading" title="Checking MM2 level…">⋯</span>`;
   }
   const level = mm2LevelMap.get(id);
+
+  // Render the lock icon for private inventories
+  if (level === -1) {
+    return `<span class="mm2-badge mm2-text" style="color:var(--faint); border-color:var(--line-2);" title="Inventory is Private">🔒</span>`;
+  }
+
   if (!level) return ''; 
   const meta = (mm2Icons || []).find(x => x.level === level);
   if (meta && meta.icon) {
