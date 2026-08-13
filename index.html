@@ -177,8 +177,13 @@ const HYDRATE_CHUNK  = 100;
 const HYDRATE_LANES  = 1;     
 const POLL_MS        = 400;   
 
-const BATCH = { size: 10, pauseMs: 10000 };
-const BATCHED_ACTIONS = new Set(['accept', 'unfriend']);
+// Dynamic batching to respect exact Roblox rate limits per action
+const BATCH_CONFIGS = {
+  unfriend: { size: 9, pauseMs: 62000 }, // 9 unfriends, then wait 62 seconds
+  unblock: { size: 19, pauseMs: 62000 }, // 19 unblocks, then wait 62 seconds
+  accept: { size: 9, pauseMs: 62000 },  // 9 accepts, then wait 62 seconds
+  decline: { size: 9, pauseMs: 62000 }  // 9 declines, then wait 62 seconds
+};
 
 const AUTO_SYNC_MS        = 30000; 
 const AUTO_ACCEPT_IDLE_MS = 15000; 
@@ -712,7 +717,8 @@ function renderProgress(job) {
 
 async function startJob(action, userIds, { auto = false } = {}) {
   if (activeJobId) { showToast('A job is already running.', 'warn'); return; }
-  const batch = BATCHED_ACTIONS.has(action) ? { size: BATCH.size, pauseMs: BATCH.pauseMs } : false;
+  // Pulls the correct batch size and pause time based on the action being run
+  const batch = BATCH_CONFIGS[action] || false;
   try {
     const res = await fetch(`${BACKEND_URL}/api/jobs`, {
       method: 'POST',
@@ -889,7 +895,8 @@ function toggleAutoAccept() {
 
   if (autoAccept) {
     autoAcceptTotal = 0;
-    showToast(`Auto accept on — ${BATCH.size} at a time, ${BATCH.pauseMs / 1000}s between batches.`, 'success');
+    const cfg = BATCH_CONFIGS.accept;
+    showToast(`Auto accept on — ${cfg.size} at a time, ${cfg.pauseMs / 1000}s between batches.`, 'success');
     autoAcceptSweep();
   } else {
     autoNextAt = 0;
