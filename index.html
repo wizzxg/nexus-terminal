@@ -758,9 +758,10 @@ async function hydrateMm2Levels(ids, token) {
       try {
         const res = await fetch(`${BACKEND_URL}/api/mm2/levels`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'roblox-cookie': session() },
           body: JSON.stringify({ userIds: chunk })
         });
+        if (res.status === 401) { remaining -= chunk.length; renderMm2Note(Math.max(0, remaining), needed.length); return; }
         if (!res.ok) { remaining -= chunk.length; renderMm2Note(Math.max(0, remaining), needed.length); continue; }
         const data = await res.json();
         if (token !== mm2Token) return;
