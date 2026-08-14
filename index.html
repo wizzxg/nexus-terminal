@@ -121,6 +121,7 @@ body::before{ content:""; position:fixed; inset:0; pointer-events:none; z-index:
         <button class="btn btn-danger" onclick="massActionAll('decline')" id="btn-decline-all">Decline all</button>
         <button class="btn btn-violet" onclick="blacklistAll()" id="btn-blacklist-all">Blacklist all</button>
         <button class="btn btn-violet" onclick="blacklistPage()" id="btn-blacklist-page">Blacklist page</button>
+        <button class="btn btn-violet" onclick="blacklistFiltered()" id="btn-blacklist-filtered">Blacklist filtered</button>
         <button class="btn btn-warn" onclick="removeAllFriends()" id="btn-remove-friends">Unfriend everyone</button>
         <span class="divider"></span>
         <button class="btn" onclick="exportBlocklist()">Export blocklist</button>
@@ -287,8 +288,30 @@ function updateControls() {
   set('btn-decline-all',    busy || !targets);
   set('btn-blacklist-all',  busy || !targets);
   set('btn-blacklist-page', busy || !targets);
+  set('btn-blacklist-filtered', busy || !targets);
   set('btn-remove-friends', busy);
   set('btn-unblock-all',    busy || (currentView === 'blocked' && !targets));
+}
+
+function getBotFilteredIds() {
+  const botFilter = filterToggle.checked;
+  if (!botFilter && !botFilterV2Enabled) return [];
+
+  return currentIds.filter(id => {
+    const d = loadedDetailsMap.get(id);
+    if (!d) return false;
+
+    let isBot = false;
+    if (botFilter) {
+      if (d.username !== 'Unknown' || d.displayName !== 'Unknown') {
+        if (d.username.toLowerCase() === d.displayName.toLowerCase()) isBot = true;
+      }
+    }
+    if (botFilterV2Enabled) {
+      if (botFilterV2Map.has(id) && botFilterV2Map.get(id) === true) isBot = true;
+    }
+    return isBot;
+  });
 }
 
 function computeVisible() {
@@ -308,7 +331,7 @@ function computeVisible() {
         if (sameName) return false; 
       }
       
-      // Bot Filter V2 (Hides player if they are wearing the specific hair)
+      // Bot Filter V2
       if (botFilterV2Enabled) {
         if (botFilterV2Map.has(id) && botFilterV2Map.get(id) === true) {
           return false; 
@@ -948,10 +971,33 @@ async function blacklistPage() {
       const gone = new Set(pageIds);
       currentIds = currentIds.filter(id => !gone.has(id));
       
-      // Auto-adjust page backwards if we just cleared the very last page
       const maxPage = Math.max(1, Math.ceil(currentIds.length / PAGE_SIZE));
       if (currentPage > maxPage) currentPage = maxPage;
       
+      render();
+    }
+  } catch (err) { showToast('Failed to communicate with backend', 'error'); }
+}
+
+async function blacklistFiltered() {
+  const filteredIds = getBotFilteredIds();
+  if (filteredIds.length === 0) {
+    showToast('No users are currently hidden by the Bot Filters.', 'warn');
+    return;
+  }
+  if (!confirm(`Hide ${filteredIds.length} bot-filtered targets locally? (This does not decline them on Roblox)`)) return;
+  
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/blocklist/add`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userIds: filteredIds })
+    });
+    const result = await response.json();
+    if (result.success) {
+      showToast(`Blacklisted ${result.addedCount ?? filteredIds.length} bot-filtered targets`, 'success');
+      const gone = new Set(filteredIds);
+      currentIds = currentIds.filter(id => !gone.has(id));
       render();
     }
   } catch (err) { showToast('Failed to communicate with backend', 'error'); }
