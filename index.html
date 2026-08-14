@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Roblox Tools - NEXUS</title>
-<link rel="icon" href="https://ibb.co/jkS7nj8Z">
+<link rel="icon" href="https://ibb.co/BKny7SJh">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://tr.rbxcdn.com">
 <style>
@@ -120,6 +120,7 @@ body::before{ content:""; position:fixed; inset:0; pointer-events:none; z-index:
         <button class="btn btn-primary" onclick="massActionAll('accept')" id="btn-accept-all">Accept all</button>
         <button class="btn btn-danger" onclick="massActionAll('decline')" id="btn-decline-all">Decline all</button>
         <button class="btn btn-violet" onclick="blacklistAll()" id="btn-blacklist-all">Blacklist all</button>
+        <button class="btn btn-violet" onclick="blacklistPage()" id="btn-blacklist-page">Blacklist page</button>
         <button class="btn btn-warn" onclick="removeAllFriends()" id="btn-remove-friends">Unfriend everyone</button>
         <span class="divider"></span>
         <button class="btn" onclick="exportBlocklist()">Export blocklist</button>
@@ -285,6 +286,7 @@ function updateControls() {
   set('btn-accept-all',     busy || !targets);
   set('btn-decline-all',    busy || !targets);
   set('btn-blacklist-all',  busy || !targets);
+  set('btn-blacklist-page', busy || !targets);
   set('btn-remove-friends', busy);
   set('btn-unblock-all',    busy || (currentView === 'blocked' && !targets));
 }
@@ -923,6 +925,33 @@ async function blacklistAll() {
       showToast(`Blacklisted ${result.addedCount ?? targets.length} targets`, 'success');
       const gone = new Set(targets);
       currentIds = currentIds.filter(id => !gone.has(id));
+      render();
+    }
+  } catch (err) { showToast('Failed to communicate with backend', 'error'); }
+}
+
+async function blacklistPage() {
+  const pageIds = visibleIds.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  if (pageIds.length === 0) return;
+  if (!confirm(`Hide ${pageIds.length} targets on THIS PAGE locally? (This does not decline them on Roblox)`)) return;
+  
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/blocklist/add`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userIds: pageIds })
+    });
+    const result = await response.json();
+    if (result.success) {
+      showToast(`Blacklisted ${result.addedCount ?? pageIds.length} targets from this page`, 'success');
+      
+      const gone = new Set(pageIds);
+      currentIds = currentIds.filter(id => !gone.has(id));
+      
+      // Auto-adjust page backwards if we just cleared the very last page
+      const maxPage = Math.max(1, Math.ceil(currentIds.length / PAGE_SIZE));
+      if (currentPage > maxPage) currentPage = maxPage;
+      
       render();
     }
   } catch (err) { showToast('Failed to communicate with backend', 'error'); }
