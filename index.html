@@ -88,6 +88,11 @@ body::before{ content:""; position:fixed; inset:0; pointer-events:none; z-index:
           <span class="track"></span>
           Bot filter
         </label>
+        <label class="toggle" id="bot-filter-v2-label" title="Filters out accounts wearing known bot items (e.g., Down-to-Earth Hair, Pal Hair)">
+          <input type="checkbox" id="bot-filter-v2-toggle" onchange="toggleBotFilterV2()">
+          <span class="track"></span>
+          Bot filter V2
+        </label>
         <label class="toggle" id="mm2-filter-label" title="Checks each account's MM2 level badges and sorts highest level first. Loads in the background — never slows down sync.">
           <input type="checkbox" id="mm2-filter-toggle" onchange="toggleMm2Filter()">
           <span class="track"></span>
@@ -179,10 +184,10 @@ const POLL_MS        = 400;
 
 // Dynamic batching to respect exact Roblox rate limits per action
 const BATCH_CONFIGS = {
-  unfriend: { size: 9, pauseMs: 62000 }, // 9 unfriends, then wait 62 seconds
-  unblock: { size: 19, pauseMs: 62000 }, // 19 unblocks, then wait 62 seconds
-  accept: { size: 9, pauseMs: 62000 },  // 9 accepts, then wait 62 seconds
-  decline: { size: 9, pauseMs: 62000 }  // 9 declines, then wait 62 seconds
+  unfriend: { size: 9, pauseMs: 62000 }, 
+  unblock: { size: 19, pauseMs: 62000 }, 
+  accept: { size: 9, pauseMs: 62000 },  
+  decline: { size: 9, pauseMs: 62000 }  
 };
 
 const AUTO_SYNC_MS        = 30000; 
@@ -191,12 +196,14 @@ const AUTO_ACCEPT_GAP_MS  = 3000;
 
 const MM2_CHUNK = 40;
 const MM2_LANES = 3;
+const BOT_ITEM_IDS = [1772336109, 63690008]; // Down-to-Earth Hair, Pal Hair
 
 const loginSection      = document.getElementById('login-section');
 const dashboardSection  = document.getElementById('dashboard-section');
 const container         = document.getElementById('requests-container');
 const searchInput       = document.getElementById('search-input');
 const filterToggle      = document.getElementById('bot-filter-toggle');
+const botFilterV2Toggle = document.getElementById('bot-filter-v2-toggle');
 const mm2FilterToggle   = document.getElementById('mm2-filter-toggle');
 const mm2Note           = document.getElementById('mm2-note');
 const mm2NoteText       = document.getElementById('mm2-note-text');
@@ -253,6 +260,10 @@ let mm2Token = 0;
 let mm2Pending = 0;
 let mm2Total = 0;
 
+let botFilterV2Enabled = false;
+let botFilterV2Map = new Map(); 
+let botFilterV2Token = 0;
+
 const session = () => (localStorage.getItem('nexusSession') || '').trim();
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
@@ -282,18 +293,26 @@ function computeVisible() {
   const term = searchInput.value.toLowerCase().trim();
   const botFilter = filterToggle.checked;
 
-  if (!term && !botFilter) { visibleIds = currentIds; }
+  if (!term && !botFilter && !botFilterV2Enabled) { visibleIds = currentIds; }
   else {
     visibleIds = currentIds.filter(id => {
       const d = loadedDetailsMap.get(id);
       if (!d) return !term; 
 
+      // Bot Filter V1
       if (botFilter) {
         if (d.username === 'Unknown' && d.displayName === 'Unknown') return true;
         const sameName = d.username.toLowerCase() === d.displayName.toLowerCase();
-        const ageDays = (Date.now() - new Date(d.created).getTime()) / 86400000;
-        if (sameName || ageDays < 3) return false; 
+        if (sameName) return false; 
       }
+      
+      // Bot Filter V2 (Hides player if they are wearing the specific hair)
+      if (botFilterV2Enabled) {
+        if (botFilterV2Map.has(id) && botFilterV2Map.get(id) === true) {
+          return false; 
+        }
+      }
+
       if (term) return d.username.toLowerCase().includes(term) || d.displayName.toLowerCase().includes(term);
       return true;
     });
@@ -327,6 +346,7 @@ function switchView(view) {
   currentView = view;
   hydrateToken++;
   mm2Token++; 
+  botFilterV2Token++;
   for (const [name, cfg] of Object.entries(VIEWS)) {
     const on = name === view;
     document.getElementById(cfg.tab).classList.toggle('is-active', on);
@@ -396,6 +416,7 @@ async function loadList({ fresh = false, quiet = false } = {}) {
     render();                        
     hydrateAll(currentIds, token);   
     if (mm2Enabled) hydrateMm2Levels(currentIds, ++mm2Token); 
+    if (botFilterV2Enabled) hydrateBotFilterV2(currentIds, ++botFilterV2Token); 
 
     if (fresh && !quiet) showToast(`Synced ${currentIds.length} in ${Math.round(performance.now() - t0)}ms`, 'success');
   } catch (err) {
@@ -437,6 +458,54 @@ async function hydrateAll(ids, token) {
   await Promise.all(Array.from({ length: HYDRATE_LANES }, lane));
 }
 
+// ---- BOT FILTER V2 HYDRATION ----
+function toggleBotFilterV2() {
+  botFilterV2Enabled = botFilterV2Toggle.checked;
+  localStorage.setItem('nexusBotFilterV2', botFilterV2Enabled ? '1' : '0');
+
+  if (botFilterV2Enabled) {
+    hydrateBotFilterV2(currentIds, ++botFilterV2Token);
+  } else {
+    botFilterV2Token++; 
+    render();
+  }
+}
+
+async function hydrateBotFilterV2(ids, token) {
+  const needed = ids.filter(id => !botFilterV2Map.has(id));
+  if (needed.length === 0) return;
+
+  const pageIds = visibleIds.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const onScreen = new Set(pageIds);
+  needed.sort((a, b) => (onScreen.has(b) ? 1 : 0) - (onScreen.has(a) ? 1 : 0));
+
+  let next = 0;
+  const lane = async () => {
+    while (next < needed.length) {
+      if (token !== botFilterV2Token) return;
+      const id = needed[next++];
+      try {
+        // Fetching through roproxy to bypass browser CORS restrictions to Roblox API
+        const res = await fetch(`https://avatar.roproxy.com/v1/users/${id}/avatar`);
+        if (res.ok) {
+          const data = await res.json();
+          const wearsBotItem = data.assets && data.assets.some(a => BOT_ITEM_IDS.includes(a.id));
+          botFilterV2Map.set(id, wearsBotItem);
+          if (wearsBotItem) queueRender(); 
+        } else {
+          botFilterV2Map.set(id, false); 
+        }
+      } catch (e) {
+        botFilterV2Map.set(id, false);
+      }
+      await new Promise(r => setTimeout(r, 150)); // Throttling for proxy stability
+    }
+  };
+
+  await Promise.all(Array.from({ length: 3 }, lane));
+}
+
+// ---- MM2 HYDRATION ----
 function renderMm2Note(pending, total) {
   mm2Pending = pending;
   mm2Total = total;
@@ -526,7 +595,6 @@ function mm2BadgeHtml(id) {
   }
   const level = mm2LevelMap.get(id);
 
-  // Render the lock icon for private inventories
   if (level === -1) {
     return `<span class="mm2-badge mm2-text" style="color:var(--faint); border-color:var(--line-2);" title="Inventory is Private">🔒</span>`;
   }
@@ -717,7 +785,6 @@ function renderProgress(job) {
 
 async function startJob(action, userIds, { auto = false } = {}) {
   if (activeJobId) { showToast('A job is already running.', 'warn'); return; }
-  // Pulls the correct batch size and pause time based on the action being run
   const batch = BATCH_CONFIGS[action] || false;
   try {
     const res = await fetch(`${BACKEND_URL}/api/jobs`, {
@@ -936,6 +1003,7 @@ async function autoAcceptSweep() {
       render();
       hydrateAll(ids, hydrateToken);
       if (mm2Enabled) hydrateMm2Levels(ids, ++mm2Token);
+      if (botFilterV2Enabled) hydrateBotFilterV2(ids, ++botFilterV2Token);
     }
     setAutoPhase('working');
     await startJob('accept', ids, { batch: true, auto: true });
@@ -966,6 +1034,20 @@ document.addEventListener('visibilitychange', () => {
   if (autoAccept && !activeJobId) scheduleAutoAccept(500);
 });
 
+function restoreFilters() {
+  mm2FilterToggle.checked = localStorage.getItem('nexusMm2Filter') === '1';
+  if (mm2FilterToggle.checked) {
+    mm2Enabled = true;
+    loadMm2Icons().then(() => { render(); hydrateMm2Levels(currentIds, ++mm2Token); });
+  }
+
+  botFilterV2Toggle.checked = localStorage.getItem('nexusBotFilterV2') === '1';
+  if (botFilterV2Toggle.checked) {
+    botFilterV2Enabled = true;
+    hydrateBotFilterV2(currentIds, ++botFilterV2Token);
+  }
+}
+
 function restoreAutomation() {
   autoSyncToggle.checked = localStorage.getItem('nexusAutoSync') === '1';
   autoAcceptToggle.checked = localStorage.getItem('nexusAutoAccept') === '1';
@@ -973,14 +1055,6 @@ function restoreAutomation() {
   if (autoAcceptToggle.checked) { autoAccept = true; autoAcceptTotal = 0; scheduleAutoAccept(2000); }
   if (autoAccept || autoSync) showToast('Automation resumed from last session.', 'info');
   renderAutoStatus();
-}
-
-function restoreMm2Filter() {
-  mm2FilterToggle.checked = localStorage.getItem('nexusMm2Filter') === '1';
-  if (mm2FilterToggle.checked) {
-    mm2Enabled = true;
-    loadMm2Icons().then(() => { render(); hydrateMm2Levels(currentIds, ++mm2Token); });
-  }
 }
 
 async function exportBlocklist() {
@@ -1030,7 +1104,7 @@ document.addEventListener('keydown', e => {
 checkAuth();
 resumeActiveJob();
 if (session()) restoreAutomation();
-if (session()) restoreMm2Filter();
+if (session()) restoreFilters();
 </script>
 </body>
 </html>
