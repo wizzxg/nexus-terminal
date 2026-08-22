@@ -136,6 +136,7 @@ body::before{ content:""; position:fixed; inset:0; pointer-events:none; z-index:
         <button class="btn btn-violet" onclick="blacklistMarked()" id="btn-blacklist-marked" disabled>Blacklist Marked (0)</button>
         <span class="divider"></span>
         <button class="btn btn-warn" onclick="removeAllFriends()" id="btn-remove-friends">Unfriend everyone</button>
+        <button class="btn btn-violet" onclick="blacklistAllFriends()" id="btn-blacklist-friends">Blacklist all friends</button>
         <span class="divider"></span>
         <button class="btn" onclick="openBlocklistModal()">Blocklist Data</button>
         <button class="btn" onclick="manualRefresh()">↻ Sync</button>
@@ -317,6 +318,7 @@ function updateControls() {
   set('btn-blacklist-page', busy || !targets);
   set('btn-blacklist-filtered', busy || !targets);
   set('btn-remove-friends', busy);
+  set('btn-blacklist-friends', busy);
   set('btn-unblock-all',    busy || (currentView === 'blocked' && !targets));
   updateMarkedControls();
 }
@@ -965,6 +967,43 @@ async function removeAllFriends() {
     if (!confirm(`Unfriend all ${friendIds.length} people on your Roblox friends list?\n\nThis cannot be undone.`)) return;
     startJob('unfriend', friendIds);
   } catch (e) { showToast('Could not load friends.', 'error'); }
+}
+
+async function blacklistAllFriends() {
+  if (isProcessingMassAction) return;
+  showToast('Fetching your friends list…');
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/friends`, { headers: { 'roblox-cookie': session() } });
+    const friendIds = await res.json();
+    if (!res.ok) { showToast(friendIds.error || 'Could not load friends.', 'error'); return; }
+    if (!Array.isArray(friendIds) || friendIds.length === 0) { showToast('You have 0 friends to blacklist.', 'info'); return; }
+    
+    if (!confirm(`Add all ${friendIds.length} friends to your local blocklist?\n\nThis prevents them from showing up in your queue if they send a request later.`)) return;
+    
+    const response = await fetch(`${BACKEND_URL}/api/blocklist/add`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userIds: friendIds })
+    });
+    
+    const result = await response.json();
+    if (result.success) {
+      showToast(`Blacklisted ${result.addedCount ?? friendIds.length} friends locally.`, 'success');
+      
+      // Update Export Data view if it is open
+      if (transferMode === 'export' && exportModal.style.display === 'flex') {
+          fetchExportData();
+      }
+      
+      // Just in case they are also in the current view queue
+      const gone = new Set(friendIds);
+      currentIds = currentIds.filter(id => !gone.has(id));
+      markedIds.forEach(id => { if (gone.has(id)) markedIds.delete(id); });
+      render();
+    } else {
+        showToast('Failed to add friends to blocklist.', 'error');
+    }
+  } catch (e) { showToast('Could not reach the backend.', 'error'); }
 }
 
 async function unblockEveryone() {
