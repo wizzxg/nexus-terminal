@@ -40,6 +40,16 @@ body::before{ content:""; position:fixed; inset:0; pointer-events:none; z-index:
 .mm2-note{display:flex; align-items:center; gap:7px; margin-left:auto; font-family:var(--mono); font-size:10px; letter-spacing:.06em; color:var(--faint); white-space:nowrap} .mm2-note .mm2-dot{width:6px; height:6px; border-radius:50%; background:var(--violet); flex:none; animation:pulse 1.6s infinite}
 #requests-container{display:grid; grid-template-columns:repeat(auto-fill, minmax(214px, 1fr)); gap:16px; margin-top:22px}
 .user-card{position:relative; background:linear-gradient(180deg, var(--surface-2), var(--surface)); border:1px solid var(--line); border-radius:var(--r-md); padding:22px 18px 18px; display:flex; flex-direction:column; align-items:center; text-align:center; overflow:hidden; transition:border-color .18s, transform .12s, box-shadow .18s, opacity .12s} .user-card:hover{border-color:var(--line-2); transform:translateY(-3px); box-shadow:0 18px 40px -24px rgba(0,0,0,.9)} .user-card.is-pending{opacity:.28; pointer-events:none}
+
+/* CHECKBOX STYLES */
+.card-checkbox { position: absolute; top: 12px; left: 12px; z-index: 10; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0.6; transition: opacity 0.2s; }
+.user-card:hover .card-checkbox, .card-checkbox:has(input:checked) { opacity: 1; }
+.card-checkbox input { position: absolute; opacity: 0; width: 0; height: 0; }
+.check-box { width: 18px; height: 18px; background: var(--void); border: 1px solid var(--line-2); border-radius: 4px; transition: all 0.15s; display: flex; align-items: center; justify-content: center; }
+.card-checkbox input:checked + .check-box { background: var(--cyan); border-color: var(--cyan); }
+.card-checkbox input:checked + .check-box::after { content: "✓"; color: #04120f; font-size: 13px; font-weight: bold; }
+.card-checkbox:hover .check-box { border-color: var(--cyan); }
+
 .card-reticle{position:absolute; inset:8px; border-radius:8px; pointer-events:none; opacity:0; transition:opacity .2s} .card-reticle::before,.card-reticle::after{content:""; position:absolute; width:12px; height:12px; border:1.5px solid var(--cyan)} .card-reticle::before{top:0; left:0; border-right:0; border-bottom:0} .card-reticle::after{bottom:0; right:0; border-left:0; border-top:0} .user-card:hover .card-reticle{opacity:.55}
 .pfp-wrap{position:relative; width:78px; height:78px; margin-bottom:14px; flex:none} .pfp{width:78px; height:78px; border-radius:50%; background:var(--void); border:1px solid var(--line-2); padding:3px; object-fit:cover; display:block} .names{width:100%; margin-bottom:18px} .names h2{margin:0; font-size:15px; font-weight:600; letter-spacing:-.01em; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis} .names p{margin:4px 0 0; font-family:var(--mono); font-size:11.5px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 .mm2-badge{position:absolute; bottom:-3px; right:-3px; width:27px; height:27px; border-radius:50%; border:2px solid var(--surface-2); background:var(--void); box-shadow:0 3px 8px -1px rgba(0,0,0,.7); object-fit:cover; display:flex; align-items:center; justify-content:center} img.mm2-badge{object-fit:cover} .mm2-badge.mm2-text{font-family:var(--mono); font-size:9.5px; font-weight:700; color:var(--violet)} .mm2-badge.mm2-loading{color:var(--faint); font-size:11px; border-style:dashed}
@@ -119,12 +129,15 @@ body::before{ content:""; position:fixed; inset:0; pointer-events:none; z-index:
       <div class="deck-row deck-actions" id="actions-requests">
         <button class="btn btn-primary" onclick="massActionAll('accept')" id="btn-accept-all">Accept all</button>
         <button class="btn btn-danger" onclick="massActionAll('decline')" id="btn-decline-all">Decline all</button>
+        <span class="divider"></span>
         <button class="btn btn-violet" onclick="blacklistAll()" id="btn-blacklist-all">Blacklist all</button>
         <button class="btn btn-violet" onclick="blacklistPage()" id="btn-blacklist-page">Blacklist page</button>
         <button class="btn btn-violet" onclick="blacklistFiltered()" id="btn-blacklist-filtered">Blacklist filtered</button>
+        <button class="btn btn-violet" onclick="blacklistMarked()" id="btn-blacklist-marked" disabled>Blacklist Marked (0)</button>
+        <span class="divider"></span>
         <button class="btn btn-warn" onclick="removeAllFriends()" id="btn-remove-friends">Unfriend everyone</button>
         <span class="divider"></span>
-        <button class="btn" onclick="exportBlocklist()">Export blocklist</button>
+        <button class="btn" onclick="exportBlocklist()">Blocklist Data</button>
         <button class="btn" onclick="manualRefresh()">↻ Sync</button>
         <button class="btn" onclick="logout()">Disconnect</button>
         <div class="mm2-note" id="mm2-note" style="display:none;"><span class="mm2-dot"></span><span id="mm2-note-text">Checking MM2 levels…</span></div>
@@ -158,7 +171,14 @@ body::before{ content:""; position:fixed; inset:0; pointer-events:none; z-index:
   <div class="modal-content">
     <h2>Blocklist export</h2>
     <p class="m-sub">Comma-separated user IDs currently on your blocklist.</p>
+    
+    <div style="display:flex; gap:10px; margin-bottom: 16px;">
+        <input type="text" id="add-blocklist-input" placeholder="Enter Player ID..." style="flex:1; padding: 10px 14px; background: var(--void); color: var(--text); border: 1px solid var(--line-2); border-radius: var(--r-sm); font-family: var(--mono); font-size: 13px; outline: none;">
+        <button class="btn btn-violet" onclick="addSingleBlacklist()">Add ID</button>
+    </div>
+
     <textarea id="export-textarea" readonly></textarea>
+    
     <div class="modal-actions" style="justify-content: space-between; align-items: center;">
       <div style="display:flex; gap:10px;">
         <input type="number" id="pop-blocklist-input" placeholder="Amount" min="1" style="width: 85px; padding: 8px 12px; background: var(--void); color: var(--cyan); border: 1px solid var(--line-2); border-radius: var(--r-sm); font-family: var(--mono); font-size: 12px; outline: none;">
@@ -225,6 +245,7 @@ const autoAcceptToggle  = document.getElementById('auto-accept-toggle');
 const autoSyncToggle    = document.getElementById('auto-sync-toggle');
 const autoStatus        = document.getElementById('auto-status');
 const autoStatusText    = document.getElementById('auto-status-text');
+const btnBlacklistMarked= document.getElementById('btn-blacklist-marked');
 
 const VIEWS = {
   requests: {
@@ -249,6 +270,7 @@ let currentView = 'requests';
 let isProcessingMassAction = false;
 let currentIds = [];
 let visibleIds = [];
+let markedIds = new Set(); // Holds checked users
 let loadedDetailsMap = new Map();
 let currentPage = 1;
 let hydrateToken = 0;   
@@ -291,6 +313,20 @@ function updateControls() {
   set('btn-blacklist-filtered', busy || !targets);
   set('btn-remove-friends', busy);
   set('btn-unblock-all',    busy || (currentView === 'blocked' && !targets));
+  updateMarkedControls();
+}
+
+function updateMarkedControls() {
+    if (btnBlacklistMarked) {
+        btnBlacklistMarked.disabled = markedIds.size === 0 || isProcessingMassAction;
+        btnBlacklistMarked.innerText = `Blacklist Marked (${markedIds.size})`;
+    }
+}
+
+function toggleMark(id, checked) {
+    if (checked) markedIds.add(id);
+    else markedIds.delete(id);
+    updateMarkedControls();
 }
 
 function getBotFilteredIds() {
@@ -381,6 +417,7 @@ function switchView(view) {
   emptyBody.innerText  = VIEWS[view].emptyBody;
 
   currentIds = [];
+  markedIds.clear();
   currentPage = 1;
   renderMm2Note(0, 0);
   render();
@@ -407,7 +444,7 @@ function saveCookie() {
   const input = document.getElementById('cookie-input').value.trim();
   if (!input) return;
   localStorage.setItem('nexusSession', input);
-  currentIds = []; loadedDetailsMap.clear(); currentPage = 1;
+  currentIds = []; markedIds.clear(); loadedDetailsMap.clear(); currentPage = 1;
   checkAuth();
 }
 
@@ -415,7 +452,7 @@ function logout() { localStorage.removeItem('nexusSession'); location.reload(); 
 
 function manualRefresh() {
   if (isProcessingMassAction) return;
-  currentIds = []; currentPage = 1;
+  currentIds = []; markedIds.clear(); currentPage = 1;
   render();
   loadList({ fresh: true });
 }
@@ -673,6 +710,8 @@ function buildCard(id) {
   const card = document.createElement('div');
   card.className = 'user-card';
   card.id = `user-${id}`;
+  
+  const isChecked = markedIds.has(id) ? 'checked' : '';
 
   const d = loadedDetailsMap.get(id);
   if (!d) {
@@ -687,6 +726,10 @@ function buildCard(id) {
        <button class="btn btn-reject" onclick="handleAction(${id}, 'decline')">Decline</button>`;
 
   card.innerHTML = `
+    <label class="card-checkbox" title="Select for blacklisting">
+      <input type="checkbox" class="user-check" onchange="toggleMark(${id}, this.checked)" ${isChecked}>
+      <span class="check-box"></span>
+    </label>
     <div class="card-reticle"></div>
     <div class="pfp-wrap">
       <img src="${esc(d.pfp)}" class="pfp" alt="" loading="lazy" decoding="async">
@@ -712,6 +755,7 @@ async function handleAction(userId, action) {
 
   const index = currentIds.indexOf(userId);
   currentIds = currentIds.filter(id => id !== userId);
+  markedIds.delete(userId); // Ensure it's removed from marked list if acted upon manually
   render();
 
   try {
@@ -901,6 +945,7 @@ async function massActionAll(action) {
   const targets = [...visibleIds];
   const scope = targets.length === currentIds.length ? '' : ' (filtered)';
   if (!confirm(`${action.toUpperCase()} all ${targets.length} requests${scope}?\n\nRuns in the background — you can keep using the page.`)) return;
+  markedIds.clear(); // Mass actions process everything shown; let's clear markers
   startJob(action, targets);
 }
 
@@ -948,6 +993,7 @@ async function blacklistAll() {
       showToast(`Blacklisted ${result.addedCount ?? targets.length} targets`, 'success');
       const gone = new Set(targets);
       currentIds = currentIds.filter(id => !gone.has(id));
+      markedIds.clear();
       render();
     }
   } catch (err) { showToast('Failed to communicate with backend', 'error'); }
@@ -974,6 +1020,7 @@ async function blacklistPage() {
       const maxPage = Math.max(1, Math.ceil(currentIds.length / PAGE_SIZE));
       if (currentPage > maxPage) currentPage = maxPage;
       
+      markedIds.forEach(id => { if (gone.has(id)) markedIds.delete(id); });
       render();
     }
   } catch (err) { showToast('Failed to communicate with backend', 'error'); }
@@ -998,9 +1045,62 @@ async function blacklistFiltered() {
       showToast(`Blacklisted ${result.addedCount ?? filteredIds.length} bot-filtered targets`, 'success');
       const gone = new Set(filteredIds);
       currentIds = currentIds.filter(id => !gone.has(id));
+      markedIds.forEach(id => { if (gone.has(id)) markedIds.delete(id); });
       render();
     }
   } catch (err) { showToast('Failed to communicate with backend', 'error'); }
+}
+
+async function blacklistMarked() {
+    if (markedIds.size === 0) return;
+    const targets = Array.from(markedIds);
+    if (!confirm(`Hide ${targets.length} manually marked targets locally? (This does not decline them on Roblox)`)) return;
+    try {
+        const response = await fetch(`${BACKEND_URL}/api/blocklist/add`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userIds: targets })
+        });
+        const result = await response.json();
+        if (result.success) {
+            showToast(`Blacklisted ${result.addedCount ?? targets.length} marked targets`, 'success');
+            const gone = new Set(targets);
+            currentIds = currentIds.filter(id => !gone.has(id));
+            markedIds.clear();
+            render();
+        }
+    } catch (err) { showToast('Failed to communicate with backend', 'error'); }
+}
+
+async function addSingleBlacklist() {
+    const input = document.getElementById('add-blocklist-input');
+    const id = input.value.trim();
+    if (!id || !/^\d+$/.test(id)) {
+        showToast('Please enter a valid numerical ID.', 'warn');
+        return;
+    }
+
+    try {
+        const response = await fetch(`${BACKEND_URL}/api/blocklist/add`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userIds: [id] })
+        });
+        const result = await response.json();
+        if (result.success) {
+            showToast(`Added ${id} to the blocklist.`, 'success');
+            input.value = '';
+            
+            // Remove it from active views if it's there
+            currentIds = currentIds.filter(cid => cid != id);
+            markedIds.delete(Number(id));
+            
+            // Refresh the export modal list right away
+            exportBlocklist(); 
+            
+            if (currentView === 'requests') render();
+        }
+    } catch (err) { showToast('Failed to communicate with backend', 'error'); }
 }
 
 let autoAccept = false;
