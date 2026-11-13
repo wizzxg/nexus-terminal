@@ -33,7 +33,7 @@ body::before{ content:""; position:fixed; inset:0; pointer-events:none; z-index:
 .deck{background:var(--surface); border:1px solid var(--line-2); border-radius:var(--r-md); box-shadow:0 12px 40px -20px rgba(0,0,0,.8); overflow:hidden} .deck-row{display:flex; align-items:center; gap:14px; padding:14px 16px; flex-wrap:wrap} .deck-row + .deck-row{border-top:1px solid var(--line)}
 .view-tabs{display:inline-flex; background:var(--void); border:1px solid var(--line-2); border-radius:var(--r-sm); padding:3px; gap:3px; flex:none} .vtab{font-family:var(--mono); font-size:10.5px; font-weight:500; letter-spacing:.12em; text-transform:uppercase; color:var(--faint); background:transparent; border:0; border-radius:6px; padding:8px 13px; cursor:pointer; transition:color .15s, background .15s; white-space:nowrap} .vtab:hover{color:var(--text)} .vtab.is-active{color:var(--cyan); background:var(--cyan-soft); box-shadow:inset 0 0 0 1px rgba(56,229,216,.3)}
 .search-wrap{position:relative; flex:1; min-width:210px} .search-wrap svg{position:absolute; left:13px; top:50%; transform:translateY(-50%); color:var(--faint)} #search-input, #tt-username-input{width:100%; padding:11px 14px 11px 38px; background:var(--void); color:var(--text); border:1px solid var(--line-2); border-radius:var(--r-sm); outline:none; font-family:var(--sans); font-size:13px; transition:border-color .15s, box-shadow .15s} #search-input::placeholder, #tt-username-input::placeholder{color:var(--faint)} #search-input:focus, #tt-username-input:focus{border-color:var(--cyan); box-shadow:0 0 0 3px var(--cyan-soft)}
-#tt-username-input{padding-left:14px; width:240px; flex:none; font-family:var(--mono); font-size:12px}
+#tt-username-input{padding-left:14px; width:210px; flex:none; font-family:var(--mono); font-size:12px}
 .toggle{display:inline-flex; align-items:center; gap:10px; cursor:pointer; user-select:none; font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); white-space:nowrap} .toggle input{position:absolute; opacity:0; width:0; height:0} .track{width:38px; height:20px; border-radius:20px; background:var(--surface-3); border:1px solid var(--line-2); position:relative; transition:background .18s, border-color .18s; flex:none} .track::after{content:""; position:absolute; top:2px; left:2px; width:14px; height:14px; border-radius:50%; background:var(--faint); transition:transform .18s, background .18s} .toggle input:checked + .track{background:var(--cyan-soft); border-color:var(--cyan)} .toggle input:checked + .track::after{transform:translateX(18px); background:var(--cyan)} .toggle:hover .track{border-color:rgba(132,152,192,.35)}
 .deck-row.auto-row{gap:18px} .auto-eyebrow{font-family:var(--mono); font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--faint); white-space:nowrap} .toggle.is-live{color:var(--cyan)} .toggle input:disabled + .track{opacity:.35} .toggle input:disabled ~ *{opacity:.5} .auto-status{display:flex; align-items:center; gap:9px; margin-left:auto; font-family:var(--mono); font-size:10.5px; letter-spacing:.06em; color:var(--faint); white-space:nowrap} .auto-dot{width:6px; height:6px; border-radius:50%; background:var(--faint); flex:none; transition:background .2s} .auto-status.is-live .auto-dot{background:var(--cyan); animation:pulse 2.4s infinite} .auto-status.is-live{color:var(--muted)} .auto-status.is-waiting .auto-dot{background:var(--amber); animation:pulse 1.6s infinite}
 .readout{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--faint); white-space:nowrap} .readout #target-num{color:var(--cyan); font-weight:700; font-size:13px} .readout .of-total{color:var(--faint); text-transform:none; letter-spacing:.08em}
@@ -61,7 +61,7 @@ body::before{ content:""; position:fixed; inset:0; pointer-events:none; z-index:
 .user-card.is-loading{pointer-events:none} .sk{position:relative; overflow:hidden; background:var(--surface-3); border-radius:6px} .sk::after{content:""; position:absolute; inset:0; transform:translateX(-100%); background:linear-gradient(90deg, transparent, rgba(255,255,255,.05), transparent); animation:shimmer 1.4s infinite} @keyframes shimmer{100%{transform:translateX(100%)}} .sk-pfp{width:78px; height:78px; border-radius:50%; margin-bottom:14px} .sk-line{height:11px; margin-bottom:9px; width:80%} .sk-line.short{width:45%}
 #empty-state{display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:90px 20px; margin-top:22px; border:1px dashed var(--line-2); border-radius:var(--r-lg); color:var(--muted)} #empty-state .es-glyph{font-size:34px; color:var(--faint); margin-bottom:16px} #empty-state h3{margin:0 0 8px; font-family:var(--mono); font-size:14px; letter-spacing:.08em; text-transform:uppercase; color:var(--text)} #empty-state p{margin:0; font-size:13px; max-width:340px}
 .pagination-bar{display:flex; justify-content:center; align-items:center; gap:16px; margin-top:34px} .page-indicator{font-family:var(--mono); font-size:12px; letter-spacing:.16em; color:var(--muted)} .page-indicator b{color:var(--cyan)}
-#export-modal{display:none; position:fixed; inset:0; z-index:1000; background:rgba(4,5,10,.82); backdrop-filter:blur(6px); justify-content:center; align-items:center; padding:20px} .modal-content{width:100%; max-width:560px; background:var(--surface-2); border:1px solid var(--line-2); border-radius:var(--r-lg); padding:26px; box-shadow:0 40px 100px -30px rgba(0,0,0,.9)} .modal-content h2{margin:0 0 4px; font-size:16px; font-weight:600} .modal-content .m-sub{margin:0 0 18px; color:var(--muted); font-size:12.5px} #export-textarea{width:100%; height:280px; background:var(--void); color:var(--cyan); border:1px solid var(--line-2); border-radius:var(--r-sm); padding:14px; box-sizing:border-box; font-family:var(--mono); font-size:12px; resize:vertical; margin-bottom:18px; outline:none} #export-textarea:focus{border-color:var(--cyan)} .modal-actions{display:flex; gap:10px; justify-content:flex-end}
+#export-modal, #tt-blacklist-modal, #tt-login-modal{display:none; position:fixed; inset:0; z-index:1000; background:rgba(4,5,10,.82); backdrop-filter:blur(6px); justify-content:center; align-items:center; padding:20px} .modal-content{width:100%; max-width:560px; background:var(--surface-2); border:1px solid var(--line-2); border-radius:var(--r-lg); padding:26px; box-shadow:0 40px 100px -30px rgba(0,0,0,.9)} .modal-content h2{margin:0 0 4px; font-size:16px; font-weight:600} .modal-content .m-sub{margin:0 0 18px; color:var(--muted); font-size:12.5px} #export-textarea, #tt-blacklist-textarea{width:100%; height:280px; background:var(--void); color:var(--cyan); border:1px solid var(--line-2); border-radius:var(--r-sm); padding:14px; box-sizing:border-box; font-family:var(--mono); font-size:12px; resize:vertical; margin-bottom:18px; outline:none} #export-textarea:focus, #tt-blacklist-textarea:focus{border-color:var(--cyan)} .modal-actions{display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap}
 #toast-container{position:fixed; bottom:22px; right:22px; display:flex; flex-direction:column; gap:12px; z-index:1100; max-width:340px} .toast{display:flex; align-items:flex-start; gap:11px; background:var(--surface-2); border:1px solid var(--line-2); border-left:3px solid var(--cyan); border-radius:var(--r-sm); padding:13px 16px; font-size:13px; color:var(--text); box-shadow:0 16px 40px -16px rgba(0,0,0,.85); animation:slideIn .35s cubic-bezier(.2,.8,.2,1) both; transition:opacity .3s, transform .3s} .toast-glyph{font-family:var(--mono); font-weight:700; font-size:12px; line-height:1.5; color:var(--cyan)} .toast.error{border-left-color:var(--red)} .toast.error .toast-glyph{color:var(--red)} .toast.success{border-left-color:var(--cyan)} .toast.success .toast-glyph{color:var(--cyan)} .toast.warn{border-left-color:var(--amber)} .toast.warn .toast-glyph{color:var(--amber)} .toast.info{border-left-color:var(--muted)} .toast.info .toast-glyph{color:var(--muted)} @keyframes slideIn{from{transform:translateX(120%); opacity:0}to{transform:translateX(0); opacity:1}}
 #job-progress{position:fixed; left:50%; bottom:24px; transform:translateX(-50%); width:min(520px, calc(100vw - 32px)); background:var(--surface-2); border:1px solid var(--line-2); border-left:3px solid var(--cyan); border-radius:var(--r-md); padding:16px 18px; z-index:1200; box-shadow:0 24px 60px -20px rgba(0,0,0,.9); animation:jpRise .3s cubic-bezier(.2,.8,.2,1) both} @keyframes jpRise{from{transform:translate(-50%,20px); opacity:0}to{transform:translate(-50%,0); opacity:1}} .jp-head{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px} .jp-label{font-family:var(--mono); font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--text)} .jp-track{height:5px; background:var(--void); border-radius:3px; overflow:hidden} .jp-fill{height:100%; width:0%; background:var(--cyan); border-radius:3px; transition:width .3s linear} .jp-meta{margin-top:10px; font-family:var(--mono); font-size:10.5px; color:var(--muted); letter-spacing:.04em} .jp-rate{color:var(--cyan)} #job-progress.is-error{border-left-color:var(--red)} #job-progress.is-error .jp-fill{background:var(--red)} .jp-verify{margin-top:8px; font-family:var(--mono); font-size:10.5px; letter-spacing:.04em; color:var(--cyan)} .jp-verify.bad{color:var(--red)} .jp-error{margin-top:8px; font-family:var(--mono); font-size:10.5px; line-height:1.5; letter-spacing:.02em; color:var(--amber); word-break:break-word} #job-progress.is-warn{border-left-color:var(--amber)} #job-progress.is-warn .jp-fill{background:var(--amber)} #job-progress.is-paused{border-left-color:var(--amber)} #job-progress.is-paused .jp-fill{background:var(--amber)} .jp-breather{color:var(--amber)}
 @media (max-width:560px){ #dashboard-section{padding:0 14px 50px} .deck-actions{width:100%} .deck-actions .divider{display:none} .view-tabs{width:100%} .vtab{flex:1} #requests-container{grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:12px} .mm2-note{margin-left:0; width:100%} }
@@ -160,10 +160,19 @@ body::before{ content:""; position:fixed; inset:0; pointer-events:none; z-index:
       <div class="deck-row deck-actions" id="actions-tiktok" style="display:none;">
         <input type="text" id="tt-username-input" placeholder="@tiktok_username (LIVE)..." onkeydown="if(event.key==='Enter')connectTikTokLive()">
         <button class="btn btn-primary" onclick="connectTikTokLive()" id="btn-tt-connect">Listen Live</button>
-        <button class="btn btn-danger" onclick="disconnectTikTokLive()" id="btn-tt-disconnect">Stop Listener</button>
+        <button class="btn btn-danger" onclick="disconnectTikTokLive()" id="btn-tt-disconnect">Stop</button>
         <span class="divider"></span>
-        <button class="btn btn-violet" onclick="copyAllTikTokSharers()">Copy All @Usernames</button>
-        <button class="btn btn-warn" onclick="clearTikTokSharers()">Clear Share Log</button>
+        <label class="toggle" title="Automatically block and blacklist anyone who shares your TikTok LIVE">
+          <input type="checkbox" id="tt-autoblock-toggle" onchange="toggleTikTokAutoBlock()">
+          <span class="track"></span>
+          Auto-Block Sharers
+        </label>
+        <button class="btn btn-danger" onclick="blockAllTikTokSharers()">Block All Sharers</button>
+        <button class="btn btn-violet" onclick="openTikTokBlacklistModal()">TT Blacklist (<span id="tt-bl-count">0</span>)</button>
+        <button class="btn" onclick="openTikTokLoginModal()" id="btn-tt-login">TikTok Account</button>
+        <span class="divider"></span>
+        <button class="btn" onclick="copyAllTikTokSharers()">Copy @Users</button>
+        <button class="btn btn-warn" onclick="clearTikTokSharers()">Clear Log</button>
         <div class="auto-status" id="tt-live-status" style="margin-left:auto;">
           <span class="auto-dot" id="tt-live-dot"></span>
           <span id="tt-live-status-text">Listener offline</span>
@@ -187,6 +196,7 @@ body::before{ content:""; position:fixed; inset:0; pointer-events:none; z-index:
   </div>
 </div>
 
+<!-- ROBLOX BLOCKLIST MODAL -->
 <div id="export-modal">
   <div class="modal-content">
     <h2>Blocklist Data</h2>
@@ -212,6 +222,50 @@ body::before{ content:""; position:fixed; inset:0; pointer-events:none; z-index:
       <div style="display:flex; gap:10px;">
         <button class="btn" onclick="closeModal()">Close</button>
         <button class="btn btn-primary" id="btn-copy-import" onclick="copyExportText()">Copy</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TIKTOK USERNAME BLACKLIST MODAL (LINE BY LINE) -->
+<div id="tt-blacklist-modal">
+  <div class="modal-content">
+    <h2>TikTok Username Blacklist</h2>
+    <p class="m-sub">Type or paste one TikTok username per line (without @). Blacklisted usernames are saved automatically and hidden from your live share list.</p>
+    <textarea id="tt-blacklist-textarea" placeholder="username&#10;username1&#10;username2"></textarea>
+    <div class="modal-actions" style="justify-content: space-between; align-items: center;">
+      <button class="btn btn-danger" onclick="blockAllListedTikTokUsers()">Block All Listed on TikTok</button>
+      <div style="display:flex; gap:10px;">
+        <button class="btn" onclick="closeTikTokBlacklistModal()">Close</button>
+        <button class="btn" onclick="copyTikTokBlacklistText()">Copy List</button>
+        <button class="btn btn-primary" onclick="saveTikTokBlacklistText()">Save Blacklist</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TIKTOK ACCOUNT LOGIN MODAL -->
+<div id="tt-login-modal">
+  <div class="modal-content">
+    <h2>Log In to TikTok Account</h2>
+    <p class="m-sub">Connect your TikTok session so NEXUS can automatically block sharers and blacklisted accounts on TikTok.</p>
+
+    <label class="field-label" for="tt-account-name-input">Your TikTok @Username (optional label)</label>
+    <input type="text" id="tt-account-name-input" placeholder="@your_tiktok_handle" style="width:100%; padding:11px 14px; margin-bottom:16px; background:var(--void); color:var(--text); border:1px solid var(--line-2); border-radius:var(--r-sm); font-family:var(--mono); font-size:12.5px; outline:none;">
+
+    <label class="field-label" for="tt-cookie-input">TikTok Session Cookie (sessionid or full Cookie header)</label>
+    <input type="password" id="tt-cookie-input" placeholder="Paste sessionid value or full Cookie header from tiktok.com…" style="width:100%; padding:12px 14px; margin-bottom:14px; background:var(--void); color:var(--cyan); border:1px solid var(--line-2); border-radius:var(--r-sm); font-family:var(--mono); font-size:12.5px; outline:none;">
+
+    <div class="login-warn" style="margin-top:0; margin-bottom:18px;">
+      <span>ℹ</span>
+      <span>Open <b>tiktok.com</b> logged in → press <b>F12</b> → <b>Application</b> → <b>Cookies</b> → copy the <b>sessionid</b> value (or copy the full <b>Cookie</b> header from the Network tab).</span>
+    </div>
+
+    <div class="modal-actions" style="justify-content: space-between; align-items: center;">
+      <button class="btn btn-danger" onclick="logoutTikTokAccount()">Disconnect TikTok</button>
+      <div style="display:flex; gap:10px;">
+        <button class="btn" onclick="closeTikTokLoginModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveTikTokLogin()">Save &amp; Log In</button>
       </div>
     </div>
   </div>
@@ -265,6 +319,9 @@ const emptyTitle        = document.getElementById('empty-title');
 const emptyBody         = document.getElementById('empty-body');
 const exportModal       = document.getElementById('export-modal');
 const exportTextarea    = document.getElementById('export-textarea');
+const ttBlacklistModal  = document.getElementById('tt-blacklist-modal');
+const ttBlacklistTa     = document.getElementById('tt-blacklist-textarea');
+const ttLoginModal      = document.getElementById('tt-login-modal');
 const autoAcceptToggle  = document.getElementById('auto-accept-toggle');
 const autoSyncToggle    = document.getElementById('auto-sync-toggle');
 const autoStatus        = document.getElementById('auto-status');
@@ -322,8 +379,11 @@ let botFilterV2Token = 0;
 
 // TIKTOK STATE
 let ttSharersMap = new Map();
+let ttBlacklistSet = new Set();
 let ttEventSource = null;
+let ttPollTimer = null;
 let ttState = { connected: false, username: null, roomId: null, error: null };
+let ttAuth = { loggedIn: false, accountName: '', autoBlockSharers: false };
 
 const session = () => (localStorage.getItem('nexusSession') || '').trim();
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -392,7 +452,10 @@ function computeVisible() {
   const term = searchInput.value.toLowerCase().trim();
 
   if (currentView === 'tiktok') {
-    const allSharers = Array.from(ttSharersMap.values()).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+    const allSharers = Array.from(ttSharersMap.values())
+      .filter(u => !ttBlacklistSet.has(u.uniqueId.toLowerCase()))
+      .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
     if (!term) {
       visibleIds = allSharers.map(u => u.uniqueId);
     } else {
@@ -438,12 +501,18 @@ function computeVisible() {
 }
 
 function setTargetCount() {
-  const totalCount = currentView === 'tiktok' ? ttSharersMap.size : currentIds.length;
+  const unblockedSharersCount = Array.from(ttSharersMap.values()).filter(u => !ttBlacklistSet.has(u.uniqueId.toLowerCase())).length;
+  const totalCount = currentView === 'tiktok' ? unblockedSharersCount : currentIds.length;
   targetNum.innerText = visibleIds.length;
   targetWord.innerText = VIEWS[currentView].word;
   targetTotal.innerText = visibleIds.length === totalCount ? '' : ` of ${totalCount}`;
+
   const ttTabBadge = document.getElementById('tt-tab-count');
-  if (ttTabBadge) ttTabBadge.innerText = ttSharersMap.size;
+  if (ttTabBadge) ttTabBadge.innerText = unblockedSharersCount;
+
+  const ttBlBadge = document.getElementById('tt-bl-count');
+  if (ttBlBadge) ttBlBadge.innerText = ttBlacklistSet.size;
+
   updateControls();
 }
 
@@ -480,6 +549,7 @@ function switchView(view) {
   renderMm2Note(0, 0);
 
   if (isTikTok) {
+    fetchTikTokSnapshot();
     render();
   } else {
     currentIds = [];
@@ -495,6 +565,7 @@ function checkAuth() {
     dashboardSection.style.display = 'block';
     warmBackend();
     initTikTokSSE();
+    restoreTikTokLocalAuth();
     if (currentIds.length === 0 && currentView !== 'tiktok') loadList();
   } else {
     loginSection.style.display = 'block';
@@ -587,9 +658,7 @@ async function hydrateAll(ids, token) {
   await Promise.all(Array.from({ length: HYDRATE_LANES }, lane));
 }
 
-// ---- TIKTOK LIVE LOGIC ----
-let ttPollTimer = null;
-
+// ---- TIKTOK LIVE & BLOCKER LOGIC ----
 function initTikTokSSE() {
   if (ttEventSource) ttEventSource.close();
   const savedUser = localStorage.getItem('nexusTikTokUser');
@@ -609,6 +678,10 @@ function initTikTokSSE() {
       const data = JSON.parse(event.data);
       if (data.type === 'INIT') {
         ttState = data.state || { connected: false };
+        if (data.auth) ttAuth = data.auth;
+        if (Array.isArray(data.blacklist)) {
+          ttBlacklistSet = new Set(data.blacklist.map(u => u.toLowerCase()));
+        }
         ttSharersMap.clear();
         (data.sharers || []).forEach(u => ttSharersMap.set(u.uniqueId, u));
         updateTikTokStatusUI();
@@ -616,16 +689,20 @@ function initTikTokSSE() {
       } else if (data.type === 'STATUS') {
         ttState = data.state || { connected: false };
         updateTikTokStatusUI();
+      } else if (data.type === 'AUTH') {
+        if (data.auth) ttAuth = data.auth;
+        updateTikTokStatusUI();
+      } else if (data.type === 'BLACKLIST') {
+        if (Array.isArray(data.blacklist)) {
+          ttBlacklistSet = new Set(data.blacklist.map(u => u.toLowerCase()));
+        }
+        queueRender();
       } else if (data.type === 'SHARE') {
         ttSharersMap.set(data.user.uniqueId, data.user);
-        const ttTabBadge = document.getElementById('tt-tab-count');
-        if (ttTabBadge) ttTabBadge.innerText = ttSharersMap.size;
-        if (currentView === 'tiktok') queueRender();
+        queueRender();
       } else if (data.type === 'CLEAR') {
         ttSharersMap.clear();
-        const ttTabBadge = document.getElementById('tt-tab-count');
-        if (ttTabBadge) ttTabBadge.innerText = '0';
-        if (currentView === 'tiktok') queueRender();
+        queueRender();
       }
     } catch (e) {}
   };
@@ -636,17 +713,16 @@ async function fetchTikTokSnapshot() {
     const res = await fetch(`${BACKEND_URL}/api/tiktok/sharers`);
     if (!res.ok) return;
     const data = await res.json();
-    if (data.state) {
-      ttState = data.state;
-      updateTikTokStatusUI();
+    if (data.state) ttState = data.state;
+    if (data.auth) ttAuth = data.auth;
+    if (Array.isArray(data.blacklist)) {
+      ttBlacklistSet = new Set(data.blacklist.map(u => u.toLowerCase()));
     }
+    updateTikTokStatusUI();
     if (Array.isArray(data.sharers)) {
-      const prevSize = ttSharersMap.size;
       ttSharersMap.clear();
       data.sharers.forEach(u => ttSharersMap.set(u.uniqueId, u));
-      const ttTabBadge = document.getElementById('tt-tab-count');
-      if (ttTabBadge) ttTabBadge.innerText = ttSharersMap.size;
-      if (currentView === 'tiktok' || ttSharersMap.size !== prevSize) queueRender();
+      queueRender();
     }
   } catch (e) {}
 }
@@ -654,6 +730,21 @@ async function fetchTikTokSnapshot() {
 function updateTikTokStatusUI() {
   const wrap = document.getElementById('tt-live-status');
   const txt = document.getElementById('tt-live-status-text');
+  const loginBtn = document.getElementById('btn-tt-login');
+  const autoBlockToggle = document.getElementById('tt-autoblock-toggle');
+
+  if (autoBlockToggle) autoBlockToggle.checked = !!ttAuth.autoBlockSharers;
+
+  if (loginBtn) {
+    if (ttAuth.loggedIn) {
+      loginBtn.innerText = `TT: @${ttAuth.accountName || 'Logged In'}`;
+      loginBtn.classList.add('btn-primary');
+    } else {
+      loginBtn.innerText = 'TikTok Account';
+      loginBtn.classList.remove('btn-primary');
+    }
+  }
+
   if (!wrap || !txt) return;
 
   wrap.classList.toggle('is-live', !!ttState.connected);
@@ -714,7 +805,7 @@ async function disconnectTikTokLive() {
 
 async function clearTikTokSharers() {
   if (ttSharersMap.size === 0) return;
-  if (!confirm(`Clear all ${ttSharersMap.size} collected TikTok sharers?`)) return;
+  if (!confirm(`Clear all collected TikTok sharers from the current log?`)) return;
   try {
     await fetch(`${BACKEND_URL}/api/tiktok/clear`, { method: 'POST' });
     ttSharersMap.clear();
@@ -726,18 +817,243 @@ async function clearTikTokSharers() {
 }
 
 function copyAllTikTokSharers() {
-  if (ttSharersMap.size === 0) {
+  if (visibleIds.length === 0) {
     showToast('No TikTok sharers to copy yet.', 'warn');
     return;
   }
-  const list = Array.from(ttSharersMap.keys()).join('\n');
+  const list = visibleIds.join('\n');
   navigator.clipboard?.writeText(list);
-  showToast(`Copied ${ttSharersMap.size} TikTok usernames!`, 'success');
+  showToast(`Copied ${visibleIds.length} TikTok usernames!`, 'success');
 }
 
 function copySingleTikTokUser(uniqueId) {
   navigator.clipboard?.writeText(uniqueId);
   showToast(`Copied @${uniqueId}`, 'success');
+}
+
+// ---- TIKTOK BLOCKING & BLACKLIST FUNCTIONS ----
+async function blockSingleTikTokUser(uniqueId) {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/tiktok/block`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ usernames: [uniqueId] })
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      ttBlacklistSet.add(uniqueId.toLowerCase());
+      queueRender();
+      if (data.blockedOnTikTokCount > 0) {
+        showToast(`Blocked @${uniqueId} on TikTok & added to blacklist!`, 'success');
+      } else {
+        showToast(`Added @${uniqueId} to blacklist${data.loggedIn ? '' : ' (Log in to TikTok to auto-block on account)'}.`, 'info');
+      }
+    }
+  } catch (e) {
+    showToast('Could not reach backend.', 'error');
+  }
+}
+
+async function blockAllTikTokSharers() {
+  if (visibleIds.length === 0) {
+    showToast('No sharers in the queue to block.', 'warn');
+    return;
+  }
+  const targets = [...visibleIds];
+  const msg = ttAuth.loggedIn
+    ? `Block all ${targets.length} sharers on your TikTok account and save them to your line-by-line blacklist?`
+    : `Add all ${targets.length} sharers to your TikTok blacklist? (Tip: Click "TikTok Account" to also block them on TikTok automatically)`;
+  if (!confirm(msg)) return;
+
+  showToast(`Blocking ${targets.length} TikTok users…`, 'info');
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/tiktok/block`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ usernames: targets })
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      targets.forEach(u => ttBlacklistSet.add(u.toLowerCase()));
+      queueRender();
+      showToast(
+        ttAuth.loggedIn
+          ? `Blocked ${data.blockedOnTikTokCount}/${targets.length} on TikTok & saved to blacklist!`
+          : `Saved ${targets.length} usernames to TikTok blacklist!`,
+        'success'
+      );
+    }
+  } catch (e) {
+    showToast('Failed to block TikTok sharers.', 'error');
+  }
+}
+
+async function toggleTikTokAutoBlock() {
+  const enabled = document.getElementById('tt-autoblock-toggle').checked;
+  try {
+    await fetch(`${BACKEND_URL}/api/tiktok/auto-block`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ enabled })
+    });
+    ttAuth.autoBlockSharers = enabled;
+    showToast(
+      enabled
+        ? 'Auto-Block Sharers ON — anyone who shares will be blacklisted & blocked.'
+        : 'Auto-Block Sharers OFF.',
+      enabled ? 'success' : 'info'
+    );
+  } catch (e) {
+    showToast('Could not update Auto-Block setting.', 'error');
+  }
+}
+
+async function openTikTokBlacklistModal() {
+  ttBlacklistModal.style.display = 'flex';
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/tiktok/blacklist`);
+    const data = await res.json();
+    ttBlacklistTa.value = data.text || '';
+  } catch (e) {
+    ttBlacklistTa.value = Array.from(ttBlacklistSet).join('\n');
+  }
+}
+
+function closeTikTokBlacklistModal() {
+  ttBlacklistModal.style.display = 'none';
+}
+
+function copyTikTokBlacklistText() {
+  ttBlacklistTa.select();
+  navigator.clipboard?.writeText(ttBlacklistTa.value);
+  showToast('Copied TikTok blacklist to clipboard!', 'success');
+}
+
+async function saveTikTokBlacklistText() {
+  const text = ttBlacklistTa.value;
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/tiktok/blacklist/save`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text })
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      ttBlacklistSet = new Set((data.usernames || []).map(u => u.toLowerCase()));
+      queueRender();
+      showToast(`Saved ${data.total} usernames (line-by-line) to TikTok Blacklist!`, 'success');
+      closeTikTokBlacklistModal();
+    }
+  } catch (e) {
+    showToast('Could not save TikTok blacklist.', 'error');
+  }
+}
+
+async function blockAllListedTikTokUsers() {
+  const lines = ttBlacklistTa.value
+    .split(/\r?\n/)
+    .map(s => s.trim().replace(/^@/, ''))
+    .filter(Boolean);
+
+  if (lines.length === 0) {
+    showToast('Type at least one username in the list first.', 'warn');
+    return;
+  }
+  if (!ttAuth.loggedIn) {
+    showToast('Log in via "TikTok Account" first so the site can block them on TikTok.', 'warn');
+    return;
+  }
+  if (!confirm(`Save and block all ${lines.length} listed usernames on your TikTok account?`)) return;
+
+  showToast(`Blocking ${lines.length} users on TikTok…`, 'info');
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/tiktok/block`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ usernames: lines })
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      ttBlacklistSet = new Set((data.blacklist || []).map(u => u.toLowerCase()));
+      ttBlacklistTa.value = (data.blacklist || []).join('\n');
+      queueRender();
+      showToast(`Blocked ${data.blockedOnTikTokCount}/${lines.length} users on TikTok!`, 'success');
+    }
+  } catch (e) {
+    showToast('Failed to block listed users.', 'error');
+  }
+}
+
+// ---- TIKTOK LOGIN MODAL ----
+function openTikTokLoginModal() {
+  ttLoginModal.style.display = 'flex';
+  document.getElementById('tt-account-name-input').value = localStorage.getItem('nexusTikTokAccountName') || ttAuth.accountName || '';
+  document.getElementById('tt-cookie-input').value = localStorage.getItem('nexusTikTokCookie') || '';
+}
+
+function closeTikTokLoginModal() {
+  ttLoginModal.style.display = 'none';
+}
+
+async function saveTikTokLogin() {
+  const accountName = document.getElementById('tt-account-name-input').value.trim();
+  const cookie = document.getElementById('tt-cookie-input').value.trim();
+  if (!cookie) {
+    showToast('Paste your TikTok sessionid or Cookie header first.', 'warn');
+    return;
+  }
+
+  localStorage.setItem('nexusTikTokAccountName', accountName);
+  localStorage.setItem('nexusTikTokCookie', cookie);
+
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/tiktok/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accountName, cookie })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      showToast(data.error || 'Failed to log in to TikTok.', 'error');
+      return;
+    }
+    ttAuth = data.auth;
+    updateTikTokStatusUI();
+    closeTikTokLoginModal();
+    showToast(`Logged into TikTok as @${ttAuth.accountName || 'Account'}!`, 'success');
+  } catch (e) {
+    showToast('Could not reach backend.', 'error');
+  }
+}
+
+async function logoutTikTokAccount() {
+  localStorage.removeItem('nexusTikTokCookie');
+  localStorage.removeItem('nexusTikTokAccountName');
+  try {
+    await fetch(`${BACKEND_URL}/api/tiktok/logout`, { method: 'POST' });
+    ttAuth = { loggedIn: false, accountName: '', autoBlockSharers: false };
+    updateTikTokStatusUI();
+    closeTikTokLoginModal();
+    showToast('Disconnected TikTok account.', 'info');
+  } catch (e) {}
+}
+
+async function restoreTikTokLocalAuth() {
+  const savedCookie = localStorage.getItem('nexusTikTokCookie');
+  const savedName = localStorage.getItem('nexusTikTokAccountName') || 'Account';
+  if (!savedCookie) return;
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/tiktok/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accountName: savedName, cookie: savedCookie })
+    });
+    const data = await res.json();
+    if (res.ok && data.auth) {
+      ttAuth = data.auth;
+      updateTikTokStatusUI();
+    }
+  } catch (e) {}
 }
 
 function buildTikTokCard(uniqueId) {
@@ -757,9 +1073,59 @@ function buildTikTokCard(uniqueId) {
       <p title="@${esc(u.uniqueId)}">@${esc(u.uniqueId)}</p>
     </div>
     <div class="actions">
-      <button class="btn btn-accept" onclick="copySingleTikTokUser('${esc(u.uniqueId)}')">Copy @User</button>
+      <button class="btn btn-accept" onclick="copySingleTikTokUser('${esc(u.uniqueId)}')">Copy</button>
+      <button class="btn btn-reject" onclick="blockSingleTikTokUser('${esc(u.uniqueId)}')">Block</button>
     </div>`;
   return card;
+}
+
+// ---- BOT FILTER V2 HYDRATION ----
+function toggleBotFilterV2() {
+  botFilterV2Enabled = botFilterV2Toggle.checked;
+  localStorage.setItem('nexusBotFilterV2', botFilterV2Enabled ? '1' : '0');
+
+  currentPage = 1;
+
+  if (botFilterV2Enabled) {
+    render();
+    hydrateBotFilterV2(currentIds, ++botFilterV2Token);
+  } else {
+    botFilterV2Token++; 
+    render();
+  }
+}
+
+async function hydrateBotFilterV2(ids, token) {
+  const needed = ids.filter(id => !botFilterV2Map.has(id));
+  if (needed.length === 0) return;
+
+  const pageIds = visibleIds.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const onScreen = new Set(pageIds);
+  needed.sort((a, b) => (onScreen.has(b) ? 1 : 0) - (onScreen.has(a) ? 1 : 0));
+
+  let next = 0;
+  const lane = async () => {
+    while (next < needed.length) {
+      if (token !== botFilterV2Token) return;
+      const id = needed[next++];
+      try {
+        const res = await fetch(`https://avatar.roproxy.com/v1/users/${id}/avatar`);
+        if (res.ok) {
+          const data = await res.json();
+          const wearsBotItem = data.assets && data.assets.some(a => BOT_ITEM_IDS.includes(a.id));
+          botFilterV2Map.set(id, wearsBotItem);
+          if (wearsBotItem) queueRender(); 
+        } else {
+          botFilterV2Map.set(id, false); 
+        }
+      } catch (e) {
+        botFilterV2Map.set(id, false);
+      }
+      await new Promise(r => setTimeout(r, 150));
+    }
+  };
+
+  await Promise.all(Array.from({ length: 3 }, lane));
 }
 
 // ---- MM2 HYDRATION ----
@@ -1555,7 +1921,11 @@ function restoreAutomation() {
 }
 
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape' && exportModal.style.display === 'flex') closeModal();
+  if (e.key === 'Escape') {
+    if (exportModal.style.display === 'flex') closeModal();
+    if (ttBlacklistModal.style.display === 'flex') closeTikTokBlacklistModal();
+    if (ttLoginModal.style.display === 'flex') closeTikTokLoginModal();
+  }
 });
 
 checkAuth();
