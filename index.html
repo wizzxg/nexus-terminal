@@ -32,7 +32,8 @@ body::before{ content:""; position:fixed; inset:0; pointer-events:none; z-index:
 .sticky-header{position:sticky; top:0; z-index:100; padding:10px 0 16px; background:linear-gradient(180deg, var(--void) 70%, transparent);}
 .deck{background:var(--surface); border:1px solid var(--line-2); border-radius:var(--r-md); box-shadow:0 12px 40px -20px rgba(0,0,0,.8); overflow:hidden} .deck-row{display:flex; align-items:center; gap:14px; padding:14px 16px; flex-wrap:wrap} .deck-row + .deck-row{border-top:1px solid var(--line)}
 .view-tabs{display:inline-flex; background:var(--void); border:1px solid var(--line-2); border-radius:var(--r-sm); padding:3px; gap:3px; flex:none} .vtab{font-family:var(--mono); font-size:10.5px; font-weight:500; letter-spacing:.12em; text-transform:uppercase; color:var(--faint); background:transparent; border:0; border-radius:6px; padding:8px 13px; cursor:pointer; transition:color .15s, background .15s; white-space:nowrap} .vtab:hover{color:var(--text)} .vtab.is-active{color:var(--cyan); background:var(--cyan-soft); box-shadow:inset 0 0 0 1px rgba(56,229,216,.3)}
-.search-wrap{position:relative; flex:1; min-width:210px} .search-wrap svg{position:absolute; left:13px; top:50%; transform:translateY(-50%); color:var(--faint)} #search-input{width:100%; padding:11px 14px 11px 38px; background:var(--void); color:var(--text); border:1px solid var(--line-2); border-radius:var(--r-sm); outline:none; font-family:var(--sans); font-size:13px; transition:border-color .15s, box-shadow .15s} #search-input::placeholder{color:var(--faint)} #search-input:focus{border-color:var(--cyan); box-shadow:0 0 0 3px var(--cyan-soft)}
+.search-wrap{position:relative; flex:1; min-width:210px} .search-wrap svg{position:absolute; left:13px; top:50%; transform:translateY(-50%); color:var(--faint)} #search-input, #tt-username-input{width:100%; padding:11px 14px 11px 38px; background:var(--void); color:var(--text); border:1px solid var(--line-2); border-radius:var(--r-sm); outline:none; font-family:var(--sans); font-size:13px; transition:border-color .15s, box-shadow .15s} #search-input::placeholder, #tt-username-input::placeholder{color:var(--faint)} #search-input:focus, #tt-username-input:focus{border-color:var(--cyan); box-shadow:0 0 0 3px var(--cyan-soft)}
+#tt-username-input{padding-left:14px; width:240px; flex:none; font-family:var(--mono); font-size:12px}
 .toggle{display:inline-flex; align-items:center; gap:10px; cursor:pointer; user-select:none; font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); white-space:nowrap} .toggle input{position:absolute; opacity:0; width:0; height:0} .track{width:38px; height:20px; border-radius:20px; background:var(--surface-3); border:1px solid var(--line-2); position:relative; transition:background .18s, border-color .18s; flex:none} .track::after{content:""; position:absolute; top:2px; left:2px; width:14px; height:14px; border-radius:50%; background:var(--faint); transition:transform .18s, background .18s} .toggle input:checked + .track{background:var(--cyan-soft); border-color:var(--cyan)} .toggle input:checked + .track::after{transform:translateX(18px); background:var(--cyan)} .toggle:hover .track{border-color:rgba(132,152,192,.35)}
 .deck-row.auto-row{gap:18px} .auto-eyebrow{font-family:var(--mono); font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--faint); white-space:nowrap} .toggle.is-live{color:var(--cyan)} .toggle input:disabled + .track{opacity:.35} .toggle input:disabled ~ *{opacity:.5} .auto-status{display:flex; align-items:center; gap:9px; margin-left:auto; font-family:var(--mono); font-size:10.5px; letter-spacing:.06em; color:var(--faint); white-space:nowrap} .auto-dot{width:6px; height:6px; border-radius:50%; background:var(--faint); flex:none; transition:background .2s} .auto-status.is-live .auto-dot{background:var(--cyan); animation:pulse 2.4s infinite} .auto-status.is-live{color:var(--muted)} .auto-status.is-waiting .auto-dot{background:var(--amber); animation:pulse 1.6s infinite}
 .readout{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--faint); white-space:nowrap} .readout #target-num{color:var(--cyan); font-weight:700; font-size:13px} .readout .of-total{color:var(--faint); text-transform:none; letter-spacing:.08em}
@@ -49,6 +50,9 @@ body::before{ content:""; position:fixed; inset:0; pointer-events:none; z-index:
 .card-checkbox input:checked + .check-box { background: var(--cyan); border-color: var(--cyan); }
 .card-checkbox input:checked + .check-box::after { content: "✓"; color: #04120f; font-size: 13px; font-weight: bold; }
 .card-checkbox:hover .check-box { border-color: var(--cyan); }
+
+/* TIKTOK SHARE BADGE */
+.tt-share-pill{ font-family:var(--mono); font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--cyan); background:var(--cyan-soft); border:1px solid rgba(56,229,216,.3); padding:3px 8px; border-radius:6px; position:absolute; top:12px; right:12px; }
 
 .card-reticle{position:absolute; inset:8px; border-radius:8px; pointer-events:none; opacity:0; transition:opacity .2s} .card-reticle::before,.card-reticle::after{content:""; position:absolute; width:12px; height:12px; border:1.5px solid var(--cyan)} .card-reticle::before{top:0; left:0; border-right:0; border-bottom:0} .card-reticle::after{bottom:0; right:0; border-left:0; border-top:0} .user-card:hover .card-reticle{opacity:.55}
 .pfp-wrap{position:relative; width:78px; height:78px; margin-bottom:14px; flex:none} .pfp{width:78px; height:78px; border-radius:50%; background:var(--void); border:1px solid var(--line-2); padding:3px; object-fit:cover; display:block} .names{width:100%; margin-bottom:18px} .names h2{margin:0; font-size:15px; font-weight:600; letter-spacing:-.01em; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis} .names p{margin:4px 0 0; font-family:var(--mono); font-size:11.5px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
@@ -88,12 +92,13 @@ body::before{ content:""; position:fixed; inset:0; pointer-events:none; z-index:
         <div class="view-tabs">
           <button class="vtab is-active" id="vtab-requests" onclick="switchView('requests')">Friend requests</button>
           <button class="vtab" id="vtab-blocked" onclick="switchView('blocked')">Blocked users</button>
+          <button class="vtab" id="vtab-tiktok" onclick="switchView('tiktok')">TikTok Live (<span id="tt-tab-count">0</span>)</button>
         </div>
         <div class="search-wrap">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
           <input type="text" id="search-input" placeholder="Search by name or username…" oninput="handleFilterChange()">
         </div>
-        <label class="toggle">
+        <label class="toggle" id="bot-filter-v1-label">
           <input type="checkbox" id="bot-filter-toggle" onchange="handleFilterChange()">
           <span class="track"></span>
           Bot filter
@@ -111,7 +116,7 @@ body::before{ content:""; position:fixed; inset:0; pointer-events:none; z-index:
         <div class="readout"><span id="target-num">0</span> <span id="target-word">targets</span><span class="of-total" id="target-total"></span></div>
       </div>
 
-      <div class="deck-row auto-row">
+      <div class="deck-row auto-row" id="roblox-auto-row">
         <span class="auto-eyebrow">Automation</span>
         <label class="toggle" id="auto-accept-label">
           <input type="checkbox" id="auto-accept-toggle" onchange="toggleAutoAccept()">
@@ -149,6 +154,20 @@ body::before{ content:""; position:fixed; inset:0; pointer-events:none; z-index:
         <span class="divider"></span>
         <button class="btn" onclick="manualRefresh()">↻ Sync</button>
         <button class="btn" onclick="logout()">Disconnect</button>
+      </div>
+
+      <!-- TIKTOK LIVE CONTROLS ROW -->
+      <div class="deck-row deck-actions" id="actions-tiktok" style="display:none;">
+        <input type="text" id="tt-username-input" placeholder="@tiktok_username (LIVE)..." onkeydown="if(event.key==='Enter')connectTikTokLive()">
+        <button class="btn btn-primary" onclick="connectTikTokLive()" id="btn-tt-connect">Listen Live</button>
+        <button class="btn btn-danger" onclick="disconnectTikTokLive()" id="btn-tt-disconnect">Stop Listener</button>
+        <span class="divider"></span>
+        <button class="btn btn-violet" onclick="copyAllTikTokSharers()">Copy All @Usernames</button>
+        <button class="btn btn-warn" onclick="clearTikTokSharers()">Clear Share Log</button>
+        <div class="auto-status" id="tt-live-status" style="margin-left:auto;">
+          <span class="auto-dot" id="tt-live-dot"></span>
+          <span id="tt-live-status-text">Listener offline</span>
+        </div>
       </div>
     </div>
   </div>
@@ -210,7 +229,6 @@ const HYDRATE_CHUNK  = 100;
 const HYDRATE_LANES  = 1;     
 const POLL_MS        = 400;   
 
-// Dynamic batching to respect exact Roblox rate limits per action
 const BATCH_CONFIGS = {
   unfriend: { size: 9, pauseMs: 62000 }, 
   unblock: { size: 19, pauseMs: 62000 }, 
@@ -224,7 +242,7 @@ const AUTO_ACCEPT_GAP_MS  = 3000;
 
 const MM2_CHUNK = 40;
 const MM2_LANES = 3;
-const BOT_ITEM_IDS = [1772336109, 63690008]; // Down-to-Earth Hair, Pal Hair
+const BOT_ITEM_IDS = [1772336109, 63690008];
 
 const loginSection      = document.getElementById('login-section');
 const dashboardSection  = document.getElementById('dashboard-section');
@@ -270,13 +288,21 @@ const VIEWS = {
     emptyTitle: 'Nobody is blocked',
     emptyBody: 'Your Roblox block list is empty. Anyone you block will show up here.',
   },
+  tiktok: {
+    word: 'sharers',
+    endpoint: null,
+    actionsRow: 'actions-tiktok',
+    tab: 'vtab-tiktok',
+    emptyTitle: 'No live shares collected yet',
+    emptyBody: 'Enter your TikTok @username above and click Listen Live — everyone who shares your stream will appear here in real time.',
+  }
 };
 
 let currentView = 'requests';
 let isProcessingMassAction = false;
 let currentIds = [];
 let visibleIds = [];
-let markedIds = new Set(); // Holds checked users
+let markedIds = new Set();
 let loadedDetailsMap = new Map();
 let currentPage = 1;
 let hydrateToken = 0;   
@@ -293,6 +319,11 @@ let mm2Total = 0;
 let botFilterV2Enabled = false;
 let botFilterV2Map = new Map(); 
 let botFilterV2Token = 0;
+
+// TIKTOK STATE
+let ttSharersMap = new Map();
+let ttEventSource = null;
+let ttState = { connected: false, username: null, roomId: null, error: null };
 
 const session = () => (localStorage.getItem('nexusSession') || '').trim();
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -324,16 +355,16 @@ function updateControls() {
 }
 
 function updateMarkedControls() {
-    if (btnBlacklistMarked) {
-        btnBlacklistMarked.disabled = markedIds.size === 0 || isProcessingMassAction;
-        btnBlacklistMarked.innerText = `Blacklist Marked (${markedIds.size})`;
-    }
+  if (btnBlacklistMarked) {
+    btnBlacklistMarked.disabled = markedIds.size === 0 || isProcessingMassAction;
+    btnBlacklistMarked.innerText = `Blacklist Marked (${markedIds.size})`;
+  }
 }
 
 function toggleMark(id, checked) {
-    if (checked) markedIds.add(id);
-    else markedIds.delete(id);
-    updateMarkedControls();
+  if (checked) markedIds.add(id);
+  else markedIds.delete(id);
+  updateMarkedControls();
 }
 
 function getBotFilteredIds() {
@@ -359,6 +390,19 @@ function getBotFilteredIds() {
 
 function computeVisible() {
   const term = searchInput.value.toLowerCase().trim();
+
+  if (currentView === 'tiktok') {
+    const allSharers = Array.from(ttSharersMap.values()).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+    if (!term) {
+      visibleIds = allSharers.map(u => u.uniqueId);
+    } else {
+      visibleIds = allSharers
+        .filter(u => u.uniqueId.toLowerCase().includes(term) || (u.nickname || '').toLowerCase().includes(term))
+        .map(u => u.uniqueId);
+    }
+    return;
+  }
+
   const botFilter = filterToggle.checked;
 
   if (!term && !botFilter && !botFilterV2Enabled) { visibleIds = currentIds; }
@@ -367,14 +411,12 @@ function computeVisible() {
       const d = loadedDetailsMap.get(id);
       if (!d) return !term; 
 
-      // Bot Filter V1
       if (botFilter) {
         if (d.username === 'Unknown' && d.displayName === 'Unknown') return true;
         const sameName = d.username.toLowerCase() === d.displayName.toLowerCase();
         if (sameName) return false; 
       }
       
-      // Bot Filter V2
       if (botFilterV2Enabled) {
         if (botFilterV2Map.has(id) && botFilterV2Map.get(id) === true) {
           return false; 
@@ -396,9 +438,12 @@ function computeVisible() {
 }
 
 function setTargetCount() {
+  const totalCount = currentView === 'tiktok' ? ttSharersMap.size : currentIds.length;
   targetNum.innerText = visibleIds.length;
   targetWord.innerText = VIEWS[currentView].word;
-  targetTotal.innerText = visibleIds.length === currentIds.length ? '' : ` of ${currentIds.length}`;
+  targetTotal.innerText = visibleIds.length === totalCount ? '' : ` of ${totalCount}`;
+  const ttTabBadge = document.getElementById('tt-tab-count');
+  if (ttTabBadge) ttTabBadge.innerText = ttSharersMap.size;
   updateControls();
 }
 
@@ -409,26 +454,39 @@ function handleFilterChange() {
 
 function switchView(view) {
   if (view === currentView || !VIEWS[view]) return;
-  if (isProcessingMassAction) { showToast('Wait for the running job to finish.', 'warn'); return; }
+  if (isProcessingMassAction && view !== 'tiktok') { showToast('Wait for the running job to finish.', 'warn'); return; }
 
   currentView = view;
   hydrateToken++;
   mm2Token++; 
   botFilterV2Token++;
+
   for (const [name, cfg] of Object.entries(VIEWS)) {
     const on = name === view;
     document.getElementById(cfg.tab).classList.toggle('is-active', on);
     document.getElementById(cfg.actionsRow).style.display = on ? 'flex' : 'none';
   }
+
+  const isTikTok = view === 'tiktok';
+  document.getElementById('roblox-auto-row').style.display = isTikTok ? 'none' : 'flex';
+  document.getElementById('bot-filter-v1-label').style.display = isTikTok ? 'none' : 'inline-flex';
+  document.getElementById('bot-filter-v2-label').style.display = isTikTok ? 'none' : 'inline-flex';
+  document.getElementById('mm2-filter-label').style.display = isTikTok ? 'none' : 'inline-flex';
+
   emptyTitle.innerText = VIEWS[view].emptyTitle;
   emptyBody.innerText  = VIEWS[view].emptyBody;
 
-  currentIds = [];
-  markedIds.clear();
   currentPage = 1;
   renderMm2Note(0, 0);
-  render();
-  loadList();
+
+  if (isTikTok) {
+    render();
+  } else {
+    currentIds = [];
+    markedIds.clear();
+    render();
+    loadList();
+  }
 }
 
 function checkAuth() {
@@ -436,7 +494,8 @@ function checkAuth() {
     loginSection.style.display = 'none';
     dashboardSection.style.display = 'block';
     warmBackend();
-    if (currentIds.length === 0) loadList();
+    initTikTokSSE();
+    if (currentIds.length === 0 && currentView !== 'tiktok') loadList();
   } else {
     loginSection.style.display = 'block';
     dashboardSection.style.display = 'none';
@@ -458,13 +517,14 @@ function saveCookie() {
 function logout() { localStorage.removeItem('nexusSession'); location.reload(); }
 
 function manualRefresh() {
-  if (isProcessingMassAction) return;
+  if (isProcessingMassAction || currentView === 'tiktok') return;
   currentIds = []; markedIds.clear(); currentPage = 1;
   render();
   loadList({ fresh: true });
 }
 
 async function loadList({ fresh = false, quiet = false } = {}) {
+  if (currentView === 'tiktok') return;
   const view = currentView;
   const token = ++hydrateToken;
   const t0 = performance.now();
@@ -527,15 +587,153 @@ async function hydrateAll(ids, token) {
   await Promise.all(Array.from({ length: HYDRATE_LANES }, lane));
 }
 
+// ---- TIKTOK LIVE LOGIC ----
+function initTikTokSSE() {
+  if (ttEventSource) ttEventSource.close();
+  const savedUser = localStorage.getItem('nexusTikTokUser');
+  if (savedUser) document.getElementById('tt-username-input').value = savedUser;
+
+  ttEventSource = new EventSource(`${BACKEND_URL}/api/tiktok/stream`);
+
+  ttEventSource.onmessage = (event) => {
+    try {
+      const data = JSON.parse(event.data);
+      if (data.type === 'INIT') {
+        ttState = data.state || { connected: false };
+        ttSharersMap.clear();
+        (data.sharers || []).forEach(u => ttSharersMap.set(u.uniqueId, u));
+        updateTikTokStatusUI();
+        queueRender();
+      } else if (data.type === 'STATUS') {
+        ttState = data.state || { connected: false };
+        updateTikTokStatusUI();
+      } else if (data.type === 'SHARE') {
+        ttSharersMap.set(data.user.uniqueId, data.user);
+        const ttTabBadge = document.getElementById('tt-tab-count');
+        if (ttTabBadge) ttTabBadge.innerText = ttSharersMap.size;
+        if (currentView === 'tiktok') queueRender();
+      } else if (data.type === 'CLEAR') {
+        ttSharersMap.clear();
+        const ttTabBadge = document.getElementById('tt-tab-count');
+        if (ttTabBadge) ttTabBadge.innerText = '0';
+        if (currentView === 'tiktok') queueRender();
+      }
+    } catch (e) {}
+  };
+}
+
+function updateTikTokStatusUI() {
+  const wrap = document.getElementById('tt-live-status');
+  const txt = document.getElementById('tt-live-status-text');
+  if (!wrap || !txt) return;
+
+  wrap.classList.toggle('is-live', !!ttState.connected);
+  wrap.classList.toggle('is-waiting', !ttState.connected && !!ttState.error);
+
+  if (ttState.connected) {
+    txt.innerText = `Listening to @${ttState.username}`;
+    const inp = document.getElementById('tt-username-input');
+    if (inp && !inp.value) inp.value = `@${ttState.username}`;
+  } else if (ttState.error) {
+    txt.innerText = `Error: ${ttState.error}`;
+  } else {
+    txt.innerText = 'Listener offline';
+  }
+}
+
+async function connectTikTokLive() {
+  const input = document.getElementById('tt-username-input');
+  const username = input.value.trim();
+  if (!username) {
+    showToast('Enter a TikTok @username first.', 'warn');
+    return;
+  }
+  localStorage.setItem('nexusTikTokUser', username);
+  showToast(`Connecting to @${username.replace(/^@/, '')} LIVE…`, 'info');
+
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/tiktok/connect`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      showToast(data.error || 'Could not connect to TikTok LIVE.', 'error');
+      return;
+    }
+    showToast(`Listening for shares on @${data.state.username}!`, 'success');
+  } catch (e) {
+    showToast('Could not reach backend.', 'error');
+  }
+}
+
+async function disconnectTikTokLive() {
+  try {
+    await fetch(`${BACKEND_URL}/api/tiktok/disconnect`, { method: 'POST' });
+    showToast('Stopped TikTok listener.', 'info');
+  } catch (e) {
+    showToast('Could not reach backend.', 'error');
+  }
+}
+
+async function clearTikTokSharers() {
+  if (ttSharersMap.size === 0) return;
+  if (!confirm(`Clear all ${ttSharersMap.size} collected TikTok sharers?`)) return;
+  try {
+    await fetch(`${BACKEND_URL}/api/tiktok/clear`, { method: 'POST' });
+    showToast('Cleared TikTok share list.', 'success');
+  } catch (e) {
+    showToast('Could not reach backend.', 'error');
+  }
+}
+
+function copyAllTikTokSharers() {
+  if (ttSharersMap.size === 0) {
+    showToast('No TikTok sharers to copy yet.', 'warn');
+    return;
+  }
+  const list = Array.from(ttSharersMap.keys()).join('\n');
+  navigator.clipboard?.writeText(list);
+  showToast(`Copied ${ttSharersMap.size} TikTok usernames!`, 'success');
+}
+
+function copySingleTikTokUser(uniqueId) {
+  navigator.clipboard?.writeText(uniqueId);
+  showToast(`Copied @${uniqueId}`, 'success');
+}
+
+function buildTikTokCard(uniqueId) {
+  const u = ttSharersMap.get(uniqueId);
+  const card = document.createElement('div');
+  card.className = 'user-card';
+  if (!u) return card;
+
+  card.innerHTML = `
+    <span class="tt-share-pill">${u.shareCount}× SHARED</span>
+    <div class="card-reticle"></div>
+    <div class="pfp-wrap">
+      <img src="${esc(u.profilePictureUrl)}" class="pfp" alt="" loading="lazy" decoding="async">
+    </div>
+    <div class="names">
+      <h2 title="${esc(u.nickname)}">${esc(u.nickname)}</h2>
+      <p title="@${esc(u.uniqueId)}">@${esc(u.uniqueId)}</p>
+    </div>
+    <div class="actions">
+      <button class="btn btn-accept" onclick="copySingleTikTokUser('${esc(u.uniqueId)}')">Copy @User</button>
+    </div>`;
+  return card;
+}
+
 // ---- BOT FILTER V2 HYDRATION ----
 function toggleBotFilterV2() {
   botFilterV2Enabled = botFilterV2Toggle.checked;
   localStorage.setItem('nexusBotFilterV2', botFilterV2Enabled ? '1' : '0');
 
-  currentPage = 1; // Reset to page 1 when filtering
+  currentPage = 1;
 
   if (botFilterV2Enabled) {
-    render(); // Update UI instantly
+    render();
     hydrateBotFilterV2(currentIds, ++botFilterV2Token);
   } else {
     botFilterV2Token++; 
@@ -557,7 +755,6 @@ async function hydrateBotFilterV2(ids, token) {
       if (token !== botFilterV2Token) return;
       const id = needed[next++];
       try {
-        // Fetching through roproxy to bypass browser CORS restrictions to Roblox API
         const res = await fetch(`https://avatar.roproxy.com/v1/users/${id}/avatar`);
         if (res.ok) {
           const data = await res.json();
@@ -570,7 +767,7 @@ async function hydrateBotFilterV2(ids, token) {
       } catch (e) {
         botFilterV2Map.set(id, false);
       }
-      await new Promise(r => setTimeout(r, 150)); // Throttling for proxy stability
+      await new Promise(r => setTimeout(r, 150));
     }
   };
 
@@ -704,7 +901,9 @@ function render() {
 
   const pageIds = visibleIds.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
   const frag = document.createDocumentFragment();
-  for (const id of pageIds) frag.appendChild(buildCard(id));
+  for (const id of pageIds) {
+    frag.appendChild(currentView === 'tiktok' ? buildTikTokCard(id) : buildCard(id));
+  }
   container.replaceChildren(frag);
 
   pageIndicator.innerHTML = `PAGE <b>${String(currentPage).padStart(2,'0')}</b> / ${String(totalPages).padStart(2,'0')}`;
@@ -762,7 +961,7 @@ async function handleAction(userId, action) {
 
   const index = currentIds.indexOf(userId);
   currentIds = currentIds.filter(id => id !== userId);
-  markedIds.delete(userId); // Ensure it's removed from marked list if acted upon manually
+  markedIds.delete(userId);
   render();
 
   try {
@@ -952,7 +1151,7 @@ async function massActionAll(action) {
   const targets = [...visibleIds];
   const scope = targets.length === currentIds.length ? '' : ' (filtered)';
   if (!confirm(`${action.toUpperCase()} all ${targets.length} requests${scope}?\n\nRuns in the background — you can keep using the page.`)) return;
-  markedIds.clear(); // Mass actions process everything shown; let's clear markers
+  markedIds.clear();
   startJob(action, targets);
 }
 
@@ -989,19 +1188,13 @@ async function blacklistAllFriends() {
     const result = await response.json();
     if (result.success) {
       showToast(`Blacklisted ${result.addedCount ?? friendIds.length} friends locally.`, 'success');
-      
-      // Update Export Data view if it is open
-      if (transferMode === 'export' && exportModal.style.display === 'flex') {
-          fetchExportData();
-      }
-      
-      // Just in case they are also in the current view queue
+      if (transferMode === 'export' && exportModal.style.display === 'flex') fetchExportData();
       const gone = new Set(friendIds);
       currentIds = currentIds.filter(id => !gone.has(id));
       markedIds.forEach(id => { if (gone.has(id)) markedIds.delete(id); });
       render();
     } else {
-        showToast('Failed to add friends to blocklist.', 'error');
+      showToast('Failed to add friends to blocklist.', 'error');
     }
   } catch (e) { showToast('Could not reach the backend.', 'error'); }
 }
@@ -1057,13 +1250,10 @@ async function blacklistPage() {
     const result = await response.json();
     if (result.success) {
       showToast(`Blacklisted ${result.addedCount ?? pageIds.length} targets from this page`, 'success');
-      
       const gone = new Set(pageIds);
       currentIds = currentIds.filter(id => !gone.has(id));
-      
       const maxPage = Math.max(1, Math.ceil(currentIds.length / PAGE_SIZE));
       if (currentPage > maxPage) currentPage = maxPage;
-      
       markedIds.forEach(id => { if (gone.has(id)) markedIds.delete(id); });
       render();
     }
@@ -1096,128 +1286,120 @@ async function blacklistFiltered() {
 }
 
 async function blacklistMarked() {
-    if (markedIds.size === 0) return;
-    const targets = Array.from(markedIds);
-    if (!confirm(`Hide ${targets.length} manually marked targets locally? (This does not decline them on Roblox)`)) return;
-    try {
-        const response = await fetch(`${BACKEND_URL}/api/blocklist/add`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userIds: targets })
-        });
-        const result = await response.json();
-        if (result.success) {
-            showToast(`Blacklisted ${result.addedCount ?? targets.length} marked targets`, 'success');
-            const gone = new Set(targets);
-            currentIds = currentIds.filter(id => !gone.has(id));
-            markedIds.clear();
-            render();
-        }
-    } catch (err) { showToast('Failed to communicate with backend', 'error'); }
+  if (markedIds.size === 0) return;
+  const targets = Array.from(markedIds);
+  if (!confirm(`Hide ${targets.length} manually marked targets locally? (This does not decline them on Roblox)`)) return;
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/blocklist/add`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userIds: targets })
+    });
+    const result = await response.json();
+    if (result.success) {
+      showToast(`Blacklisted ${result.addedCount ?? targets.length} marked targets`, 'success');
+      const gone = new Set(targets);
+      currentIds = currentIds.filter(id => !gone.has(id));
+      markedIds.clear();
+      render();
+    }
+  } catch (err) { showToast('Failed to communicate with backend', 'error'); }
 }
 
 async function addSingleBlacklist() {
-    const input = document.getElementById('add-blocklist-input');
-    const id = input.value.trim();
-    if (!id || !/^\d+$/.test(id)) {
-        showToast('Please enter a valid numerical ID.', 'warn');
-        return;
-    }
+  const input = document.getElementById('add-blocklist-input');
+  const id = input.value.trim();
+  if (!id || !/^\d+$/.test(id)) {
+    showToast('Please enter a valid numerical ID.', 'warn');
+    return;
+  }
 
-    try {
-        const response = await fetch(`${BACKEND_URL}/api/blocklist/add`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userIds: [id] })
-        });
-        const result = await response.json();
-        if (result.success) {
-            showToast(`Added ${id} to the blocklist.`, 'success');
-            input.value = '';
-            
-            // Remove it from active views if it's there
-            currentIds = currentIds.filter(cid => cid != id);
-            markedIds.delete(Number(id));
-            
-            // Refresh the export modal list right away
-            if (transferMode === 'export') {
-                fetchExportData();
-            }
-            
-            if (currentView === 'requests') render();
-        }
-    } catch (err) { showToast('Failed to communicate with backend', 'error'); }
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/blocklist/add`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userIds: [id] })
+    });
+    const result = await response.json();
+    if (result.success) {
+      showToast(`Added ${id} to the blocklist.`, 'success');
+      input.value = '';
+      currentIds = currentIds.filter(cid => cid != id);
+      markedIds.delete(Number(id));
+      if (transferMode === 'export') fetchExportData();
+      if (currentView === 'requests') render();
+    }
+  } catch (err) { showToast('Failed to communicate with backend', 'error'); }
 }
 
 // ---- IMPORT & EXPORT LOGIC ----
 let transferMode = 'export';
 
 function toggleTransferMode(mode) {
-    transferMode = mode;
-    document.getElementById('tab-export').classList.toggle('is-active', mode === 'export');
-    document.getElementById('tab-import').classList.toggle('is-active', mode === 'import');
-    
-    const btn = document.getElementById('btn-copy-import');
-    const ta = document.getElementById('export-textarea');
-    
-    if (mode === 'export') {
-        btn.innerText = 'Copy';
-        btn.onclick = copyExportText;
-        ta.readOnly = true;
-        fetchExportData(); 
-    } else {
-        btn.innerText = 'Import Data';
-        btn.onclick = importBlocklistData;
-        ta.readOnly = false;
-        ta.value = '';
-        ta.placeholder = 'Paste your previously exported data here to import...';
-    }
+  transferMode = mode;
+  document.getElementById('tab-export').classList.toggle('is-active', mode === 'export');
+  document.getElementById('tab-import').classList.toggle('is-active', mode === 'import');
+  
+  const btn = document.getElementById('btn-copy-import');
+  const ta = document.getElementById('export-textarea');
+  
+  if (mode === 'export') {
+    btn.innerText = 'Copy';
+    btn.onclick = copyExportText;
+    ta.readOnly = true;
+    fetchExportData(); 
+  } else {
+    btn.innerText = 'Import Data';
+    btn.onclick = importBlocklistData;
+    ta.readOnly = false;
+    ta.value = '';
+    ta.placeholder = 'Paste your previously exported data here to import...';
+  }
 }
 
 async function fetchExportData() {
-    try {
-      const response = await fetch(`${BACKEND_URL}/api/blocklist`);
-      const data = await response.json();
-      exportTextarea.value = data.ids.map(id => `"${id}",`).join('\n');
-    } catch (err) { showToast('Blocklist fetch failed', 'error'); }
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/blocklist`);
+    const data = await response.json();
+    exportTextarea.value = data.ids.map(id => `"${id}",`).join('\n');
+  } catch (err) { showToast('Blocklist fetch failed', 'error'); }
 }
 
 function openBlocklistModal() {
-    exportModal.style.display = 'flex';
-    toggleTransferMode('export');
+  exportModal.style.display = 'flex';
+  toggleTransferMode('export');
 }
 
 async function importBlocklistData() {
-    const text = document.getElementById('export-textarea').value;
-    const matches = text.match(/\d+/g);
-    
-    if (!matches || matches.length === 0) {
-        showToast('No valid IDs found in the text.', 'warn');
-        return;
-    }
-    
-    const uniqueIds = [...new Set(matches)];
-    
-    if (!confirm(`Found ${uniqueIds.length} unique IDs. Import them to the server?`)) return;
+  const text = document.getElementById('export-textarea').value;
+  const matches = text.match(/\d+/g);
+  
+  if (!matches || matches.length === 0) {
+    showToast('No valid IDs found in the text.', 'warn');
+    return;
+  }
+  
+  const uniqueIds = [...new Set(matches)];
+  if (!confirm(`Found ${uniqueIds.length} unique IDs. Import them to the server?`)) return;
 
-    try {
-        const response = await fetch(`${BACKEND_URL}/api/blocklist/add`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userIds: uniqueIds })
-        });
-        const result = await response.json();
-        if (result.success) {
-            showToast(`Successfully imported ${result.addedCount} new IDs.`, 'success');
-            document.getElementById('export-textarea').value = '';
-            toggleTransferMode('export'); 
-            if (currentView === 'requests') manualRefresh();
-        } else {
-            showToast('Failed to import IDs.', 'error');
-        }
-    } catch (err) {
-        showToast('Failed to communicate with backend.', 'error');
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/blocklist/add`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userIds: uniqueIds })
+    });
+    const result = await response.json();
+    if (result.success) {
+      showToast(`Successfully imported ${result.addedCount} new IDs.`, 'success');
+      document.getElementById('export-textarea').value = '';
+      toggleTransferMode('export'); 
+      if (currentView === 'requests') manualRefresh();
+    } else {
+      showToast('Failed to import IDs.', 'error');
     }
+  } catch (err) {
+    showToast('Failed to communicate with backend.', 'error');
+  }
 }
 
 function closeModal() { exportModal.style.display = 'none'; }
@@ -1351,13 +1533,13 @@ function toggleAutoSync() {
 
 async function autoSyncTick() {
   if (!autoSync) return;
-  if (!isProcessingMassAction && !document.hidden && session()) await loadList({ fresh: true, quiet: true });
+  if (!isProcessingMassAction && !document.hidden && session() && currentView !== 'tiktok') await loadList({ fresh: true, quiet: true });
   autoSyncTimer = setTimeout(autoSyncTick, AUTO_SYNC_MS);
 }
 
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) return;
-  if (autoSync && !isProcessingMassAction) loadList({ fresh: true, quiet: true });
+  if (autoSync && !isProcessingMassAction && currentView !== 'tiktok') loadList({ fresh: true, quiet: true });
   if (autoAccept && !activeJobId) scheduleAutoAccept(500);
 });
 
