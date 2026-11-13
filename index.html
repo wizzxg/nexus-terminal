@@ -588,10 +588,19 @@ async function hydrateAll(ids, token) {
 }
 
 // ---- TIKTOK LIVE LOGIC ----
+let ttPollTimer = null;
+
 function initTikTokSSE() {
   if (ttEventSource) ttEventSource.close();
   const savedUser = localStorage.getItem('nexusTikTokUser');
   if (savedUser) document.getElementById('tt-username-input').value = savedUser;
+
+  fetchTikTokSnapshot();
+  if (!ttPollTimer) {
+    ttPollTimer = setInterval(() => {
+      if (currentView === 'tiktok' || ttState.connected) fetchTikTokSnapshot();
+    }, 2000);
+  }
 
   ttEventSource = new EventSource(`${BACKEND_URL}/api/tiktok/stream`);
 
@@ -620,6 +629,26 @@ function initTikTokSSE() {
       }
     } catch (e) {}
   };
+}
+
+async function fetchTikTokSnapshot() {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/tiktok/sharers`);
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.state) {
+      ttState = data.state;
+      updateTikTokStatusUI();
+    }
+    if (Array.isArray(data.sharers)) {
+      const prevSize = ttSharersMap.size;
+      ttSharersMap.clear();
+      data.sharers.forEach(u => ttSharersMap.set(u.uniqueId, u));
+      const ttTabBadge = document.getElementById('tt-tab-count');
+      if (ttTabBadge) ttTabBadge.innerText = ttSharersMap.size;
+      if (currentView === 'tiktok' || ttSharersMap.size !== prevSize) queueRender();
+    }
+  } catch (e) {}
 }
 
 function updateTikTokStatusUI() {
@@ -659,10 +688,14 @@ async function connectTikTokLive() {
     });
     const data = await res.json();
     if (!res.ok) {
+      ttState = { connected: false, error: data.error || 'Connection failed' };
+      updateTikTokStatusUI();
       showToast(data.error || 'Could not connect to TikTok LIVE.', 'error');
       return;
     }
-    showToast(`Listening for shares on @${data.state.username}!`, 'success');
+    ttState = data.state || { connected: true, username: username.replace(/^@/, '') };
+    updateTikTokStatusUI();
+    showToast(`Listening for shares on @${ttState.username}!`, 'success');
   } catch (e) {
     showToast('Could not reach backend.', 'error');
   }
@@ -671,6 +704,8 @@ async function connectTikTokLive() {
 async function disconnectTikTokLive() {
   try {
     await fetch(`${BACKEND_URL}/api/tiktok/disconnect`, { method: 'POST' });
+    ttState = { connected: false, username: null, roomId: null, error: null };
+    updateTikTokStatusUI();
     showToast('Stopped TikTok listener.', 'info');
   } catch (e) {
     showToast('Could not reach backend.', 'error');
@@ -682,6 +717,8 @@ async function clearTikTokSharers() {
   if (!confirm(`Clear all ${ttSharersMap.size} collected TikTok sharers?`)) return;
   try {
     await fetch(`${BACKEND_URL}/api/tiktok/clear`, { method: 'POST' });
+    ttSharersMap.clear();
+    queueRender();
     showToast('Cleared TikTok share list.', 'success');
   } catch (e) {
     showToast('Could not reach backend.', 'error');
@@ -723,55 +760,6 @@ function buildTikTokCard(uniqueId) {
       <button class="btn btn-accept" onclick="copySingleTikTokUser('${esc(u.uniqueId)}')">Copy @User</button>
     </div>`;
   return card;
-}
-
-// ---- BOT FILTER V2 HYDRATION ----
-function toggleBotFilterV2() {
-  botFilterV2Enabled = botFilterV2Toggle.checked;
-  localStorage.setItem('nexusBotFilterV2', botFilterV2Enabled ? '1' : '0');
-
-  currentPage = 1;
-
-  if (botFilterV2Enabled) {
-    render();
-    hydrateBotFilterV2(currentIds, ++botFilterV2Token);
-  } else {
-    botFilterV2Token++; 
-    render();
-  }
-}
-
-async function hydrateBotFilterV2(ids, token) {
-  const needed = ids.filter(id => !botFilterV2Map.has(id));
-  if (needed.length === 0) return;
-
-  const pageIds = visibleIds.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
-  const onScreen = new Set(pageIds);
-  needed.sort((a, b) => (onScreen.has(b) ? 1 : 0) - (onScreen.has(a) ? 1 : 0));
-
-  let next = 0;
-  const lane = async () => {
-    while (next < needed.length) {
-      if (token !== botFilterV2Token) return;
-      const id = needed[next++];
-      try {
-        const res = await fetch(`https://avatar.roproxy.com/v1/users/${id}/avatar`);
-        if (res.ok) {
-          const data = await res.json();
-          const wearsBotItem = data.assets && data.assets.some(a => BOT_ITEM_IDS.includes(a.id));
-          botFilterV2Map.set(id, wearsBotItem);
-          if (wearsBotItem) queueRender(); 
-        } else {
-          botFilterV2Map.set(id, false); 
-        }
-      } catch (e) {
-        botFilterV2Map.set(id, false);
-      }
-      await new Promise(r => setTimeout(r, 150));
-    }
-  };
-
-  await Promise.all(Array.from({ length: 3 }, lane));
 }
 
 // ---- MM2 HYDRATION ----
