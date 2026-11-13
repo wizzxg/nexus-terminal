@@ -977,7 +977,7 @@ async function blockAllListedTikTokUsers() {
       ttBlacklistSet = new Set((data.blacklist || []).map(u => u.toLowerCase()));
       ttBlacklistTa.value = (data.blacklist || []).join('\n');
       queueRender();
-      showToast(`Blocked ${data.blockedOnTikTokCount}/${lines.length} users on TikTok!`, 'success');
+      showToast(`Blocked ${data.blockedOnTikTokCount}/${lines.length} on TikTok${data.note ? ' (' + data.note + ')' : ''}`, data.blockedOnTikTokCount > 0 ? 'success' : 'warn');
     }
   } catch (e) {
     showToast('Failed to block listed users.', 'error');
