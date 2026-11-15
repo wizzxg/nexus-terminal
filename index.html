@@ -1729,6 +1729,89 @@ function copySingleTikTokUser(uniqueId) {
 }
 
 // ---- TIKTOK BLOCKING & BLACKLIST FUNCTIONS ----
+let activeTikTokJobId = null;
+
+async function cancelTikTokJob() {
+  if (!activeTikTokJobId) return;
+  try {
+    await fetch(`${BACKEND_URL}/api/tiktok/jobs/${activeTikTokJobId}`, { method: 'DELETE' });
+    showToast('Stopping TikTok block job…', 'info');
+  } catch (e) {
+    showToast('Could not cancel TikTok job.', 'error');
+  }
+}
+
+async function runTikTokBlockJobWithProgress(usernames) {
+  if (activeTikTokJobId) {
+    showToast('A TikTok block job is already running.', 'warn');
+    return;
+  }
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/tiktok/jobs/block`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ usernames })
+    });
+    const job = await res.json();
+    if (!res.ok) {
+      showToast(job.error || 'Could not start TikTok block job.', 'error');
+      return;
+    }
+
+    activeTikTokJobId = job.id;
+    usernames.forEach(u => ttBlacklistSet.add(u.toLowerCase()));
+    queueRender();
+
+    showToast(`Started blocking ${job.total} users on TikTok…`, 'info');
+
+    const poll = setInterval(async () => {
+      try {
+        const r = await fetch(`${BACKEND_URL}/api/tiktok/jobs/${job.id}`);
+        if (!r.ok) {
+          clearInterval(poll);
+          activeTikTokJobId = null;
+          return;
+        }
+        const state = await r.json();
+
+        const bar = ensureProgressBar();
+        const cancelBtn = document.getElementById('jp-cancel');
+        if (cancelBtn) {
+          cancelBtn.style.display = state.status === 'running' ? '' : 'none';
+          cancelBtn.onclick = cancelTikTokJob;
+        }
+
+        document.getElementById('jp-label').innerText =
+          `TikTok Block — ${state.processed} / ${state.total}` +
+          (state.currentUsername ? ` (@${state.currentUsername})` : '');
+        document.getElementById('jp-fill').style.width =
+          `${Math.round((state.processed / Math.max(1, state.total)) * 100)}%`;
+        document.getElementById('jp-meta').innerHTML =
+          `<span class="jp-rate">${state.blockedOnTikTokCount} blocked on TikTok</span> · ${state.failedCount} failed` +
+          (state.lastNote ? ` · ${esc(state.lastNote)}` : '');
+
+        if (state.status !== 'running') {
+          clearInterval(poll);
+          activeTikTokJobId = null;
+          if (cancelBtn) cancelBtn.onclick = cancelJob;
+          setTimeout(hideProgress, 4500);
+          fetchTikTokSnapshot();
+          showToast(
+            `Blocked ${state.blockedOnTikTokCount}/${state.total} users on TikTok!`,
+            state.blockedOnTikTokCount > 0 ? 'success' : 'warn'
+          );
+        }
+      } catch (e) {
+        clearInterval(poll);
+        activeTikTokJobId = null;
+      }
+    }, 1000);
+  } catch (e) {
+    activeTikTokJobId = null;
+    showToast('Could not reach backend.', 'error');
+  }
+}
+
 async function blockSingleTikTokUser(uniqueId) {
   try {
     const res = await fetch(`${BACKEND_URL}/api/tiktok/block`, {
@@ -1762,27 +1845,88 @@ async function blockAllTikTokSharers() {
     : `Add all ${targets.length} sharers to your TikTok blacklist? (Tip: Click "TikTok Account" to also block them on TikTok automatically)`;
   if (!confirm(msg)) return;
 
-  showToast(`Blocking ${targets.length} TikTok users…`, 'info');
+  await runTikTokBlockJobWithProgress(targets);
+}
+
+async function toggleTikTokAutoBlock() {
+  const enabled = document.getElementById('tt-autoblock-toggle').checked;
   try {
-    const res = await fetch(`${BACKEND_URL}/api/tiktok/block`, {
+    await fetch(`${BACKEND_URL}/api/tiktok/auto-block`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ usernames: targets })
+      body: JSON.stringify({ enabled })
+    });
+    ttAuth.autoBlockSharers = enabled;
+    showToast(
+      enabled
+        ? 'Auto-Block Sharers ON — anyone who shares will be blacklisted & blocked.'
+        : 'Auto-Block Sharers OFF.',
+      enabled ? 'success' : 'info'
+    );
+  } catch (e) {
+    showToast('Could not update Auto-Block setting.', 'error');
+  }
+}
+
+async function openTikTokBlacklistModal() {
+  ttBlacklistModal.style.display = 'flex';
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/tiktok/blacklist`);
+    const data = await res.json();
+    ttBlacklistTa.value = data.text || '';
+  } catch (e) {
+    ttBlacklistTa.value = Array.from(ttBlacklistSet).join('\n');
+  }
+}
+
+function closeTikTokBlacklistModal() {
+  ttBlacklistModal.style.display = 'none';
+}
+
+function copyTikTokBlacklistText() {
+  ttBlacklistTa.select();
+  navigator.clipboard?.writeText(ttBlacklistTa.value);
+  showToast('Copied TikTok blacklist to clipboard!', 'success');
+}
+
+async function saveTikTokBlacklistText() {
+  const text = ttBlacklistTa.value;
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/tiktok/blacklist/save`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text })
     });
     const data = await res.json();
     if (res.ok && data.success) {
-      targets.forEach(u => ttBlacklistSet.add(u.toLowerCase()));
+      ttBlacklistSet = new Set((data.usernames || []).map(u => u.toLowerCase()));
       queueRender();
-      showToast(
-        ttAuth.loggedIn
-          ? `Blocked ${data.blockedOnTikTokCount}/${targets.length} on TikTok${data.note ? ' (' + data.note + ')' : ''}`
-          : `Saved ${targets.length} usernames to TikTok blacklist!`,
-        data.blockedOnTikTokCount > 0 || !ttAuth.loggedIn ? 'success' : 'warn'
-      );
+      showToast(`Saved ${data.total} usernames (line-by-line) to TikTok Blacklist!`, 'success');
+      closeTikTokBlacklistModal();
     }
   } catch (e) {
-    showToast('Failed to block TikTok sharers.', 'error');
+    showToast('Could not save TikTok blacklist.', 'error');
   }
+}
+
+async function blockAllListedTikTokUsers() {
+  const lines = ttBlacklistTa.value
+    .split(/\r?\n/)
+    .map(s => s.trim().replace(/^@/, ''))
+    .filter(Boolean);
+
+  if (lines.length === 0) {
+    showToast('Type at least one username in the list first.', 'warn');
+    return;
+  }
+  if (!ttAuth.loggedIn) {
+    showToast('Log in via "TikTok Account" first so the site can block them on TikTok.', 'warn');
+    return;
+  }
+  if (!confirm(`Save and block all ${lines.length} listed usernames on your TikTok account?`)) return;
+
+  closeTikTokBlacklistModal();
+  await runTikTokBlockJobWithProgress(lines);
 }
 
 async function toggleTikTokAutoBlock() {
