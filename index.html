@@ -3,1969 +3,154 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NEXUS // Terminal — Enterprise Command Suite</title>
+<title>Roblox Tools - NEXUS</title>
 <link rel="icon" href="https://ibb.co/BKny7SJh">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://tr.rbxcdn.com">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
-
-:root {
-  --void: #05060b;
-  --void-deep: #030407;
-  --surface: #0a0d16;
-  --surface-2: #0f1320;
-  --surface-3: #161b2c;
-  --surface-4: #1d2438;
-  --surface-glass: rgba(12, 15, 26, 0.86);
-  --line: rgba(148, 163, 196, 0.09);
-  --line-2: rgba(148, 163, 196, 0.18);
-  --line-3: rgba(148, 163, 196, 0.28);
-  --line-bright: rgba(45, 226, 208, 0.38);
-  --text: #eef2f9;
-  --muted: #8b95af;
-  --faint: #555f78;
-  --cyan: #2de2d0;
-  --cyan-glow: rgba(45, 226, 208, 0.25);
-  --cyan-soft: rgba(45, 226, 208, 0.10);
-  --emerald: #10b981;
-  --emerald-soft: rgba(16, 185, 129, 0.12);
-  --red: #ff4769;
-  --red-soft: rgba(255, 71, 105, 0.11);
-  --amber: #f59e0b;
-  --amber-soft: rgba(245, 158, 11, 0.11);
-  --violet: #a78bfa;
-  --violet-soft: rgba(167, 139, 250, 0.11);
-  --r-xs: 4px;
-  --r-sm: 6px;
-  --r-md: 8px;
-  --r-lg: 12px;
-  --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
-  --sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  margin: 0;
-  min-height: 100vh;
-  color: var(--text);
-  font-family: var(--sans);
-  font-size: 14px;
-  line-height: 1.5;
-  background-color: var(--void);
-  background-image:
-    radial-gradient(
-      1100px 520px at 50% -15%,
-      rgba(45, 226, 208, 0.08),
-      transparent 65%
-    ),
-    radial-gradient(
-      800px 400px at 85% 10%,
-      rgba(167, 139, 250, 0.05),
-      transparent 60%
-    ),
-    linear-gradient(
-      180deg,
-      #070912 0%,
-      var(--void) 50%
-    );
-  background-attachment: fixed;
-  overflow-x: hidden;
-}
-
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.45;
-  background-image:
-    linear-gradient(
-      rgba(148, 163, 196, 0.03) 1px,
-      transparent 1px
-    ),
-    linear-gradient(
-      90deg,
-      rgba(148, 163, 196, 0.03) 1px,
-      transparent 1px
-    );
-  background-size: 36px 36px;
-  mask-image: radial-gradient(
-    ellipse 90% 65% at 50% 0%,
-    #000 35%,
-    transparent 85%
-  );
-}
-
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--void);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--surface-3);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #262f47;
-}
-
-:focus-visible {
-  outline: 1.5px solid var(--cyan);
-  outline-offset: 2px;
-}
-
-/* ==========================================================================
-   BUTTONS & CONTROLS
-   ========================================================================== */
-
-.btn {
-  font-family: var(--mono);
-  font-size: 10.5px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--muted);
-  background: linear-gradient(180deg, var(--surface-2), var(--surface));
-  border: 1px solid var(--line-2);
-  padding: 8px 13px;
-  border-radius: var(--r-xs);
-  cursor: pointer;
-  transition:
-    color 0.15s ease,
-    border-color 0.15s ease,
-    background 0.15s ease,
-    transform 0.1s ease,
-    box-shadow 0.15s ease;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  white-space: nowrap;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
-}
-
-.btn:hover:not(:disabled) {
-  color: var(--text);
-  border-color: rgba(148, 163, 196, 0.38);
-  background: var(--surface-3);
-  transform: translateY(-1px);
-}
-
-.btn:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.btn:disabled {
-  opacity: 0.32;
-  cursor: not-allowed;
-  color: var(--faint);
-}
-
-.btn-primary {
-  color: var(--cyan);
-  border-color: rgba(45, 226, 208, 0.32);
-  background: linear-gradient(
-    180deg,
-    rgba(45, 226, 208, 0.14),
-    rgba(45, 226, 208, 0.05)
-  );
-}
-
-.btn-primary:hover:not(:disabled) {
-  color: #031412;
-  background: var(--cyan);
-  border-color: var(--cyan);
-  box-shadow: 0 0 20px -4px var(--cyan-glow);
-}
-
-.btn-danger {
-  color: #ff6b86;
-  border-color: rgba(255, 71, 105, 0.28);
-  background: linear-gradient(
-    180deg,
-    rgba(255, 71, 105, 0.12),
-    rgba(255, 71, 105, 0.04)
-  );
-}
-
-.btn-danger:hover:not(:disabled) {
-  color: #fff;
-  background: var(--red);
-  border-color: var(--red);
-  box-shadow: 0 0 20px -4px rgba(255, 71, 105, 0.45);
-}
-
-.btn-violet {
-  color: var(--violet);
-  border-color: rgba(167, 139, 250, 0.28);
-  background: linear-gradient(
-    180deg,
-    rgba(167, 139, 250, 0.12),
-    rgba(167, 139, 250, 0.04)
-  );
-}
-
-.btn-violet:hover:not(:disabled) {
-  color: #0f0722;
-  background: var(--violet);
-  border-color: var(--violet);
-  box-shadow: 0 0 20px -4px rgba(167, 139, 250, 0.45);
-}
-
-.btn-warn {
-  color: var(--amber);
-  border-color: rgba(245, 158, 11, 0.28);
-  background: linear-gradient(
-    180deg,
-    rgba(245, 158, 11, 0.12),
-    rgba(245, 158, 11, 0.04)
-  );
-}
-
-.btn-warn:hover:not(:disabled) {
-  color: #180e00;
-  background: var(--amber);
-  border-color: var(--amber);
-  box-shadow: 0 0 20px -4px rgba(245, 158, 11, 0.4);
-}
-
-.btn-emerald {
-  color: var(--emerald);
-  border-color: rgba(16, 185, 129, 0.32);
-  background: linear-gradient(
-    180deg,
-    rgba(16, 185, 129, 0.14),
-    rgba(16, 185, 129, 0.05)
-  );
-}
-
-.btn-emerald:hover:not(:disabled) {
-  color: #021a11;
-  background: var(--emerald);
-  border-color: var(--emerald);
-  box-shadow: 0 0 20px -4px rgba(16, 185, 129, 0.45);
-}
-
-/* ==========================================================================
-   AUTHENTICATION / LOGIN PANEL
-   ========================================================================== */
-
-#login-section {
-  position: relative;
-  z-index: 1;
-  margin: 14vh auto 0;
-  width: 92%;
-  max-width: 430px;
-  background: linear-gradient(180deg, var(--surface-2), var(--surface));
-  border: 1px solid var(--line-2);
-  border-top: 2px solid var(--cyan);
-  border-radius: var(--r-md);
-  padding: 36px 32px 32px;
-  box-shadow:
-    0 32px 80px -24px rgba(0, 0, 0, 0.95),
-    0 0 40px -15px rgba(45, 226, 208, 0.12);
-}
-
-.login-mark {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 24px;
-}
-
-.login-mark .glyph {
-  color: var(--cyan);
-  font-size: 18px;
-  line-height: 1;
-  filter: drop-shadow(0 0 8px var(--cyan-glow));
-}
-
-.login-mark b {
-  font-family: var(--mono);
-  font-weight: 700;
-  letter-spacing: 0.2em;
-  font-size: 15px;
-}
-
-.login-mark span {
-  font-family: var(--mono);
-  color: var(--faint);
-  font-size: 11.5px;
-  letter-spacing: 0.14em;
-}
-
-#login-section h2 {
-  margin: 0 0 6px;
-  font-size: 18px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-}
-
-#login-section .sub {
-  margin: 0 0 22px;
-  color: var(--muted);
-  font-size: 13px;
-}
-
-.field-label {
-  font-family: var(--mono);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: var(--muted);
-  display: block;
-  margin-bottom: 8px;
-}
-
-#cookie-input {
-  width: 100%;
-  padding: 12px 14px;
-  background: var(--void);
-  color: var(--cyan);
-  border: 1px solid var(--line-2);
-  border-radius: var(--r-xs);
-  outline: none;
-  font-family: var(--mono);
-  font-size: 12.5px;
-  transition: border-color 0.15s, box-shadow 0.15s;
-}
-
-#cookie-input::placeholder {
-  color: #3a4257;
-}
-
-#cookie-input:focus {
-  border-color: var(--cyan);
-  box-shadow: 0 0 0 3px var(--cyan-soft);
-}
-
-.login-btn {
-  width: 100%;
-  padding: 12px;
-  margin-top: 18px;
-  font-size: 12px;
-}
-
-.login-warn {
-  margin-top: 18px;
-  padding: 12px;
-  background: rgba(245, 158, 11, 0.05);
-  border: 1px solid rgba(245, 158, 11, 0.18);
-  border-radius: var(--r-xs);
-  font-family: var(--mono);
-  font-size: 10.5px;
-  color: var(--muted);
-  line-height: 1.55;
-  display: flex;
-  gap: 9px;
-}
-
-.login-warn b {
-  color: var(--amber);
-  font-weight: 600;
-}
-
-/* ==========================================================================
-   MAIN DASHBOARD LAYOUT & TOP TELEMETRY BAR
-   ========================================================================== */
-
-#dashboard-section {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  max-width: 1480px;
-  margin: 0 auto;
-  padding: 0 24px 70px;
-}
-
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 20px 2px 14px;
-  flex-wrap: wrap;
-  gap: 14px;
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.brand-badge {
-  width: 28px;
-  height: 28px;
-  border-radius: var(--r-xs);
-  background: var(--cyan-soft);
-  border: 1px solid rgba(45, 226, 208, 0.35);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--cyan);
-  font-size: 14px;
-  box-shadow: 0 0 16px -4px var(--cyan-glow);
-}
-
-.brand b {
-  font-family: var(--mono);
-  font-weight: 700;
-  letter-spacing: 0.22em;
-  font-size: 15px;
-  color: var(--text);
-}
-
-.brand span {
-  font-family: var(--mono);
-  color: var(--faint);
-  font-size: 11.5px;
-  letter-spacing: 0.12em;
-}
-
-.telemetry-bar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.status-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--surface-2);
-  border: 1px solid var(--line-2);
-  padding: 6px 12px;
-  border-radius: var(--r-xs);
-  font-family: var(--mono);
-  font-size: 10.5px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--muted);
-  cursor: default;
-}
-
-.status-pill.clickable {
-  cursor: pointer;
-  transition: border-color 0.15s, color 0.15s;
-}
-
-.status-pill.clickable:hover {
-  border-color: var(--cyan);
-  color: var(--text);
-}
-
-.status-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--cyan);
-  box-shadow: 0 0 8px var(--cyan);
-  animation: pulse 2.4s infinite;
-}
-
-.status-dot.offline {
-  background: var(--faint);
-  box-shadow: none;
-  animation: none;
-}
-
-.status-dot.live {
-  background: var(--emerald);
-  box-shadow: 0 0 8px var(--emerald);
-}
-
-.status-dot.warn {
-  background: var(--amber);
-  box-shadow: 0 0 8px var(--amber);
-}
-
-@keyframes pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(45, 226, 208, 0.5);
-  }
-  70% {
-    box-shadow: 0 0 0 6px rgba(45, 226, 208, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(45, 226, 208, 0);
-  }
-}
-
-/* ==========================================================================
-   STICKY COMMAND DECK & SEGMENTED NAVIGATION
-   ========================================================================== */
-
-.sticky-header {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  padding: 8px 0 14px;
-  background: linear-gradient(180deg, var(--void) 65%, transparent);
-}
-
-.deck {
-  background: var(--surface-glass);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  border: 1px solid var(--line-2);
-  border-radius: var(--r-md);
-  box-shadow:
-    0 20px 50px -20px rgba(0, 0, 0, 0.85),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  overflow: hidden;
-}
-
-.deck-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  flex-wrap: wrap;
-}
-
-.deck-row + .deck-row {
-  border-top: 1px solid var(--line);
-  background: rgba(7, 9, 16, 0.45);
-}
-
-.view-tabs {
-  display: inline-flex;
-  background: var(--void);
-  border: 1px solid var(--line-2);
-  border-radius: var(--r-sm);
-  padding: 3px;
-  gap: 3px;
-  flex: none;
-}
-
-.vtab {
-  font-family: var(--mono);
-  font-size: 10.5px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--muted);
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: var(--r-xs);
-  padding: 7px 13px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  white-space: nowrap;
-}
-
-.vtab:hover {
-  color: var(--text);
-}
-
-.vtab.is-active {
-  color: var(--cyan);
-  background: var(--cyan-soft);
-  border-color: rgba(45, 226, 208, 0.3);
-  box-shadow: 0 0 14px -4px var(--cyan-glow);
-}
-
-.vtab-count {
-  font-size: 9.5px;
-  padding: 1px 6px;
-  border-radius: 3px;
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--text);
-}
-
-.vtab.is-active .vtab-count {
-  background: rgba(45, 226, 208, 0.2);
-  color: var(--cyan);
-}
-
-/* ==========================================================================
-   SEARCH INPUTS, TOGGLES & TELEMETRY READOUTS
-   ========================================================================== */
-
-.search-wrap {
-  position: relative;
-  flex: 1;
-  min-width: 200px;
-}
-
-.search-wrap svg {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--faint);
-  pointer-events: none;
-}
-
-#search-input,
-#tt-username-input,
-#tt-quick-block-input {
-  width: 100%;
-  padding: 9px 13px 9px 36px;
-  background: var(--void);
-  color: var(--text);
-  border: 1px solid var(--line-2);
-  border-radius: var(--r-xs);
-  outline: none;
-  font-family: var(--sans);
-  font-size: 13px;
-  transition: border-color 0.15s, box-shadow 0.15s;
-}
-
-#search-input::placeholder,
-#tt-username-input::placeholder,
-#tt-quick-block-input::placeholder {
-  color: var(--faint);
-}
-
-#search-input:focus,
-#tt-username-input:focus,
-#tt-quick-block-input:focus {
-  border-color: var(--cyan);
-  box-shadow: 0 0 0 3px var(--cyan-soft);
-}
-
-#tt-username-input {
-  padding-left: 12px;
-  width: 205px;
-  flex: none;
-  font-family: var(--mono);
-  font-size: 12px;
-}
-
-#tt-quick-block-input {
-  padding-left: 12px;
-  width: 195px;
-  flex: none;
-  font-family: var(--mono);
-  font-size: 12px;
-}
-
-.toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  cursor: pointer;
-  user-select: none;
-  font-family: var(--mono);
-  font-size: 10.5px;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--muted);
-  white-space: nowrap;
-  padding: 4px 8px;
-  border-radius: var(--r-xs);
-  transition: background 0.15s, color 0.15s;
-}
-
-.toggle:hover {
-  color: var(--text);
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.toggle input {
-  position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.track {
-  width: 34px;
-  height: 18px;
-  border-radius: 10px;
-  background: var(--void);
-  border: 1px solid var(--line-2);
-  position: relative;
-  transition: all 0.18s ease;
-  flex: none;
-}
-
-.track::after {
-  content: "";
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: var(--faint);
-  transition: transform 0.18s ease, background 0.18s ease;
-}
-
-.toggle input:checked + .track {
-  background: var(--cyan-soft);
-  border-color: var(--cyan);
-}
-
-.toggle input:checked + .track::after {
-  transform: translateX(16px);
-  background: var(--cyan);
-  box-shadow: 0 0 6px var(--cyan);
-}
-
-.deck-row.auto-row {
-  gap: 16px;
-}
-
-.auto-eyebrow {
-  font-family: var(--mono);
-  font-size: 9.5px;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--cyan);
-  background: var(--cyan-soft);
-  border: 1px solid rgba(45, 226, 208, 0.22);
-  padding: 3px 8px;
-  border-radius: 4px;
-  white-space: nowrap;
-}
-
-.auto-status {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-left: auto;
-  font-family: var(--mono);
-  font-size: 10.5px;
-  letter-spacing: 0.06em;
-  color: var(--faint);
-  background: var(--void);
-  border: 1px solid var(--line);
-  padding: 5px 11px;
-  border-radius: var(--r-xs);
-  white-space: nowrap;
-}
-
-.auto-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--faint);
-  flex: none;
-}
-
-.auto-status.is-live {
-  color: var(--cyan);
-  border-color: rgba(45, 226, 208, 0.28);
-}
-
-.auto-status.is-live .auto-dot {
-  background: var(--cyan);
-  animation: pulse 2.4s infinite;
-}
-
-.auto-status.is-waiting {
-  color: var(--amber);
-  border-color: rgba(245, 158, 11, 0.28);
-}
-
-.auto-status.is-waiting .auto-dot {
-  background: var(--amber);
-  animation: pulse 1.6s infinite;
-}
-
-.readout {
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--muted);
-  background: var(--void);
-  border: 1px solid var(--line-2);
-  padding: 7px 12px;
-  border-radius: var(--r-xs);
-  white-space: nowrap;
-}
-
-.readout #target-num {
-  color: var(--cyan);
-  font-weight: 700;
-  font-size: 13px;
-}
-
-.readout .of-total {
-  color: var(--faint);
-  text-transform: none;
-  letter-spacing: 0.06em;
-}
-
-.deck-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.deck-actions .divider {
-  width: 1px;
-  height: 20px;
-  background: var(--line-2);
-  margin: 0 4px;
-}
-
-.mm2-note {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  margin-left: auto;
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--violet);
-  background: var(--violet-soft);
-  border: 1px solid rgba(167, 139, 250, 0.25);
-  padding: 4px 10px;
-  border-radius: var(--r-xs);
-  white-space: nowrap;
-}
-
-.mm2-note .mm2-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--violet);
-  animation: pulse 1.6s infinite;
-}
-
-/* ==========================================================================
-   TIKTOK LIVE METRICS SUB-BAR
-   ========================================================================== */
-
-#tt-metrics-bar {
-  display: none;
-  grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
-  gap: 10px;
-  margin-top: 12px;
-}
-
-.metric-tile {
-  background: linear-gradient(180deg, var(--surface-2), var(--surface));
-  border: 1px solid var(--line-2);
-  border-radius: var(--r-sm);
-  padding: 10px 14px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.metric-tile .m-label {
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-.metric-tile .m-val {
-  font-family: var(--mono);
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--cyan);
-}
-
-.metric-tile .m-val.violet {
-  color: var(--violet);
-}
-
-.metric-tile .m-val.emerald {
-  color: var(--emerald);
-}
-
-.metric-tile .m-val.red {
-  color: var(--red);
-}
-
-/* ==========================================================================
-   TARGET CARDS GRID & COMPACT LIST MODE
-   ========================================================================== */
-
-#requests-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 14px;
-  margin-top: 18px;
-}
-
-#requests-container.compact-mode {
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 10px;
-}
-
-.user-card {
-  position: relative;
-  background: linear-gradient(180deg, var(--surface-2) 0%, var(--surface) 100%);
-  border: 1px solid var(--line-2);
-  border-radius: var(--r-sm);
-  padding: 22px 16px 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  overflow: hidden;
-  transition:
-    transform 0.16s ease,
-    border-color 0.16s ease,
-    box-shadow 0.16s ease,
-    opacity 0.15s;
-  box-shadow:
-    0 10px 28px -18px rgba(0, 0, 0, 0.85),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
-}
-
-#requests-container.compact-mode .user-card {
-  flex-direction: row;
-  text-align: left;
-  padding: 12px 14px;
-  gap: 12px;
-}
-
-.user-card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-.user-card:hover {
-  border-color: rgba(45, 226, 208, 0.38);
-  transform: translateY(-2px);
-  box-shadow:
-    0 20px 38px -20px rgba(0, 0, 0, 0.95),
-    0 0 22px -8px rgba(45, 226, 208, 0.18);
-}
-
-.user-card:hover::before {
-  opacity: 1;
-}
-
-.user-card.is-pending {
-  opacity: 0.28;
-  pointer-events: none;
-}
-
-/* CHECKBOX */
-.card-checkbox {
-  position: absolute;
-  top: 11px;
-  left: 11px;
-  z-index: 10;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0.65;
-  transition: opacity 0.18s;
-}
-
-.user-card:hover .card-checkbox,
-.card-checkbox:has(input:checked) {
-  opacity: 1;
-}
-
-.card-checkbox input {
-  position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.check-box {
-  width: 17px;
-  height: 17px;
-  background: var(--void);
-  border: 1px solid var(--line-2);
-  border-radius: 3px;
-  transition: all 0.15s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.card-checkbox input:checked + .check-box {
-  background: var(--cyan);
-  border-color: var(--cyan);
-  box-shadow: 0 0 10px var(--cyan-glow);
-}
-
-.card-checkbox input:checked + .check-box::after {
-  content: "✓";
-  color: #031412;
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.card-checkbox:hover .check-box {
-  border-color: var(--cyan);
-}
-
-/* TIKTOK SHARE PILL */
-.tt-share-pill {
-  font-family: var(--mono);
-  font-size: 9.5px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--cyan);
-  background: var(--cyan-soft);
-  border: 1px solid rgba(45, 226, 208, 0.32);
-  padding: 2px 7px;
-  border-radius: 3px;
-  position: absolute;
-  top: 10px;
-  right: 10px;
-}
-
-.tt-time-pill {
-  font-family: var(--mono);
-  font-size: 9px;
-  color: var(--faint);
-  position: absolute;
-  top: 12px;
-  left: 34px;
-}
-
-.pfp-wrap {
-  position: relative;
-  width: 74px;
-  height: 74px;
-  margin-bottom: 12px;
-  flex: none;
-}
-
-#requests-container.compact-mode .pfp-wrap {
-  width: 46px;
-  height: 46px;
-  margin-bottom: 0;
-}
-
-.pfp {
-  width: 100%;
-  height: 100%;
-  border-radius: 10px;
-  background: var(--void);
-  border: 1px solid var(--line-2);
-  padding: 2px;
-  object-fit: cover;
-  display: block;
-  transition: border-color 0.2s, transform 0.2s;
-}
-
-.user-card:hover .pfp {
-  border-color: rgba(45, 226, 208, 0.45);
-  transform: scale(1.03);
-}
-
-.names {
-  width: 100%;
-  margin-bottom: 14px;
-  overflow: hidden;
-}
-
-#requests-container.compact-mode .names {
-  margin-bottom: 0;
-  flex: 1;
-}
-
-.names h2 {
-  margin: 0;
-  font-size: 14.5px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.names p {
-  margin: 4px auto 0;
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: inline-block;
-  max-width: 100%;
-  padding: 1px 7px;
-  border-radius: 3px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid transparent;
-  transition: border-color 0.15s, color 0.15s;
-}
-
-.names p:hover {
-  color: var(--cyan);
-  border-color: rgba(45, 226, 208, 0.25);
-}
-
-.mm2-badge {
-  position: absolute;
-  bottom: -4px;
-  right: -4px;
-  width: 26px;
-  height: 26px;
-  border-radius: 6px;
-  border: 2px solid var(--surface-2);
-  background: var(--void);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.75);
-  object-fit: cover;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.mm2-badge.mm2-text {
-  font-family: var(--mono);
-  font-size: 9.5px;
-  font-weight: 700;
-  color: var(--violet);
-}
-
-.mm2-badge.mm2-loading {
-  color: var(--faint);
-  font-size: 11px;
-  border-style: dashed;
-}
-
-.actions {
-  display: flex;
-  gap: 8px;
-  width: 100%;
-  margin-top: auto;
-}
-
-#requests-container.compact-mode .actions {
-  width: auto;
-  margin-top: 0;
-  flex: none;
-}
-
-.actions .btn {
-  flex: 1;
-  padding: 8px 10px;
-  font-size: 10px;
-}
-
-.btn-accept {
-  color: var(--cyan);
-  border-color: rgba(45, 226, 208, 0.3);
-  background: var(--cyan-soft);
-}
-
-.btn-accept:hover {
-  background: var(--cyan);
-  color: #031412;
-  border-color: var(--cyan);
-}
-
-.btn-reject {
-  color: var(--muted);
-}
-
-.btn-reject:hover {
-  color: #fff;
-  border-color: var(--red);
-  background: var(--red);
-}
-
-.btn-unblock {
-  color: var(--violet);
-  border-color: rgba(167, 139, 250, 0.3);
-  background: var(--violet-soft);
-}
-
-.btn-unblock:hover {
-  background: var(--violet);
-  color: #120a24;
-  border-color: var(--violet);
-}
-
-/* SKELETON LOADING */
-.user-card.is-loading {
-  pointer-events: none;
-}
-
-.sk {
-  position: relative;
-  overflow: hidden;
-  background: var(--surface-3);
-  border-radius: 5px;
-}
-
-.sk::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  transform: translateX(-100%);
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.05),
-    transparent
-  );
-  animation: shimmer 1.4s infinite;
-}
-
-@keyframes shimmer {
-  100% {
-    transform: translateX(100%);
-  }
-}
-
-.sk-pfp {
-  width: 74px;
-  height: 74px;
-  border-radius: 10px;
-  margin-bottom: 14px;
-}
-
-.sk-line {
-  height: 11px;
-  margin-bottom: 9px;
-  width: 80%;
-}
-
-.sk-line.short {
-  width: 45%;
-}
-
-/* ==========================================================================
-   EMPTY STATE & PAGINATION
-   ========================================================================== */
-
-#empty-state {
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 84px 20px;
-  margin-top: 18px;
-  background: rgba(10, 13, 22, 0.55);
-  border: 1px dashed var(--line-2);
-  border-radius: var(--r-md);
-  color: var(--muted);
-}
-
-#empty-state .es-glyph {
-  width: 48px;
-  height: 48px;
-  border-radius: var(--r-sm);
-  background: var(--surface-2);
-  border: 1px solid var(--line-2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  color: var(--cyan);
-  margin-bottom: 16px;
-  box-shadow: 0 0 24px -6px var(--cyan-glow);
-}
-
-#empty-state h3 {
-  margin: 0 0 6px;
-  font-family: var(--mono);
-  font-size: 13.5px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text);
-}
-
-#empty-state p {
-  margin: 0;
-  font-size: 13px;
-  max-width: 380px;
-  color: var(--muted);
-}
-
-.pagination-bar {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 14px;
-  margin-top: 30px;
-}
-
-.page-indicator {
-  font-family: var(--mono);
-  font-size: 11.5px;
-  letter-spacing: 0.14em;
-  color: var(--muted);
-  background: var(--surface);
-  border: 1px solid var(--line-2);
-  padding: 7px 14px;
-  border-radius: var(--r-xs);
-}
-
-.page-indicator b {
-  color: var(--cyan);
-}
-
-/* ==========================================================================
-   MODALS (ROBLOX BLOCKLIST, TIKTOK BLACKLIST, TIKTOK LOGIN, DIAGNOSTICS)
-   ========================================================================== */
-
-#export-modal,
-#tt-blacklist-modal,
-#tt-login-modal,
-#tt-diag-modal {
-  display: none;
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  background: rgba(3, 4, 8, 0.84);
-  backdrop-filter: blur(8px);
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-}
-
-.modal-content {
-  width: 100%;
-  max-width: 580px;
-  background: linear-gradient(180deg, var(--surface-2), var(--surface));
-  border: 1px solid var(--line-2);
-  border-top: 2px solid var(--cyan);
-  border-radius: var(--r-md);
-  padding: 24px 26px;
-  box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.95);
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.modal-content.wide {
-  max-width: 760px;
-}
-
-.modal-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 4px;
-}
-
-.modal-content h2 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  font-family: var(--mono);
-  letter-spacing: 0.04em;
-}
-
-.modal-close-x {
-  background: transparent;
-  border: 0;
-  color: var(--muted);
-  font-size: 16px;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 4px;
-}
-
-.modal-close-x:hover {
-  color: var(--text);
-  background: var(--surface-3);
-}
-
-.modal-content .m-sub {
-  margin: 0 0 16px;
-  color: var(--muted);
-  font-size: 12.5px;
-}
-
-#export-textarea,
-#tt-blacklist-textarea {
-  width: 100%;
-  height: 260px;
-  background: var(--void);
-  color: var(--cyan);
-  border: 1px solid var(--line-2);
-  border-radius: var(--r-xs);
-  padding: 13px;
-  font-family: var(--mono);
-  font-size: 12px;
-  line-height: 1.6;
-  resize: vertical;
-  margin-bottom: 16px;
-  outline: none;
-}
-
-#export-textarea:focus,
-#tt-blacklist-textarea:focus {
-  border-color: var(--cyan);
-  box-shadow: 0 0 0 3px var(--cyan-soft);
-}
-
-.modal-actions {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-  flex-wrap: wrap;
-}
-
-.diag-table-wrap {
-  overflow-y: auto;
-  max-height: 360px;
-  border: 1px solid var(--line-2);
-  border-radius: var(--r-xs);
-  background: var(--void);
-  margin-bottom: 16px;
-}
-
-.diag-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-family: var(--mono);
-  font-size: 11px;
-}
-
-.diag-table th,
-.diag-table td {
-  padding: 8px 11px;
-  text-align: left;
-  border-bottom: 1px solid var(--line);
-}
-
-.diag-table th {
-  background: var(--surface-2);
-  color: var(--muted);
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  position: sticky;
-  top: 0;
-}
-
-.diag-badge-ok {
-  color: var(--emerald);
-  background: var(--emerald-soft);
-  padding: 2px 6px;
-  border-radius: 3px;
-}
-
-.diag-badge-fail {
-  color: var(--red);
-  background: var(--red-soft);
-  padding: 2px 6px;
-  border-radius: 3px;
-}
-
-/* ==========================================================================
-   TOAST NOTIFICATIONS & FLOATING JOB PROGRESS BAR
-   ========================================================================== */
-
-#toast-container {
-  position: fixed;
-  bottom: 22px;
-  right: 22px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  z-index: 1100;
-  max-width: 370px;
-}
-
-.toast {
-  display: flex;
-  align-items: flex-start;
-  gap: 11px;
-  background: rgba(15, 19, 32, 0.96);
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--line-2);
-  border-left: 3px solid var(--cyan);
-  border-radius: var(--r-xs);
-  padding: 12px 15px;
-  font-size: 12.5px;
-  color: var(--text);
-  box-shadow: 0 16px 36px -12px rgba(0, 0, 0, 0.9);
-  animation: slideIn 0.25s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-  transition: opacity 0.25s, transform 0.25s;
-}
-
-.toast-glyph {
-  font-family: var(--mono);
-  font-weight: 700;
-  font-size: 12px;
-  color: var(--cyan);
-}
-
-.toast.error {
-  border-left-color: var(--red);
-}
-
-.toast.error .toast-glyph {
-  color: var(--red);
-}
-
-.toast.success {
-  border-left-color: var(--cyan);
-}
-
-.toast.success .toast-glyph {
-  color: var(--cyan);
-}
-
-.toast.warn {
-  border-left-color: var(--amber);
-}
-
-.toast.warn .toast-glyph {
-  color: var(--amber);
-}
-
-.toast.info {
-  border-left-color: var(--violet);
-}
-
-.toast.info .toast-glyph {
-  color: var(--violet);
-}
-
-@keyframes slideIn {
-  from {
-    transform: translateX(110%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-#job-progress {
-  position: fixed;
-  left: 50%;
-  bottom: 22px;
-  transform: translateX(-50%);
-  width: min(540px, calc(100vw - 32px));
-  background: rgba(15, 19, 32, 0.96);
-  backdrop-filter: blur(14px);
-  border: 1px solid var(--line-2);
-  border-left: 3px solid var(--cyan);
-  border-radius: var(--r-sm);
-  padding: 15px 18px;
-  z-index: 1200;
-  box-shadow: 0 24px 60px -15px rgba(0, 0, 0, 0.95);
-}
-
-.jp-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 10px;
-}
-
-.jp-label {
-  font-family: var(--mono);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text);
-}
-
-.jp-track {
-  height: 5px;
-  background: var(--void);
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.jp-fill {
-  height: 100%;
-  width: 0%;
-  background: var(--cyan);
-  border-radius: 3px;
-  transition: width 0.2s linear;
-}
-
-.jp-meta {
-  margin-top: 9px;
-  font-family: var(--mono);
-  font-size: 10.5px;
-  color: var(--muted);
-}
-
-.jp-rate {
-  color: var(--cyan);
-}
-
-#job-progress.is-error {
-  border-left-color: var(--red);
-}
-
-#job-progress.is-error .jp-fill {
-  background: var(--red);
-}
-
-.jp-verify {
-  margin-top: 7px;
-  font-family: var(--mono);
-  font-size: 10.5px;
-  color: var(--cyan);
-}
-
-.jp-verify.bad {
-  color: var(--red);
-}
-
-.jp-error {
-  margin-top: 7px;
-  font-family: var(--mono);
-  font-size: 10.5px;
-  color: var(--amber);
-  word-break: break-word;
-}
-
-#job-progress.is-warn,
-#job-progress.is-paused {
-  border-left-color: var(--amber);
-}
-
-#job-progress.is-warn .jp-fill,
-#job-progress.is-paused .jp-fill {
-  background: var(--amber);
-}
-
-.jp-breather {
-  color: var(--amber);
-}
-
-@media (max-width: 640px) {
-  #dashboard-section {
-    padding: 0 12px 50px;
-  }
-  .deck-actions {
-    width: 100%;
-  }
-  .deck-actions .divider {
-    display: none;
-  }
-  .view-tabs {
-    width: 100%;
-    overflow-x: auto;
-  }
-  .vtab {
-    flex: 1;
-    justify-content: center;
-  }
-  #requests-container {
-    grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
-    gap: 10px;
-  }
-  .mm2-note {
-    margin-left: 0;
-    width: 100%;
-  }
-}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap');
+:root{ --void:#070810; --surface:#0c0e18; --surface-2:#111420; --surface-3:#171b2a; --line:rgba(132,152,192,.10); --line-2:rgba(132,152,192,.20); --text:#e6eaf3; --muted:#828aa0; --faint:#565e73; --cyan:#38e5d8; --cyan-soft:rgba(56,229,216,.12); --red:#ff4d6d; --red-soft:rgba(255,77,109,.10); --amber:#ffb454; --violet:#a78bfa; --violet-soft:rgba(167,139,250,.10); --r-sm:8px; --r-md:12px; --r-lg:18px; --mono:'JetBrains Mono',ui-monospace,monospace; --sans:'Inter',system-ui,sans-serif; }
+*{box-sizing:border-box} html{scroll-behavior:smooth}
+body{ margin:0; min-height:100vh; color:var(--text); font-family:var(--sans); font-size:14px; line-height:1.5; background: radial-gradient(900px 500px at 50% -10%, rgba(56,229,216,.06), transparent 70%), linear-gradient(180deg, #08090f 0%, var(--void) 40%); background-attachment:fixed; }
+body::before{ content:""; position:fixed; inset:0; pointer-events:none; z-index:0; opacity:.5; background-image: linear-gradient(rgba(132,152,192,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(132,152,192,.035) 1px, transparent 1px); background-size:44px 44px; mask-image:radial-gradient(ellipse 80% 60% at 50% 0%, #000 30%, transparent 80%); }
+::-webkit-scrollbar{width:10px;height:10px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:var(--surface-3); border-radius:8px; border:2px solid var(--void)} ::-webkit-scrollbar-thumb:hover{background:#232838}
+:focus-visible{outline:2px solid var(--cyan); outline-offset:2px; border-radius:4px}
+.btn{ font-family:var(--mono); font-size:11px; font-weight:500; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); background:var(--surface-2); border:1px solid var(--line-2); padding:9px 14px; border-radius:var(--r-sm); cursor:pointer; transition:color .15s, border-color .15s, background .15s, transform .05s; display:inline-flex; align-items:center; gap:7px; white-space:nowrap; }
+.btn:hover{color:var(--text); border-color:rgba(132,152,192,.35)} .btn:active{transform:translateY(1px)} .btn:disabled{opacity:.35; cursor:not-allowed; transform:none; color:var(--faint)}
+.btn-primary:hover:not(:disabled){color:var(--cyan); border-color:var(--cyan); background:var(--cyan-soft)} .btn-danger:hover:not(:disabled){color:var(--red); border-color:var(--red); background:var(--red-soft)} .btn-violet:hover:not(:disabled){color:var(--violet); border-color:var(--violet); background:var(--violet-soft)} .btn-warn:hover:not(:disabled){color:var(--amber); border-color:var(--amber); background:rgba(255,180,84,.08)}
+#login-section{ position:relative; z-index:1; margin:16vh auto 0; width:92%; max-width:420px; background:linear-gradient(180deg, var(--surface-2), var(--surface)); border:1px solid var(--line-2); border-radius:var(--r-lg); padding:38px 34px 34px; box-shadow:0 30px 80px -30px rgba(0,0,0,.9), 0 0 0 1px rgba(56,229,216,.04); }
+.login-mark{display:flex; align-items:center; gap:10px; margin-bottom:26px} .login-mark .glyph{color:var(--cyan); font-size:20px; line-height:1; filter:drop-shadow(0 0 8px rgba(56,229,216,.5))} .login-mark b{font-family:var(--mono); font-weight:700; letter-spacing:.18em; font-size:15px} .login-mark span{font-family:var(--mono); color:var(--faint); font-size:12px; letter-spacing:.14em}
+#login-section h2{margin:0 0 6px; font-size:18px; font-weight:600; letter-spacing:-.01em} #login-section .sub{margin:0 0 22px; color:var(--muted); font-size:13px} .field-label{font-family:var(--mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--faint); display:block; margin-bottom:8px}
+#cookie-input{ width:100%; padding:13px 14px; background:var(--void); color:var(--cyan); border:1px solid var(--line-2); border-radius:var(--r-sm); outline:none; font-family:var(--mono); font-size:13px; letter-spacing:.02em; transition:border-color .15s, box-shadow .15s; }
+#cookie-input::placeholder{color:#3a4257} #cookie-input:focus{border-color:var(--cyan); box-shadow:0 0 0 3px var(--cyan-soft)}
+.login-btn{width:100%; justify-content:center; padding:13px; margin-top:20px; font-size:12px; color:var(--cyan); border-color:rgba(56,229,216,.4); background:var(--cyan-soft)} .login-btn:hover{background:var(--cyan); color:#04120f; border-color:var(--cyan); box-shadow:0 0 24px -4px rgba(56,229,216,.6)}
+.login-warn{margin-top:18px; font-family:var(--mono); font-size:10.5px; letter-spacing:.04em; color:var(--faint); line-height:1.6; display:flex; gap:8px} .login-warn b{color:var(--amber); font-weight:500}
+#dashboard-section{position:relative; z-index:1; width:100%; max-width:1420px; margin:0 auto; padding:0 24px 60px}
+.topbar{display:flex; align-items:center; justify-content:space-between; padding:22px 4px 18px; flex-wrap:wrap; gap:12px} .brand{display:flex; align-items:baseline; gap:9px} .brand .glyph{color:var(--cyan); font-size:16px; filter:drop-shadow(0 0 8px rgba(56,229,216,.5)); align-self:center} .brand b{font-family:var(--mono); font-weight:700; letter-spacing:.2em; font-size:15px} .brand span{font-family:var(--mono); color:var(--faint); font-size:12px; letter-spacing:.14em}
+.status{display:flex; align-items:center; gap:9px; font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted)} .status-dot{width:7px; height:7px; border-radius:50%; background:var(--cyan); box-shadow:0 0 0 0 rgba(56,229,216,.5); animation:pulse 2.4s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(56,229,216,.45)}70%{box-shadow:0 0 0 7px rgba(56,229,216,0)}100%{box-shadow:0 0 0 0 rgba(56,229,216,0)}}
+.sticky-header{position:sticky; top:0; z-index:100; padding:10px 0 16px; background:linear-gradient(180deg, var(--void) 70%, transparent);}
+.deck{background:var(--surface); border:1px solid var(--line-2); border-radius:var(--r-md); box-shadow:0 12px 40px -20px rgba(0,0,0,.8); overflow:hidden} .deck-row{display:flex; align-items:center; gap:14px; padding:14px 16px; flex-wrap:wrap} .deck-row + .deck-row{border-top:1px solid var(--line)}
+.view-tabs{display:inline-flex; background:var(--void); border:1px solid var(--line-2); border-radius:var(--r-sm); padding:3px; gap:3px; flex:none} .vtab{font-family:var(--mono); font-size:10.5px; font-weight:500; letter-spacing:.12em; text-transform:uppercase; color:var(--faint); background:transparent; border:0; border-radius:6px; padding:8px 13px; cursor:pointer; transition:color .15s, background .15s; white-space:nowrap} .vtab:hover{color:var(--text)} .vtab.is-active{color:var(--cyan); background:var(--cyan-soft); box-shadow:inset 0 0 0 1px rgba(56,229,216,.3)}
+.search-wrap{position:relative; flex:1; min-width:210px} .search-wrap svg{position:absolute; left:13px; top:50%; transform:translateY(-50%); color:var(--faint)} #search-input, #tt-username-input{width:100%; padding:11px 14px 11px 38px; background:var(--void); color:var(--text); border:1px solid var(--line-2); border-radius:var(--r-sm); outline:none; font-family:var(--sans); font-size:13px; transition:border-color .15s, box-shadow .15s} #search-input::placeholder, #tt-username-input::placeholder{color:var(--faint)} #search-input:focus, #tt-username-input:focus{border-color:var(--cyan); box-shadow:0 0 0 3px var(--cyan-soft)}
+#tt-username-input{padding-left:14px; width:240px; flex:none; font-family:var(--mono); font-size:12px}
+.toggle{display:inline-flex; align-items:center; gap:10px; cursor:pointer; user-select:none; font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); white-space:nowrap} .toggle input{position:absolute; opacity:0; width:0; height:0} .track{width:38px; height:20px; border-radius:20px; background:var(--surface-3); border:1px solid var(--line-2); position:relative; transition:background .18s, border-color .18s; flex:none} .track::after{content:""; position:absolute; top:2px; left:2px; width:14px; height:14px; border-radius:50%; background:var(--faint); transition:transform .18s, background .18s} .toggle input:checked + .track{background:var(--cyan-soft); border-color:var(--cyan)} .toggle input:checked + .track::after{transform:translateX(18px); background:var(--cyan)} .toggle:hover .track{border-color:rgba(132,152,192,.35)}
+.deck-row.auto-row{gap:18px} .auto-eyebrow{font-family:var(--mono); font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--faint); white-space:nowrap} .toggle.is-live{color:var(--cyan)} .toggle input:disabled + .track{opacity:.35} .toggle input:disabled ~ *{opacity:.5} .auto-status{display:flex; align-items:center; gap:9px; margin-left:auto; font-family:var(--mono); font-size:10.5px; letter-spacing:.06em; color:var(--faint); white-space:nowrap} .auto-dot{width:6px; height:6px; border-radius:50%; background:var(--faint); flex:none; transition:background .2s} .auto-status.is-live .auto-dot{background:var(--cyan); animation:pulse 2.4s infinite} .auto-status.is-live{color:var(--muted)} .auto-status.is-waiting .auto-dot{background:var(--amber); animation:pulse 1.6s infinite}
+.readout{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--faint); white-space:nowrap} .readout #target-num{color:var(--cyan); font-weight:700; font-size:13px} .readout .of-total{color:var(--faint); text-transform:none; letter-spacing:.08em}
+.deck-actions{display:flex; align-items:center; gap:9px; flex-wrap:wrap} .deck-actions .divider{width:1px; height:22px; background:var(--line-2); margin:0 3px}
+.mm2-note{display:flex; align-items:center; gap:7px; margin-left:auto; font-family:var(--mono); font-size:10px; letter-spacing:.06em; color:var(--faint); white-space:nowrap} .mm2-note .mm2-dot{width:6px; height:6px; border-radius:50%; background:var(--violet); flex:none; animation:pulse 1.6s infinite}
+#requests-container{display:grid; grid-template-columns:repeat(auto-fill, minmax(214px, 1fr)); gap:16px; margin-top:22px}
+.user-card{position:relative; background:linear-gradient(180deg, var(--surface-2), var(--surface)); border:1px solid var(--line); border-radius:var(--r-md); padding:22px 18px 18px; display:flex; flex-direction:column; align-items:center; text-align:center; overflow:hidden; transition:border-color .18s, transform .12s, box-shadow .18s, opacity .12s} .user-card:hover{border-color:var(--line-2); transform:translateY(-3px); box-shadow:0 18px 40px -24px rgba(0,0,0,.9)} .user-card.is-pending{opacity:.28; pointer-events:none}
+
+/* CHECKBOX STYLES */
+.card-checkbox { position: absolute; top: 12px; left: 12px; z-index: 10; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0.6; transition: opacity 0.2s; }
+.user-card:hover .card-checkbox, .card-checkbox:has(input:checked) { opacity: 1; }
+.card-checkbox input { position: absolute; opacity: 0; width: 0; height: 0; }
+.check-box { width: 18px; height: 18px; background: var(--void); border: 1px solid var(--line-2); border-radius: 4px; transition: all 0.15s; display: flex; align-items: center; justify-content: center; }
+.card-checkbox input:checked + .check-box { background: var(--cyan); border-color: var(--cyan); }
+.card-checkbox input:checked + .check-box::after { content: "✓"; color: #04120f; font-size: 13px; font-weight: bold; }
+.card-checkbox:hover .check-box { border-color: var(--cyan); }
+
+/* TIKTOK SHARE BADGE */
+.tt-share-pill{ font-family:var(--mono); font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--cyan); background:var(--cyan-soft); border:1px solid rgba(56,229,216,.3); padding:3px 8px; border-radius:6px; position:absolute; top:12px; right:12px; }
+
+.card-reticle{position:absolute; inset:8px; border-radius:8px; pointer-events:none; opacity:0; transition:opacity .2s} .card-reticle::before,.card-reticle::after{content:""; position:absolute; width:12px; height:12px; border:1.5px solid var(--cyan)} .card-reticle::before{top:0; left:0; border-right:0; border-bottom:0} .card-reticle::after{bottom:0; right:0; border-left:0; border-top:0} .user-card:hover .card-reticle{opacity:.55}
+.pfp-wrap{position:relative; width:78px; height:78px; margin-bottom:14px; flex:none} .pfp{width:78px; height:78px; border-radius:50%; background:var(--void); border:1px solid var(--line-2); padding:3px; object-fit:cover; display:block} .names{width:100%; margin-bottom:18px} .names h2{margin:0; font-size:15px; font-weight:600; letter-spacing:-.01em; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis} .names p{margin:4px 0 0; font-family:var(--mono); font-size:11.5px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.mm2-badge{position:absolute; bottom:-3px; right:-3px; width:27px; height:27px; border-radius:50%; border:2px solid var(--surface-2); background:var(--void); box-shadow:0 3px 8px -1px rgba(0,0,0,.7); object-fit:cover; display:flex; align-items:center; justify-content:center} img.mm2-badge{object-fit:cover} .mm2-badge.mm2-text{font-family:var(--mono); font-size:9.5px; font-weight:700; color:var(--violet)} .mm2-badge.mm2-loading{color:var(--faint); font-size:11px; border-style:dashed}
+.actions{display:flex; gap:9px; width:100%} .actions .btn{flex:1; justify-content:center; padding:9px 0} .btn-accept{color:var(--cyan); border-color:rgba(56,229,216,.28); background:var(--cyan-soft)} .btn-accept:hover{background:var(--cyan); color:#04120f; border-color:var(--cyan)} .btn-reject{color:var(--muted)} .btn-reject:hover{color:var(--red); border-color:var(--red); background:var(--red-soft)} .btn-unblock{color:var(--violet); border-color:rgba(167,139,250,.30); background:var(--violet-soft)} .btn-unblock:hover{background:var(--violet); color:#120a24; border-color:var(--violet)}
+.user-card.is-loading{pointer-events:none} .sk{position:relative; overflow:hidden; background:var(--surface-3); border-radius:6px} .sk::after{content:""; position:absolute; inset:0; transform:translateX(-100%); background:linear-gradient(90deg, transparent, rgba(255,255,255,.05), transparent); animation:shimmer 1.4s infinite} @keyframes shimmer{100%{transform:translateX(100%)}} .sk-pfp{width:78px; height:78px; border-radius:50%; margin-bottom:14px} .sk-line{height:11px; margin-bottom:9px; width:80%} .sk-line.short{width:45%}
+#empty-state{display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:90px 20px; margin-top:22px; border:1px dashed var(--line-2); border-radius:var(--r-lg); color:var(--muted)} #empty-state .es-glyph{font-size:34px; color:var(--faint); margin-bottom:16px} #empty-state h3{margin:0 0 8px; font-family:var(--mono); font-size:14px; letter-spacing:.08em; text-transform:uppercase; color:var(--text)} #empty-state p{margin:0; font-size:13px; max-width:340px}
+.pagination-bar{display:flex; justify-content:center; align-items:center; gap:16px; margin-top:34px} .page-indicator{font-family:var(--mono); font-size:12px; letter-spacing:.16em; color:var(--muted)} .page-indicator b{color:var(--cyan)}
+#export-modal{display:none; position:fixed; inset:0; z-index:1000; background:rgba(4,5,10,.82); backdrop-filter:blur(6px); justify-content:center; align-items:center; padding:20px} .modal-content{width:100%; max-width:560px; background:var(--surface-2); border:1px solid var(--line-2); border-radius:var(--r-lg); padding:26px; box-shadow:0 40px 100px -30px rgba(0,0,0,.9)} .modal-content h2{margin:0 0 4px; font-size:16px; font-weight:600} .modal-content .m-sub{margin:0 0 18px; color:var(--muted); font-size:12.5px} #export-textarea{width:100%; height:280px; background:var(--void); color:var(--cyan); border:1px solid var(--line-2); border-radius:var(--r-sm); padding:14px; box-sizing:border-box; font-family:var(--mono); font-size:12px; resize:vertical; margin-bottom:18px; outline:none} #export-textarea:focus{border-color:var(--cyan)} .modal-actions{display:flex; gap:10px; justify-content:flex-end}
+#toast-container{position:fixed; bottom:22px; right:22px; display:flex; flex-direction:column; gap:12px; z-index:1100; max-width:340px} .toast{display:flex; align-items:flex-start; gap:11px; background:var(--surface-2); border:1px solid var(--line-2); border-left:3px solid var(--cyan); border-radius:var(--r-sm); padding:13px 16px; font-size:13px; color:var(--text); box-shadow:0 16px 40px -16px rgba(0,0,0,.85); animation:slideIn .35s cubic-bezier(.2,.8,.2,1) both; transition:opacity .3s, transform .3s} .toast-glyph{font-family:var(--mono); font-weight:700; font-size:12px; line-height:1.5; color:var(--cyan)} .toast.error{border-left-color:var(--red)} .toast.error .toast-glyph{color:var(--red)} .toast.success{border-left-color:var(--cyan)} .toast.success .toast-glyph{color:var(--cyan)} .toast.warn{border-left-color:var(--amber)} .toast.warn .toast-glyph{color:var(--amber)} .toast.info{border-left-color:var(--muted)} .toast.info .toast-glyph{color:var(--muted)} @keyframes slideIn{from{transform:translateX(120%); opacity:0}to{transform:translateX(0); opacity:1}}
+#job-progress{position:fixed; left:50%; bottom:24px; transform:translateX(-50%); width:min(520px, calc(100vw - 32px)); background:var(--surface-2); border:1px solid var(--line-2); border-left:3px solid var(--cyan); border-radius:var(--r-md); padding:16px 18px; z-index:1200; box-shadow:0 24px 60px -20px rgba(0,0,0,.9); animation:jpRise .3s cubic-bezier(.2,.8,.2,1) both} @keyframes jpRise{from{transform:translate(-50%,20px); opacity:0}to{transform:translate(-50%,0); opacity:1}} .jp-head{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px} .jp-label{font-family:var(--mono); font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--text)} .jp-track{height:5px; background:var(--void); border-radius:3px; overflow:hidden} .jp-fill{height:100%; width:0%; background:var(--cyan); border-radius:3px; transition:width .3s linear} .jp-meta{margin-top:10px; font-family:var(--mono); font-size:10.5px; color:var(--muted); letter-spacing:.04em} .jp-rate{color:var(--cyan)} #job-progress.is-error{border-left-color:var(--red)} #job-progress.is-error .jp-fill{background:var(--red)} .jp-verify{margin-top:8px; font-family:var(--mono); font-size:10.5px; letter-spacing:.04em; color:var(--cyan)} .jp-verify.bad{color:var(--red)} .jp-error{margin-top:8px; font-family:var(--mono); font-size:10.5px; line-height:1.5; letter-spacing:.02em; color:var(--amber); word-break:break-word} #job-progress.is-warn{border-left-color:var(--amber)} #job-progress.is-warn .jp-fill{background:var(--amber)} #job-progress.is-paused{border-left-color:var(--amber)} #job-progress.is-paused .jp-fill{background:var(--amber)} .jp-breather{color:var(--amber)}
+@media (max-width:560px){ #dashboard-section{padding:0 14px 50px} .deck-actions{width:100%} .deck-actions .divider{display:none} .view-tabs{width:100%} .vtab{flex:1} #requests-container{grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:12px} .mm2-note{margin-left:0; width:100%} }
+@media (prefers-reduced-motion:reduce){ *{animation-duration:.001ms !important; transition-duration:.001ms !important} html{scroll-behavior:auto} }
 </style>
 </head>
 <body>
 
-<!-- ========================================================================
-     1. ROBLOX SESSION AUTHENTICATION SCREEN
-     ======================================================================== -->
 <div id="login-section">
-  <div class="login-mark">
-    <span class="glyph">◈</span>
-    <b>NEXUS</b>
-    <span>// TERMINAL</span>
-  </div>
-  <h2>Authenticate Session</h2>
-  <p class="sub">Enter your Roblox security token to initialize the command deck.</p>
-  <label class="field-label" for="cookie-input">.ROBLOSECURITY Token</label>
-  <input
-    type="password"
-    id="cookie-input"
-    placeholder="_|WARNING:-DO-NOT-SHARE-THIS…"
-    onkeydown="if(event.key==='Enter')saveCookie()"
-  >
-  <button class="btn btn-primary login-btn" onclick="saveCookie()">
-    Establish Uplink
-  </button>
-  <div class="login-warn">
-    <span>⚠</span>
-    <span>
-      This token grants <b>full account access</b>. It is stored locally in your
-      browser storage and never exposed.
-    </span>
-  </div>
+  <div class="login-mark"><span class="glyph">◈</span><b>NEXUS</b><span>// terminal</span></div>
+  <h2>Establish connection</h2>
+  <p class="sub">Authenticate with your Roblox session to load incoming requests.</p>
+  <label class="field-label" for="cookie-input">Session token</label>
+  <input type="password" id="cookie-input" placeholder="_|WARNING:-DO-NOT-SHARE-THIS…">
+  <button class="btn login-btn" onclick="saveCookie()">Connect</button>
+  <div class="login-warn"><span>⚠</span><span>This token grants <b>full access</b> to your account. It's stored only in this browser and never displayed. Never paste it anywhere you don't trust.</span></div>
 </div>
 
-<!-- ========================================================================
-     2. MAIN COMMAND DASHBOARD
-     ======================================================================== -->
 <div id="dashboard-section" style="display:none;">
   <div class="topbar">
-    <div class="brand">
-      <div class="brand-badge">◈</div>
-      <b>NEXUS</b>
-      <span>// COMMAND TERMINAL</span>
-    </div>
-    <div class="telemetry-bar">
-      <div
-        class="status-pill clickable"
-        onclick="openTikTokDiagnosticsModal()"
-        title="Click to inspect TikTok Block Diagnostics & Telemetry"
-      >
-        <span class="status-dot offline" id="top-tt-dot"></span>
-        <span id="top-tt-text">TikTok: Standby</span>
-      </div>
-      <div class="status-pill">
-        <span class="status-dot"></span>
-        <span id="status-text">Roblox: Active</span>
-      </div>
-    </div>
+    <div class="brand"><span class="glyph">◈</span><b>NEXUS</b><span>// terminal</span></div>
+    <div class="status"><span class="status-dot"></span><span id="status-text">connection active</span></div>
   </div>
 
   <div class="sticky-header">
     <div class="deck">
-      <!-- TOP NAVIGATION & FILTER ROW -->
       <div class="deck-row">
         <div class="view-tabs">
-          <button
-            class="vtab is-active"
-            id="vtab-requests"
-            onclick="switchView('requests')"
-          >
-            Friend Requests <span class="vtab-count" id="req-tab-count">0</span>
-          </button>
-          <button
-            class="vtab"
-            id="vtab-blocked"
-            onclick="switchView('blocked')"
-          >
-            Blocked Users
-          </button>
-          <button
-            class="vtab"
-            id="vtab-tiktok"
-            onclick="switchView('tiktok')"
-          >
-            TikTok Live <span class="vtab-count" id="tt-tab-count">0</span>
-          </button>
+          <button class="vtab is-active" id="vtab-requests" onclick="switchView('requests')">Friend requests</button>
+          <button class="vtab" id="vtab-blocked" onclick="switchView('blocked')">Blocked users</button>
+          <button class="vtab" id="vtab-tiktok" onclick="switchView('tiktok')">TikTok Live (<span id="tt-tab-count">0</span>)</button>
         </div>
-
         <div class="search-wrap">
-          <svg
-            width="15"
-            height="15"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <circle cx="11" cy="11" r="7"/>
-            <path d="m21 21-4.3-4.3"/>
-          </svg>
-          <input
-            type="text"
-            id="search-input"
-            placeholder="Filter queue by display name or @username…"
-            oninput="handleFilterChange()"
-          >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="text" id="search-input" placeholder="Search by name or username…" oninput="handleFilterChange()">
         </div>
-
-        <label
-          class="toggle"
-          id="bot-filter-v1-label"
-          title="Hides accounts where Display Name equals Username"
-        >
-          <input
-            type="checkbox"
-            id="bot-filter-toggle"
-            onchange="handleFilterChange()"
-          >
+        <label class="toggle" id="bot-filter-v1-label">
+          <input type="checkbox" id="bot-filter-toggle" onchange="handleFilterChange()">
           <span class="track"></span>
-          Bot Filter
+          Bot filter
         </label>
-
-        <label
-          class="toggle"
-          id="bot-filter-v2-label"
-          title="Filters out accounts wearing known bot items (Down-to-Earth Hair, Pal Hair)"
-        >
-          <input
-            type="checkbox"
-            id="bot-filter-v2-toggle"
-            onchange="toggleBotFilterV2()"
-          >
+        <label class="toggle" id="bot-filter-v2-label" title="Filters out accounts wearing known bot items (e.g., Down-to-Earth Hair, Pal Hair)">
+          <input type="checkbox" id="bot-filter-v2-toggle" onchange="toggleBotFilterV2()">
           <span class="track"></span>
-          Bot Filter V2
+          Bot filter V2
         </label>
-
-        <label
-          class="toggle"
-          id="mm2-filter-label"
-          title="Scans MM2 level badges in the background and sorts highest level first"
-        >
-          <input
-            type="checkbox"
-            id="mm2-filter-toggle"
-            onchange="toggleMm2Filter()"
-          >
+        <label class="toggle" id="mm2-filter-label" title="Checks each account's MM2 level badges and sorts highest level first. Loads in the background — never slows down sync.">
+          <input type="checkbox" id="mm2-filter-toggle" onchange="toggleMm2Filter()">
           <span class="track"></span>
-          MM2 Levels
+          MM2 levels
         </label>
-
-        <label
-          class="toggle"
-          title="Toggle between Grid Cards and Compact Tactical Rows"
-        >
-          <input
-            type="checkbox"
-            id="compact-view-toggle"
-            onchange="toggleCompactMode()"
-          >
-          <span class="track"></span>
-          Compact
-        </label>
-
-        <div class="readout">
-          <span id="target-num">0</span>
-          <span id="target-word">targets</span>
-          <span class="of-total" id="target-total"></span>
-        </div>
+        <div class="readout"><span id="target-num">0</span> <span id="target-word">targets</span><span class="of-total" id="target-total"></span></div>
       </div>
 
-      <!-- ROBLOX AUTOMATION ROW -->
       <div class="deck-row auto-row" id="roblox-auto-row">
         <span class="auto-eyebrow">Automation</span>
         <label class="toggle" id="auto-accept-label">
-          <input
-            type="checkbox"
-            id="auto-accept-toggle"
-            onchange="toggleAutoAccept()"
-          >
+          <input type="checkbox" id="auto-accept-toggle" onchange="toggleAutoAccept()">
           <span class="track"></span>
-          Auto Accept
+          Auto accept
         </label>
         <label class="toggle" id="auto-sync-label">
-          <input
-            type="checkbox"
-            id="auto-sync-toggle"
-            onchange="toggleAutoSync()"
-          >
+          <input type="checkbox" id="auto-sync-toggle" onchange="toggleAutoSync()">
           <span class="track"></span>
-          Auto Sync
+          Auto sync
         </label>
-        <div class="auto-status" id="auto-status">
-          <span class="auto-dot"></span>
-          <span id="auto-status-text">Both off</span>
-        </div>
+        <div class="auto-status" id="auto-status"><span class="auto-dot"></span><span id="auto-status-text">Both off</span></div>
       </div>
 
-      <!-- ROBLOX FRIEND REQUESTS ACTIONS -->
       <div class="deck-row deck-actions" id="actions-requests">
-        <button
-          class="btn btn-primary"
-          onclick="massActionAll('accept')"
-          id="btn-accept-all"
-        >
-          Accept All
-        </button>
-        <button
-          class="btn btn-danger"
-          onclick="massActionAll('decline')"
-          id="btn-decline-all"
-        >
-          Decline All
-        </button>
+        <button class="btn btn-primary" onclick="massActionAll('accept')" id="btn-accept-all">Accept all</button>
+        <button class="btn btn-danger" onclick="massActionAll('decline')" id="btn-decline-all">Decline all</button>
         <span class="divider"></span>
-        <button
-          class="btn btn-violet"
-          onclick="blacklistAll()"
-          id="btn-blacklist-all"
-        >
-          Blacklist All
-        </button>
-        <button
-          class="btn btn-violet"
-          onclick="blacklistPage()"
-          id="btn-blacklist-page"
-        >
-          Blacklist Page
-        </button>
-        <button
-          class="btn btn-violet"
-          onclick="blacklistFiltered()"
-          id="btn-blacklist-filtered"
-        >
-          Blacklist Filtered
-        </button>
-        <button
-          class="btn btn-violet"
-          onclick="blacklistMarked()"
-          id="btn-blacklist-marked"
-          disabled
-        >
-          Blacklist Marked (0)
-        </button>
+        <button class="btn btn-violet" onclick="blacklistAll()" id="btn-blacklist-all">Blacklist all</button>
+        <button class="btn btn-violet" onclick="blacklistPage()" id="btn-blacklist-page">Blacklist page</button>
+        <button class="btn btn-violet" onclick="blacklistFiltered()" id="btn-blacklist-filtered">Blacklist filtered</button>
+        <button class="btn btn-violet" onclick="blacklistMarked()" id="btn-blacklist-marked" disabled>Blacklist Marked (0)</button>
         <span class="divider"></span>
-        <button
-          class="btn btn-warn"
-          onclick="removeAllFriends()"
-          id="btn-remove-friends"
-        >
-          Unfriend All
-        </button>
-        <button
-          class="btn btn-violet"
-          onclick="blacklistAllFriends()"
-          id="btn-blacklist-friends"
-        >
-          Blacklist Friends
-        </button>
+        <button class="btn btn-warn" onclick="removeAllFriends()" id="btn-remove-friends">Unfriend everyone</button>
+        <button class="btn btn-violet" onclick="blacklistAllFriends()" id="btn-blacklist-friends">Blacklist all friends</button>
         <span class="divider"></span>
-        <button class="btn" onclick="openBlocklistModal()">
-          Blocklist Data
-        </button>
+        <button class="btn" onclick="openBlocklistModal()">Blocklist Data</button>
         <button class="btn" onclick="manualRefresh()">↻ Sync</button>
         <button class="btn" onclick="logout()">Disconnect</button>
-        <div class="mm2-note" id="mm2-note" style="display:none;">
-          <span class="mm2-dot"></span>
-          <span id="mm2-note-text">Checking MM2 levels…</span>
-        </div>
+        <div class="mm2-note" id="mm2-note" style="display:none;"><span class="mm2-dot"></span><span id="mm2-note-text">Checking MM2 levels…</span></div>
       </div>
 
-      <!-- ROBLOX BLOCKED USERS ACTIONS -->
       <div class="deck-row deck-actions" id="actions-blocked" style="display:none;">
-        <button
-          class="btn btn-violet"
-          onclick="unblockEveryone()"
-          id="btn-unblock-all"
-        >
-          Unblock Everyone
-        </button>
+        <button class="btn btn-violet" onclick="unblockEveryone()" id="btn-unblock-all">Unblock everyone</button>
         <span class="divider"></span>
         <button class="btn" onclick="manualRefresh()">↻ Sync</button>
         <button class="btn" onclick="logout()">Disconnect</button>
@@ -1973,407 +158,118 @@ body::before {
 
       <!-- TIKTOK LIVE CONTROLS ROW -->
       <div class="deck-row deck-actions" id="actions-tiktok" style="display:none;">
-        <input
-          type="text"
-          id="tt-username-input"
-          placeholder="@tiktok_streamer (LIVE)..."
-          onkeydown="if(event.key==='Enter')connectTikTokLive()"
-        >
-        <button
-          class="btn btn-primary"
-          onclick="connectTikTokLive()"
-          id="btn-tt-connect"
-        >
-          ● Listen Live
-        </button>
-        <button
-          class="btn btn-danger"
-          onclick="disconnectTikTokLive()"
-          id="btn-tt-disconnect"
-        >
-          Stop
-        </button>
-
+        <input type="text" id="tt-username-input" placeholder="@tiktok_username (LIVE)..." onkeydown="if(event.key==='Enter')connectTikTokLive()">
+        <button class="btn btn-primary" onclick="connectTikTokLive()" id="btn-tt-connect">Listen Live</button>
+        <button class="btn btn-danger" onclick="disconnectTikTokLive()" id="btn-tt-disconnect">Stop Listener</button>
         <span class="divider"></span>
-
-        <label
-          class="toggle"
-          title="Zero-latency instant block: automatically blocks & blacklists anyone the millisecond they share your LIVE"
-        >
-          <input
-            type="checkbox"
-            id="tt-autoblock-toggle"
-            onchange="toggleTikTokAutoBlock()"
-          >
-          <span class="track"></span>
-          Auto-Block Sharers
-        </label>
-
-        <button class="btn btn-danger" onclick="blockAllTikTokSharers()">
-          Fast-Block All Sharers
-        </button>
-
-        <button class="btn btn-violet" onclick="openTikTokBlacklistModal()">
-          TT Blacklist (<span id="tt-bl-count">0</span>)
-        </button>
-
-        <button class="btn" onclick="openTikTokLoginModal()" id="btn-tt-login">
-          TikTok Account
-        </button>
-
-        <span class="divider"></span>
-
-        <input
-          type="text"
-          id="tt-quick-block-input"
-          placeholder="Quick block @user..."
-          onkeydown="if(event.key==='Enter')quickBlockTikTokInput()"
-        >
-        <button class="btn btn-danger" onclick="quickBlockTikTokInput()">
-          Block @
-        </button>
-
-        <span class="divider"></span>
-
-        <button class="btn" onclick="copyAllTikTokSharers()">
-          Copy @Users
-        </button>
-        <button class="btn" onclick="openTikTokDiagnosticsModal()">
-          Diagnostics
-        </button>
-        <button class="btn btn-warn" onclick="clearTikTokSharers()">
-          Clear Log
-        </button>
-
+        <button class="btn btn-violet" onclick="copyAllTikTokSharers()">Copy All @Usernames</button>
+        <button class="btn btn-warn" onclick="clearTikTokSharers()">Clear Share Log</button>
         <div class="auto-status" id="tt-live-status" style="margin-left:auto;">
           <span class="auto-dot" id="tt-live-dot"></span>
           <span id="tt-live-status-text">Listener offline</span>
         </div>
       </div>
     </div>
-
-    <!-- TIKTOK LIVE REAL-TIME TELEMETRY BAR -->
-    <div id="tt-metrics-bar">
-      <div class="metric-tile">
-        <span class="m-label">Active Sharers Queue</span>
-        <span class="m-val" id="tt-metric-visible">0</span>
-      </div>
-      <div class="metric-tile">
-        <span class="m-label">Total Shares Captured</span>
-        <span class="m-val emerald" id="tt-metric-total-shares">0</span>
-      </div>
-      <div class="metric-tile">
-        <span class="m-label">Blacklisted Usernames</span>
-        <span class="m-val violet" id="tt-metric-blacklisted">0</span>
-      </div>
-      <div class="metric-tile">
-        <span class="m-label">Auto-Block Engine</span>
-        <span class="m-val red" id="tt-metric-autoblock">OFF</span>
-      </div>
-    </div>
   </div>
 
-  <!-- MAIN CARDS GRID -->
   <div id="requests-container"></div>
 
-  <!-- EMPTY STATE -->
   <div id="empty-state">
     <div class="es-glyph">◇</div>
     <h3 id="empty-title">No incoming requests</h3>
-    <p id="empty-body">
-      Your queue is clear. New friend requests will appear here — hit Sync to
-      check again.
-    </p>
+    <p id="empty-body">Your queue is clear. New friend requests will appear here — hit Sync to check again.</p>
   </div>
 
-  <!-- PAGINATION -->
   <div class="pagination-bar" id="pagination-bar" style="display:none;">
     <button class="btn" onclick="changePage(-1)" id="btn-prev">◄ Prev</button>
-    <div class="page-indicator" id="page-indicator">
-      PAGE <b>01</b> / 01
-    </div>
+    <div class="page-indicator" id="page-indicator">PAGE <b>01</b> / 01</div>
     <button class="btn" onclick="changePage(1)" id="btn-next">Next ►</button>
   </div>
 </div>
 
-<!-- ========================================================================
-     3. ROBLOX BLOCKLIST MODAL
-     ======================================================================== -->
 <div id="export-modal">
   <div class="modal-content">
-    <div class="modal-head">
-      <h2>Roblox Blocklist Data</h2>
-      <button class="modal-close-x" onclick="closeModal()">✕</button>
-    </div>
-    <p class="m-sub">
-      Manage your local numerical ID blocklist. Export your list before
-      redeploying your server.
-    </p>
-
-    <div style="display:flex; gap:10px; margin-bottom: 14px;">
-      <input
-        type="text"
-        id="add-blocklist-input"
-        placeholder="Enter Roblox User ID..."
-        style="flex:1; padding: 10px 13px; background: var(--void); color: var(--text); border: 1px solid var(--line-2); border-radius: var(--r-xs); font-family: var(--mono); font-size: 12.5px; outline: none;"
-      >
-      <button class="btn btn-violet" onclick="addSingleBlacklist()">
-        Add ID
-      </button>
+    <h2>Blocklist Data</h2>
+    <p class="m-sub">Manage your local blocklist. Remember to export your list before updating your server!</p>
+    
+    <div style="display:flex; gap:10px; margin-bottom: 16px;">
+        <input type="text" id="add-blocklist-input" placeholder="Enter Player ID..." style="flex:1; padding: 10px 14px; background: var(--void); color: var(--text); border: 1px solid var(--line-2); border-radius: var(--r-sm); font-family: var(--mono); font-size: 13px; outline: none;">
+        <button class="btn btn-violet" onclick="addSingleBlacklist()">Add ID</button>
     </div>
 
-    <div style="display:flex; gap:8px; margin-bottom: 10px;">
-      <button
-        class="vtab is-active"
-        id="tab-export"
-        onclick="toggleTransferMode('export')"
-        style="flex:1;"
-      >
-        Export List
-      </button>
-      <button
-        class="vtab"
-        id="tab-import"
-        onclick="toggleTransferMode('import')"
-        style="flex:1;"
-      >
-        Import List
-      </button>
+    <div style="display:flex; gap:10px; margin-bottom: 8px;">
+        <button class="vtab is-active" id="tab-export" onclick="toggleTransferMode('export')" style="flex:1;">Export List</button>
+        <button class="vtab" id="tab-import" onclick="toggleTransferMode('import')" style="flex:1;">Import List</button>
     </div>
 
-    <textarea
-      id="export-textarea"
-      placeholder="Paste previously exported data here to import..."
-    ></textarea>
-
+    <textarea id="export-textarea" placeholder="Paste previously exported data here to import..."></textarea>
+    
     <div class="modal-actions" style="justify-content: space-between; align-items: center;">
-      <div style="display:flex; gap:8px;">
-        <input
-          type="number"
-          id="pop-blocklist-input"
-          placeholder="Count"
-          min="1"
-          style="width: 82px; padding: 8px 11px; background: var(--void); color: var(--cyan); border: 1px solid var(--line-2); border-radius: var(--r-xs); font-family: var(--mono); font-size: 12px; outline: none;"
-        >
-        <button class="btn btn-danger" onclick="removeLastBlacklisted()">
-          Remove Last
-        </button>
+      <div style="display:flex; gap:10px;">
+        <input type="number" id="pop-blocklist-input" placeholder="Amount" min="1" style="width: 85px; padding: 8px 12px; background: var(--void); color: var(--cyan); border: 1px solid var(--line-2); border-radius: var(--r-sm); font-family: var(--mono); font-size: 12px; outline: none;">
+        <button class="btn btn-danger" onclick="removeLastBlacklisted()">Clear Last</button>
       </div>
-      <div style="display:flex; gap:8px;">
+      <div style="display:flex; gap:10px;">
         <button class="btn" onclick="closeModal()">Close</button>
-        <button
-          class="btn btn-primary"
-          id="btn-copy-import"
-          onclick="copyExportText()"
-        >
-          Copy
-        </button>
+        <button class="btn btn-primary" id="btn-copy-import" onclick="copyExportText()">Copy</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ========================================================================
-     4. TIKTOK USERNAME BLACKLIST MODAL (LINE-BY-LINE + PREWARM)
-     ======================================================================== -->
-<div id="tt-blacklist-modal">
-  <div class="modal-content">
-    <div class="modal-head">
-      <h2>TikTok Username Blacklist</h2>
-      <button class="modal-close-x" onclick="closeTikTokBlacklistModal()">✕</button>
-    </div>
-    <p class="m-sub">
-      One TikTok username per line (without @). User IDs are pre-warmed in
-      parallel while you type so 6-lane mass blocking executes at maximum speed.
-    </p>
-    <textarea
-      id="tt-blacklist-textarea"
-      placeholder="username&#10;username1&#10;username2"
-    ></textarea>
-    <div class="modal-actions" style="justify-content: space-between; align-items: center;">
-      <button class="btn btn-danger" onclick="blockAllListedTikTokUsers()">
-        ⚡ Fast-Block All Listed on TikTok
-      </button>
-      <div style="display:flex; gap:8px;">
-        <button class="btn" onclick="closeTikTokBlacklistModal()">Close</button>
-        <button class="btn" onclick="copyTikTokBlacklistText()">Copy List</button>
-        <button class="btn btn-primary" onclick="saveTikTokBlacklistText()">
-          Save Blacklist
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ========================================================================
-     5. TIKTOK ACCOUNT SESSION LOGIN MODAL
-     ======================================================================== -->
-<div id="tt-login-modal">
-  <div class="modal-content">
-    <div class="modal-head">
-      <h2>TikTok Account Session</h2>
-      <button class="modal-close-x" onclick="closeTikTokLoginModal()">✕</button>
-    </div>
-    <p class="m-sub">
-      Connect your TikTok session cookie so NEXUS can capture authenticated
-      Webcast share events and auto-block users in real time.
-    </p>
-
-    <label class="field-label" for="tt-account-name-input">
-      Your TikTok @Handle (Display Label)
-    </label>
-    <input
-      type="text"
-      id="tt-account-name-input"
-      placeholder="@your_handle"
-      style="width:100%; padding:10px 13px; margin-bottom:14px; background:var(--void); color:var(--text); border:1px solid var(--line-2); border-radius:var(--r-xs); font-family:var(--mono); font-size:12.5px; outline:none;"
-    >
-
-    <label class="field-label" for="tt-cookie-input">
-      TikTok Cookie Header or sessionid
-    </label>
-    <input
-      type="password"
-      id="tt-cookie-input"
-      placeholder="Paste full Cookie header or sessionid value from tiktok.com…"
-      style="width:100%; padding:11px 13px; margin-bottom:14px; background:var(--void); color:var(--cyan); border:1px solid var(--line-2); border-radius:var(--r-xs); font-family:var(--mono); font-size:12.5px; outline:none;"
-    >
-
-    <div class="login-warn" style="margin-top:0; margin-bottom:18px;">
-      <span>ℹ</span>
-      <span>
-        Open <b>tiktok.com</b> logged in → press <b>F12</b> → <b>Network</b>
-        tab → click any request → copy the full <b>Cookie</b> header (or copy
-        <b>sessionid</b> from Application → Cookies).
-      </span>
-    </div>
-
-    <div class="modal-actions" style="justify-content: space-between; align-items: center;">
-      <button class="btn btn-danger" onclick="logoutTikTokAccount()">
-        Disconnect Account
-      </button>
-      <div style="display:flex; gap:8px;">
-        <button class="btn" onclick="closeTikTokLoginModal()">Cancel</button>
-        <button class="btn btn-primary" onclick="saveTikTokLogin()">
-          Save &amp; Connect
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ========================================================================
-     6. TIKTOK BLOCK DIAGNOSTICS & TELEMETRY MODAL
-     ======================================================================== -->
-<div id="tt-diag-modal">
-  <div class="modal-content wide">
-    <div class="modal-head">
-      <h2>TikTok Fast-Blocker Telemetry &amp; Diagnostics</h2>
-      <button class="modal-close-x" onclick="closeTikTokDiagnosticsModal()">✕</button>
-    </div>
-    <p class="m-sub" id="tt-diag-summary">
-      Inspect real-time user ID resolutions, block latency (ms), and vector
-      status codes.
-    </p>
-
-    <div class="diag-table-wrap">
-      <table class="diag-table">
-        <thead>
-          <tr>
-            <th>Time</th>
-            <th>@Username</th>
-            <th>Resolved User ID</th>
-            <th>Vector</th>
-            <th>Latency</th>
-            <th>Result</th>
-          </tr>
-        </thead>
-        <tbody id="tt-diag-tbody">
-          <tr>
-            <td colspan="6" style="text-align:center; color:var(--muted);">
-              No block attempts recorded in this session yet.
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="modal-actions">
-      <button class="btn" onclick="refreshTikTokDiagnostics()">↻ Refresh</button>
-      <button class="btn btn-primary" onclick="closeTikTokDiagnosticsModal()">
-        Close
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- TOAST CONTAINER -->
 <div id="toast-container"></div>
 
 <script>
-// ============================================================================
-// 1. CONFIGURATION & CONSTANTS
-// ============================================================================
-
+// ///////////////////////////////////////////////////////////
 const BACKEND_URL = 'https://nexus-backend-1-771w.onrender.com';
+// ///////////////////////////////////////////////////////////
 
-const PAGE_SIZE     = 100;
-const HYDRATE_CHUNK = 100;
-const HYDRATE_LANES = 1;
-const POLL_MS       = 400;
-const TT_JOB_POLL_MS = 220;
+const PAGE_SIZE      = 100;   
+const HYDRATE_CHUNK  = 100;   
+const HYDRATE_LANES  = 1;     
+const POLL_MS        = 400;   
 
 const BATCH_CONFIGS = {
-  unfriend: { size: 9, pauseMs: 62000 },
-  unblock:  { size: 19, pauseMs: 62000 },
-  accept:   { size: 9, pauseMs: 62000 },
-  decline:  { size: 9, pauseMs: 62000 },
+  unfriend: { size: 9, pauseMs: 62000 }, 
+  unblock: { size: 19, pauseMs: 62000 }, 
+  accept: { size: 9, pauseMs: 62000 },  
+  decline: { size: 9, pauseMs: 62000 }  
 };
 
-const AUTO_SYNC_MS        = 30000;
-const AUTO_ACCEPT_IDLE_MS = 15000;
-const AUTO_ACCEPT_GAP_MS  = 3000;
+const AUTO_SYNC_MS        = 30000; 
+const AUTO_ACCEPT_IDLE_MS = 15000; 
+const AUTO_ACCEPT_GAP_MS  = 3000;  
 
 const MM2_CHUNK = 40;
 const MM2_LANES = 3;
 const BOT_ITEM_IDS = [1772336109, 63690008];
 
-// ============================================================================
-// 2. DOM ELEMENT REFERENCES
-// ============================================================================
-
-const loginSection       = document.getElementById('login-section');
-const dashboardSection   = document.getElementById('dashboard-section');
-const container          = document.getElementById('requests-container');
-const searchInput        = document.getElementById('search-input');
-const filterToggle       = document.getElementById('bot-filter-toggle');
-const botFilterV2Toggle  = document.getElementById('bot-filter-v2-toggle');
-const mm2FilterToggle    = document.getElementById('mm2-filter-toggle');
-const compactViewToggle  = document.getElementById('compact-view-toggle');
-const mm2Note            = document.getElementById('mm2-note');
-const mm2NoteText        = document.getElementById('mm2-note-text');
-const targetNum          = document.getElementById('target-num');
-const targetWord         = document.getElementById('target-word');
-const targetTotal        = document.getElementById('target-total');
-const pageIndicator      = document.getElementById('page-indicator');
-const paginationBar      = document.getElementById('pagination-bar');
-const btnPrev            = document.getElementById('btn-prev');
-const btnNext            = document.getElementById('btn-next');
-const emptyState         = document.getElementById('empty-state');
-const emptyTitle         = document.getElementById('empty-title');
-const emptyBody          = document.getElementById('empty-body');
-const exportModal        = document.getElementById('export-modal');
-const exportTextarea     = document.getElementById('export-textarea');
-const ttBlacklistModal   = document.getElementById('tt-blacklist-modal');
-const ttBlacklistTa      = document.getElementById('tt-blacklist-textarea');
-const ttLoginModal       = document.getElementById('tt-login-modal');
-const ttDiagModal        = document.getElementById('tt-diag-modal');
-const ttMetricsBar       = document.getElementById('tt-metrics-bar');
-const autoAcceptToggle   = document.getElementById('auto-accept-toggle');
-const autoSyncToggle     = document.getElementById('auto-sync-toggle');
-const autoStatus         = document.getElementById('auto-status');
-const autoStatusText     = document.getElementById('auto-status-text');
-const btnBlacklistMarked = document.getElementById('btn-blacklist-marked');
+const loginSection      = document.getElementById('login-section');
+const dashboardSection  = document.getElementById('dashboard-section');
+const container         = document.getElementById('requests-container');
+const searchInput       = document.getElementById('search-input');
+const filterToggle      = document.getElementById('bot-filter-toggle');
+const botFilterV2Toggle = document.getElementById('bot-filter-v2-toggle');
+const mm2FilterToggle   = document.getElementById('mm2-filter-toggle');
+const mm2Note           = document.getElementById('mm2-note');
+const mm2NoteText       = document.getElementById('mm2-note-text');
+const targetNum         = document.getElementById('target-num');
+const targetWord        = document.getElementById('target-word');
+const targetTotal       = document.getElementById('target-total');
+const pageIndicator     = document.getElementById('page-indicator');
+const paginationBar     = document.getElementById('pagination-bar');
+const btnPrev           = document.getElementById('btn-prev');
+const btnNext           = document.getElementById('btn-next');
+const emptyState        = document.getElementById('empty-state');
+const emptyTitle        = document.getElementById('empty-title');
+const emptyBody         = document.getElementById('empty-body');
+const exportModal       = document.getElementById('export-modal');
+const exportTextarea    = document.getElementById('export-textarea');
+const autoAcceptToggle  = document.getElementById('auto-accept-toggle');
+const autoSyncToggle    = document.getElementById('auto-sync-toggle');
+const autoStatus        = document.getElementById('auto-status');
+const autoStatusText    = document.getElementById('auto-status-text');
+const btnBlacklistMarked= document.getElementById('btn-blacklist-marked');
 
 const VIEWS = {
   requests: {
@@ -2382,8 +278,7 @@ const VIEWS = {
     actionsRow: 'actions-requests',
     tab: 'vtab-requests',
     emptyTitle: 'No incoming requests',
-    emptyBody:
-      'Your queue is clear. New friend requests will appear here — hit Sync to check again.',
+    emptyBody: 'Your queue is clear. New friend requests will appear here — hit Sync to check again.',
   },
   blocked: {
     word: 'blocked',
@@ -2391,8 +286,7 @@ const VIEWS = {
     actionsRow: 'actions-blocked',
     tab: 'vtab-blocked',
     emptyTitle: 'Nobody is blocked',
-    emptyBody:
-      'Your Roblox block list is empty. Anyone you block will show up here.',
+    emptyBody: 'Your Roblox block list is empty. Anyone you block will show up here.',
   },
   tiktok: {
     word: 'sharers',
@@ -2400,173 +294,95 @@ const VIEWS = {
     actionsRow: 'actions-tiktok',
     tab: 'vtab-tiktok',
     emptyTitle: 'No live shares collected yet',
-    emptyBody:
-      'Enter your TikTok @username above and click Listen Live — everyone who shares your stream will appear here in real time.',
-  },
+    emptyBody: 'Enter your TikTok @username above and click Listen Live — everyone who shares your stream will appear here in real time.',
+  }
 };
 
-// ============================================================================
-// 3. APPLICATION STATE
-// ============================================================================
-
-let currentView            = 'requests';
+let currentView = 'requests';
 let isProcessingMassAction = false;
-let currentIds             = [];
-let visibleIds             = [];
-let markedIds              = new Set();
-let loadedDetailsMap       = new Map();
-let currentPage            = 1;
-let hydrateToken           = 0;
-let renderQueued           = false;
-let searchDebounce         = null;
+let currentIds = [];
+let visibleIds = [];
+let markedIds = new Set();
+let loadedDetailsMap = new Map();
+let currentPage = 1;
+let hydrateToken = 0;   
+let renderQueued = false;
+let searchDebounce = null;
 
-let mm2Enabled             = false;
-let mm2LevelMap            = new Map();
-let mm2Icons               = null;
-let mm2Token               = 0;
-let mm2Pending             = 0;
-let mm2Total               = 0;
+let mm2Enabled = false;
+let mm2LevelMap = new Map();   
+let mm2Icons = null;           
+let mm2Token = 0;
+let mm2Pending = 0;
+let mm2Total = 0;
 
-let botFilterV2Enabled     = false;
-let botFilterV2Map         = new Map();
-let botFilterV2Token       = 0;
+let botFilterV2Enabled = false;
+let botFilterV2Map = new Map(); 
+let botFilterV2Token = 0;
 
-// TIKTOK LIVE & BLOCKER STATE
-let ttSharersMap           = new Map();
-let ttBlacklistSet         = new Set();
-let ttEventSource          = null;
-let ttPollTimer            = null;
-let ttState                = {
-  connected: false,
-  username: null,
-  roomId: null,
-  error: null,
-};
-let ttAuth                 = {
-  loggedIn: false,
-  accountName: '',
-  autoBlockSharers: false,
-};
-let activeTikTokJobId      = null;
-let ttPrewarmDebounce      = null;
+// TIKTOK STATE
+let ttSharersMap = new Map();
+let ttEventSource = null;
+let ttState = { connected: false, username: null, roomId: null, error: null };
 
 const session = () => (localStorage.getItem('nexusSession') || '').trim();
-
-const esc = (s) =>
-  String(s).replace(
-    /[&<>"']/g,
-    (c) =>
-      ({
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#39;',
-      })[c]
-  );
-
-// ============================================================================
-// 4. TOAST NOTIFICATIONS & UI CONTROLS
-// ============================================================================
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 function showToast(message, type = '') {
-  const map = {
-    error: 'error',
-    purple: 'success',
-    'neon-blue': 'info',
-    success: 'success',
-    warn: 'warn',
-    info: 'info',
-  };
-  const cls = map[type] || 'info';
-  const glyph = {
-    error: '✕',
-    success: '✓',
-    warn: '!',
-    info: '›',
-  }[cls];
+  const map   = { error:'error', purple:'success', 'neon-blue':'info', success:'success', warn:'warn', info:'info' };
+  const cls   = map[type] || 'info';
+  const glyph = { error:'✕', success:'✓', warn:'!', info:'›' }[cls];
   const toast = document.createElement('div');
   toast.className = `toast ${cls}`;
   toast.innerHTML = `<span class="toast-glyph">${glyph}</span><span>${esc(message)}</span>`;
   document.getElementById('toast-container').appendChild(toast);
-  setTimeout(() => {
-    toast.style.opacity = '0';
-    toast.style.transform = 'translateX(30px)';
-    setTimeout(() => toast.remove(), 300);
-  }, 3600);
-}
-
-function toggleCompactMode() {
-  const on = compactViewToggle.checked;
-  localStorage.setItem('nexusCompactMode', on ? '1' : '0');
-  container.classList.toggle('compact-mode', on);
+  setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateX(30px)'; setTimeout(() => toast.remove(), 300); }, 3500);
 }
 
 function updateControls() {
   const targets = currentIds.length > 0;
   const busy = isProcessingMassAction;
-  const set = (id, dis) => {
-    const b = document.getElementById(id);
-    if (b) {
-      b.disabled = dis;
-    }
-  };
-  set('btn-accept-all', busy || !targets);
-  set('btn-decline-all', busy || !targets);
-  set('btn-blacklist-all', busy || !targets);
+  const set = (id, dis) => { const b = document.getElementById(id); if (b) b.disabled = dis; };
+  set('btn-accept-all',     busy || !targets);
+  set('btn-decline-all',    busy || !targets);
+  set('btn-blacklist-all',  busy || !targets);
   set('btn-blacklist-page', busy || !targets);
   set('btn-blacklist-filtered', busy || !targets);
   set('btn-remove-friends', busy);
   set('btn-blacklist-friends', busy);
-  set('btn-unblock-all', busy || (currentView === 'blocked' && !targets));
+  set('btn-unblock-all',    busy || (currentView === 'blocked' && !targets));
   updateMarkedControls();
 }
 
 function updateMarkedControls() {
   if (btnBlacklistMarked) {
-    btnBlacklistMarked.disabled =
-      markedIds.size === 0 || isProcessingMassAction;
+    btnBlacklistMarked.disabled = markedIds.size === 0 || isProcessingMassAction;
     btnBlacklistMarked.innerText = `Blacklist Marked (${markedIds.size})`;
   }
 }
 
 function toggleMark(id, checked) {
-  if (checked) {
-    markedIds.add(id);
-  } else {
-    markedIds.delete(id);
-  }
+  if (checked) markedIds.add(id);
+  else markedIds.delete(id);
   updateMarkedControls();
 }
 
-// ============================================================================
-// 5. FILTERING, SORTING & TARGET COUNTING
-// ============================================================================
-
 function getBotFilteredIds() {
   const botFilter = filterToggle.checked;
-  if (!botFilter && !botFilterV2Enabled) {
-    return [];
-  }
+  if (!botFilter && !botFilterV2Enabled) return [];
 
-  return currentIds.filter((id) => {
+  return currentIds.filter(id => {
     const d = loadedDetailsMap.get(id);
-    if (!d) {
-      return false;
-    }
+    if (!d) return false;
 
     let isBot = false;
     if (botFilter) {
       if (d.username !== 'Unknown' || d.displayName !== 'Unknown') {
-        if (d.username.toLowerCase() === d.displayName.toLowerCase()) {
-          isBot = true;
-        }
+        if (d.username.toLowerCase() === d.displayName.toLowerCase()) isBot = true;
       }
     }
     if (botFilterV2Enabled) {
-      if (botFilterV2Map.has(id) && botFilterV2Map.get(id) === true) {
-        isBot = true;
-      }
+      if (botFilterV2Map.has(id) && botFilterV2Map.get(id) === true) isBot = true;
     }
     return isBot;
   });
@@ -2576,58 +392,38 @@ function computeVisible() {
   const term = searchInput.value.toLowerCase().trim();
 
   if (currentView === 'tiktok') {
-    const allSharers = Array.from(ttSharersMap.values())
-      .filter((u) => !ttBlacklistSet.has(u.uniqueId.toLowerCase()))
-      .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-
+    const allSharers = Array.from(ttSharersMap.values()).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
     if (!term) {
-      visibleIds = allSharers.map((u) => u.uniqueId);
+      visibleIds = allSharers.map(u => u.uniqueId);
     } else {
       visibleIds = allSharers
-        .filter(
-          (u) =>
-            u.uniqueId.toLowerCase().includes(term) ||
-            (u.nickname || '').toLowerCase().includes(term)
-        )
-        .map((u) => u.uniqueId);
+        .filter(u => u.uniqueId.toLowerCase().includes(term) || (u.nickname || '').toLowerCase().includes(term))
+        .map(u => u.uniqueId);
     }
     return;
   }
 
   const botFilter = filterToggle.checked;
 
-  if (!term && !botFilter && !botFilterV2Enabled) {
-    visibleIds = currentIds;
-  } else {
-    visibleIds = currentIds.filter((id) => {
+  if (!term && !botFilter && !botFilterV2Enabled) { visibleIds = currentIds; }
+  else {
+    visibleIds = currentIds.filter(id => {
       const d = loadedDetailsMap.get(id);
-      if (!d) {
-        return !term;
-      }
+      if (!d) return !term; 
 
       if (botFilter) {
-        if (d.username === 'Unknown' && d.displayName === 'Unknown') {
-          return true;
-        }
-        const sameName =
-          d.username.toLowerCase() === d.displayName.toLowerCase();
-        if (sameName) {
-          return false;
-        }
+        if (d.username === 'Unknown' && d.displayName === 'Unknown') return true;
+        const sameName = d.username.toLowerCase() === d.displayName.toLowerCase();
+        if (sameName) return false; 
       }
-
+      
       if (botFilterV2Enabled) {
         if (botFilterV2Map.has(id) && botFilterV2Map.get(id) === true) {
-          return false;
+          return false; 
         }
       }
 
-      if (term) {
-        return (
-          d.username.toLowerCase().includes(term) ||
-          d.displayName.toLowerCase().includes(term)
-        );
-      }
+      if (term) return d.username.toLowerCase().includes(term) || d.displayName.toLowerCase().includes(term);
       return true;
     });
   }
@@ -2642,109 +438,48 @@ function computeVisible() {
 }
 
 function setTargetCount() {
-  const allSharersArr = Array.from(ttSharersMap.values());
-  const unblockedSharersCount = allSharersArr.filter(
-    (u) => !ttBlacklistSet.has(u.uniqueId.toLowerCase())
-  ).length;
-  const totalShareEvents = allSharersArr.reduce(
-    (acc, u) => acc + (Number(u.shareCount) || 1),
-    0
-  );
-
-  const totalCount =
-    currentView === 'tiktok' ? unblockedSharersCount : currentIds.length;
+  const totalCount = currentView === 'tiktok' ? ttSharersMap.size : currentIds.length;
   targetNum.innerText = visibleIds.length;
   targetWord.innerText = VIEWS[currentView].word;
-  targetTotal.innerText =
-    visibleIds.length === totalCount ? '' : ` of ${totalCount}`;
-
-  const reqTabBadge = document.getElementById('req-tab-count');
-  if (reqTabBadge && currentView === 'requests') {
-    reqTabBadge.innerText = currentIds.length;
-  }
-
+  targetTotal.innerText = visibleIds.length === totalCount ? '' : ` of ${totalCount}`;
   const ttTabBadge = document.getElementById('tt-tab-count');
-  if (ttTabBadge) {
-    ttTabBadge.innerText = unblockedSharersCount;
-  }
-
-  const ttBlBadge = document.getElementById('tt-bl-count');
-  if (ttBlBadge) {
-    ttBlBadge.innerText = ttBlacklistSet.size;
-  }
-
-  // Update TikTok Metrics Sub-bar
-  const mVis = document.getElementById('tt-metric-visible');
-  const mTot = document.getElementById('tt-metric-total-shares');
-  const mBlk = document.getElementById('tt-metric-blacklisted');
-  const mAut = document.getElementById('tt-metric-autoblock');
-  if (mVis) mVis.innerText = unblockedSharersCount;
-  if (mTot) mTot.innerText = totalShareEvents;
-  if (mBlk) mBlk.innerText = ttBlacklistSet.size;
-  if (mAut) {
-    mAut.innerText = ttAuth.autoBlockSharers ? 'ACTIVE (0ms)' : 'OFF';
-    mAut.className =
-      'm-val ' + (ttAuth.autoBlockSharers ? 'emerald' : 'red');
-  }
-
+  if (ttTabBadge) ttTabBadge.innerText = ttSharersMap.size;
   updateControls();
 }
 
 function handleFilterChange() {
   clearTimeout(searchDebounce);
-  searchDebounce = setTimeout(() => {
-    currentPage = 1;
-    render();
-  }, 100);
+  searchDebounce = setTimeout(() => { currentPage = 1; render(); }, 120);
 }
 
 function switchView(view) {
-  if (view === currentView || !VIEWS[view]) {
-    return;
-  }
-  if (isProcessingMassAction && view !== 'tiktok') {
-    showToast('Wait for the running job to finish.', 'warn');
-    return;
-  }
+  if (view === currentView || !VIEWS[view]) return;
+  if (isProcessingMassAction && view !== 'tiktok') { showToast('Wait for the running job to finish.', 'warn'); return; }
 
   currentView = view;
-  hydrateToken += 1;
-  mm2Token += 1;
-  botFilterV2Token += 1;
+  hydrateToken++;
+  mm2Token++; 
+  botFilterV2Token++;
 
   for (const [name, cfg] of Object.entries(VIEWS)) {
     const on = name === view;
     document.getElementById(cfg.tab).classList.toggle('is-active', on);
-    document.getElementById(cfg.actionsRow).style.display = on
-      ? 'flex'
-      : 'none';
+    document.getElementById(cfg.actionsRow).style.display = on ? 'flex' : 'none';
   }
 
   const isTikTok = view === 'tiktok';
-  document.getElementById('roblox-auto-row').style.display = isTikTok
-    ? 'none'
-    : 'flex';
-  document.getElementById('bot-filter-v1-label').style.display = isTikTok
-    ? 'none'
-    : 'inline-flex';
-  document.getElementById('bot-filter-v2-label').style.display = isTikTok
-    ? 'none'
-    : 'inline-flex';
-  document.getElementById('mm2-filter-label').style.display = isTikTok
-    ? 'none'
-    : 'inline-flex';
-  if (ttMetricsBar) {
-    ttMetricsBar.style.display = isTikTok ? 'grid' : 'none';
-  }
+  document.getElementById('roblox-auto-row').style.display = isTikTok ? 'none' : 'flex';
+  document.getElementById('bot-filter-v1-label').style.display = isTikTok ? 'none' : 'inline-flex';
+  document.getElementById('bot-filter-v2-label').style.display = isTikTok ? 'none' : 'inline-flex';
+  document.getElementById('mm2-filter-label').style.display = isTikTok ? 'none' : 'inline-flex';
 
   emptyTitle.innerText = VIEWS[view].emptyTitle;
-  emptyBody.innerText = VIEWS[view].emptyBody;
+  emptyBody.innerText  = VIEWS[view].emptyBody;
 
   currentPage = 1;
   renderMm2Note(0, 0);
 
   if (isTikTok) {
-    fetchTikTokSnapshot();
     render();
   } else {
     currentIds = [];
@@ -2754,20 +489,13 @@ function switchView(view) {
   }
 }
 
-// ============================================================================
-// 6. ROBLOX SESSION AUTH & QUEUE HYDRATION
-// ============================================================================
-
 function checkAuth() {
   if (session()) {
     loginSection.style.display = 'none';
     dashboardSection.style.display = 'block';
     warmBackend();
     initTikTokSSE();
-    restoreTikTokLocalAuth();
-    if (currentIds.length === 0 && currentView !== 'tiktok') {
-      loadList();
-    }
+    if (currentIds.length === 0 && currentView !== 'tiktok') loadList();
   } else {
     loginSection.style.display = 'block';
     dashboardSection.style.display = 'none';
@@ -2775,165 +503,95 @@ function checkAuth() {
 }
 
 function warmBackend() {
-  fetch(`${BACKEND_URL}/api/warm`, {
-    method: 'POST',
-    headers: { 'roblox-cookie': session() },
-  }).catch(() => {});
+  fetch(`${BACKEND_URL}/api/warm`, { method: 'POST', headers: { 'roblox-cookie': session() } }).catch(() => {});
 }
 
 function saveCookie() {
   const input = document.getElementById('cookie-input').value.trim();
-  if (!input) {
-    return;
-  }
+  if (!input) return;
   localStorage.setItem('nexusSession', input);
-  currentIds = [];
-  markedIds.clear();
-  loadedDetailsMap.clear();
-  currentPage = 1;
+  currentIds = []; markedIds.clear(); loadedDetailsMap.clear(); currentPage = 1;
   checkAuth();
 }
 
-function logout() {
-  localStorage.removeItem('nexusSession');
-  location.reload();
-}
+function logout() { localStorage.removeItem('nexusSession'); location.reload(); }
 
 function manualRefresh() {
-  if (isProcessingMassAction || currentView === 'tiktok') {
-    return;
-  }
-  currentIds = [];
-  markedIds.clear();
-  currentPage = 1;
+  if (isProcessingMassAction || currentView === 'tiktok') return;
+  currentIds = []; markedIds.clear(); currentPage = 1;
   render();
   loadList({ fresh: true });
 }
 
 async function loadList({ fresh = false, quiet = false } = {}) {
-  if (currentView === 'tiktok') {
-    return;
-  }
+  if (currentView === 'tiktok') return;
   const view = currentView;
   const token = ++hydrateToken;
   const t0 = performance.now();
   try {
     const url = `${BACKEND_URL}${VIEWS[view].endpoint}${fresh ? '?fresh=1' : ''}`;
-    const response = await fetch(url, {
-      headers: { 'roblox-cookie': session() },
-    });
+    const response = await fetch(url, { headers: { 'roblox-cookie': session() } });
     if (!response.ok) {
       const errData = await response.json().catch(() => ({}));
-      if (!quiet) {
-        showToast(errData.error || 'Connection failed', 'error');
-      }
-      if (response.status === 401) {
-        logout();
-      }
+      if (!quiet) showToast(errData.error || 'Connection failed', 'error');
+      if (response.status === 401) logout();
       return;
     }
     const ids = await response.json();
-    if (ids && ids.error) {
-      showToast(`Roblox error: ${ids.error}`, 'error');
-      return;
-    }
-    if (view !== currentView || token !== hydrateToken) {
-      return;
-    }
+    if (ids && ids.error) { showToast(`Roblox error: ${ids.error}`, 'error'); return; }
+    if (view !== currentView || token !== hydrateToken) return; 
 
     currentIds = Array.isArray(ids) ? ids : [];
-    render();
-    hydrateAll(currentIds, token);
-    if (mm2Enabled) {
-      hydrateMm2Levels(currentIds, ++mm2Token);
-    }
-    if (botFilterV2Enabled) {
-      hydrateBotFilterV2(currentIds, ++botFilterV2Token);
-    }
+    render();                        
+    hydrateAll(currentIds, token);   
+    if (mm2Enabled) hydrateMm2Levels(currentIds, ++mm2Token); 
+    if (botFilterV2Enabled) hydrateBotFilterV2(currentIds, ++botFilterV2Token); 
 
-    if (fresh && !quiet) {
-      showToast(
-        `Synced ${currentIds.length} in ${Math.round(performance.now() - t0)}ms`,
-        'success'
-      );
-    }
-  } catch (_err) {
-    if (!quiet) {
-      showToast('Network disconnected or backend updating…', 'error');
-    }
+    if (fresh && !quiet) showToast(`Synced ${currentIds.length} in ${Math.round(performance.now() - t0)}ms`, 'success');
+  } catch (err) {
+    if (!quiet) showToast('Network disconnected or backend updating…', 'error');
   }
 }
 
 async function hydrateAll(ids, token) {
-  const needed = ids.filter((id) => !loadedDetailsMap.has(id));
-  if (needed.length === 0) {
-    return;
-  }
+  const needed = ids.filter(id => !loadedDetailsMap.has(id));
+  if (needed.length === 0) return;
 
-  const pageIds = visibleIds.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE
-  );
+  const pageIds = visibleIds.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
   const onScreen = new Set(pageIds);
   needed.sort((a, b) => (onScreen.has(b) ? 1 : 0) - (onScreen.has(a) ? 1 : 0));
 
   const chunks = [];
-  for (let i = 0; i < needed.length; i += HYDRATE_CHUNK) {
-    chunks.push(needed.slice(i, i + HYDRATE_CHUNK));
-  }
+  for (let i = 0; i < needed.length; i += HYDRATE_CHUNK) chunks.push(needed.slice(i, i + HYDRATE_CHUNK));
 
   let next = 0;
   const lane = async () => {
     while (next < chunks.length) {
-      if (token !== hydrateToken) {
-        return;
-      }
+      if (token !== hydrateToken) return;
       const chunk = chunks[next++];
       try {
         const res = await fetch(`${BACKEND_URL}/api/requests/details`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userIds: chunk }),
+          body: JSON.stringify({ userIds: chunk })
         });
-        if (!res.ok) {
-          throw new Error('Hydration blocked');
-        }
+        if (!res.ok) throw new Error('Hydration blocked'); 
         const details = await res.json();
-        if (token !== hydrateToken) {
-          return;
-        }
-        details.forEach((d) => loadedDetailsMap.set(d.id, d));
+        if (token !== hydrateToken) return;
+        details.forEach(d => loadedDetailsMap.set(d.id, d));
         queueRender();
-      } catch (_e) {
-        // Ignore chunk hydration error
-      }
+      } catch (e) { }
     }
   };
 
   await Promise.all(Array.from({ length: HYDRATE_LANES }, lane));
 }
 
-// ============================================================================
-// 7. TIKTOK LIVE STREAM SSE & ULTRA-FAST PARALLEL BLOCKER LOGIC
-// ============================================================================
-
+// ---- TIKTOK LIVE LOGIC ----
 function initTikTokSSE() {
-  if (ttEventSource) {
-    ttEventSource.close();
-  }
+  if (ttEventSource) ttEventSource.close();
   const savedUser = localStorage.getItem('nexusTikTokUser');
-  if (savedUser) {
-    document.getElementById('tt-username-input').value = savedUser;
-  }
-
-  fetchTikTokSnapshot();
-  if (!ttPollTimer) {
-    ttPollTimer = setInterval(() => {
-      if (currentView === 'tiktok' || ttState.connected) {
-        fetchTikTokSnapshot();
-      }
-    }, 2000);
-  }
+  if (savedUser) document.getElementById('tt-username-input').value = savedUser;
 
   ttEventSource = new EventSource(`${BACKEND_URL}/api/tiktok/stream`);
 
@@ -2942,112 +600,32 @@ function initTikTokSSE() {
       const data = JSON.parse(event.data);
       if (data.type === 'INIT') {
         ttState = data.state || { connected: false };
-        if (data.auth) {
-          ttAuth = data.auth;
-        }
-        if (Array.isArray(data.blacklist)) {
-          ttBlacklistSet = new Set(
-            data.blacklist.map((u) => u.toLowerCase())
-          );
-        }
         ttSharersMap.clear();
-        (data.sharers || []).forEach((u) => ttSharersMap.set(u.uniqueId, u));
+        (data.sharers || []).forEach(u => ttSharersMap.set(u.uniqueId, u));
         updateTikTokStatusUI();
         queueRender();
       } else if (data.type === 'STATUS') {
         ttState = data.state || { connected: false };
         updateTikTokStatusUI();
-      } else if (data.type === 'AUTH') {
-        if (data.auth) {
-          ttAuth = data.auth;
-        }
-        updateTikTokStatusUI();
-        queueRender();
-      } else if (data.type === 'BLACKLIST') {
-        if (Array.isArray(data.blacklist)) {
-          ttBlacklistSet = new Set(
-            data.blacklist.map((u) => u.toLowerCase())
-          );
-        }
-        queueRender();
       } else if (data.type === 'SHARE') {
         ttSharersMap.set(data.user.uniqueId, data.user);
-        queueRender();
+        const ttTabBadge = document.getElementById('tt-tab-count');
+        if (ttTabBadge) ttTabBadge.innerText = ttSharersMap.size;
+        if (currentView === 'tiktok') queueRender();
       } else if (data.type === 'CLEAR') {
         ttSharersMap.clear();
-        queueRender();
+        const ttTabBadge = document.getElementById('tt-tab-count');
+        if (ttTabBadge) ttTabBadge.innerText = '0';
+        if (currentView === 'tiktok') queueRender();
       }
-    } catch (_e) {
-      // Ignore malformed SSE frame
-    }
+    } catch (e) {}
   };
-}
-
-async function fetchTikTokSnapshot() {
-  try {
-    const res = await fetch(`${BACKEND_URL}/api/tiktok/sharers`);
-    if (!res.ok) {
-      return;
-    }
-    const data = await res.json();
-    if (data.state) {
-      ttState = data.state;
-    }
-    if (data.auth) {
-      ttAuth = data.auth;
-    }
-    if (Array.isArray(data.blacklist)) {
-      ttBlacklistSet = new Set(data.blacklist.map((u) => u.toLowerCase()));
-    }
-    updateTikTokStatusUI();
-    if (Array.isArray(data.sharers)) {
-      ttSharersMap.clear();
-      data.sharers.forEach((u) => ttSharersMap.set(u.uniqueId, u));
-      queueRender();
-    }
-  } catch (_e) {
-    // Ignore snapshot network error
-  }
 }
 
 function updateTikTokStatusUI() {
   const wrap = document.getElementById('tt-live-status');
   const txt = document.getElementById('tt-live-status-text');
-  const loginBtn = document.getElementById('btn-tt-login');
-  const autoBlockToggle = document.getElementById('tt-autoblock-toggle');
-  const topDot = document.getElementById('top-tt-dot');
-  const topText = document.getElementById('top-tt-text');
-
-  if (autoBlockToggle) {
-    autoBlockToggle.checked = !!ttAuth.autoBlockSharers;
-  }
-
-  if (loginBtn) {
-    if (ttAuth.loggedIn) {
-      loginBtn.innerText = `TT: @${ttAuth.accountName || 'Connected'}`;
-      loginBtn.classList.add('btn-primary');
-    } else {
-      loginBtn.innerText = 'TikTok Account';
-      loginBtn.classList.remove('btn-primary');
-    }
-  }
-
-  if (topDot && topText) {
-    if (ttState.connected) {
-      topDot.className = 'status-dot live';
-      topText.innerText = `TikTok: @${ttState.username}`;
-    } else if (ttAuth.loggedIn) {
-      topDot.className = 'status-dot';
-      topText.innerText = `TikTok: Auth (@${ttAuth.accountName || 'Ready'})`;
-    } else {
-      topDot.className = 'status-dot offline';
-      topText.innerText = 'TikTok: Standby';
-    }
-  }
-
-  if (!wrap || !txt) {
-    return;
-  }
+  if (!wrap || !txt) return;
 
   wrap.classList.toggle('is-live', !!ttState.connected);
   wrap.classList.toggle('is-waiting', !ttState.connected && !!ttState.error);
@@ -3055,9 +633,7 @@ function updateTikTokStatusUI() {
   if (ttState.connected) {
     txt.innerText = `Listening to @${ttState.username}`;
     const inp = document.getElementById('tt-username-input');
-    if (inp && !inp.value) {
-      inp.value = `@${ttState.username}`;
-    }
+    if (inp && !inp.value) inp.value = `@${ttState.username}`;
   } else if (ttState.error) {
     txt.innerText = `Error: ${ttState.error}`;
   } else {
@@ -3079,25 +655,15 @@ async function connectTikTokLive() {
     const res = await fetch(`${BACKEND_URL}/api/tiktok/connect`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username }),
+      body: JSON.stringify({ username })
     });
     const data = await res.json();
     if (!res.ok) {
-      ttState = {
-        connected: false,
-        error: data.error || 'Connection failed',
-      };
-      updateTikTokStatusUI();
       showToast(data.error || 'Could not connect to TikTok LIVE.', 'error');
       return;
     }
-    ttState = data.state || {
-      connected: true,
-      username: username.replace(/^@/, ''),
-    };
-    updateTikTokStatusUI();
-    showToast(`Listening for shares on @${ttState.username}!`, 'success');
-  } catch (_e) {
+    showToast(`Listening for shares on @${data.state.username}!`, 'success');
+  } catch (e) {
     showToast('Could not reach backend.', 'error');
   }
 }
@@ -3105,44 +671,31 @@ async function connectTikTokLive() {
 async function disconnectTikTokLive() {
   try {
     await fetch(`${BACKEND_URL}/api/tiktok/disconnect`, { method: 'POST' });
-    ttState = {
-      connected: false,
-      username: null,
-      roomId: null,
-      error: null,
-    };
-    updateTikTokStatusUI();
     showToast('Stopped TikTok listener.', 'info');
-  } catch (_e) {
+  } catch (e) {
     showToast('Could not reach backend.', 'error');
   }
 }
 
 async function clearTikTokSharers() {
-  if (ttSharersMap.size === 0) {
-    return;
-  }
-  if (!confirm('Clear all collected TikTok sharers from the current log?')) {
-    return;
-  }
+  if (ttSharersMap.size === 0) return;
+  if (!confirm(`Clear all ${ttSharersMap.size} collected TikTok sharers?`)) return;
   try {
     await fetch(`${BACKEND_URL}/api/tiktok/clear`, { method: 'POST' });
-    ttSharersMap.clear();
-    queueRender();
     showToast('Cleared TikTok share list.', 'success');
-  } catch (_e) {
+  } catch (e) {
     showToast('Could not reach backend.', 'error');
   }
 }
 
 function copyAllTikTokSharers() {
-  if (visibleIds.length === 0) {
+  if (ttSharersMap.size === 0) {
     showToast('No TikTok sharers to copy yet.', 'warn');
     return;
   }
-  const list = visibleIds.join('\n');
+  const list = Array.from(ttSharersMap.keys()).join('\n');
   navigator.clipboard?.writeText(list);
-  showToast(`Copied ${visibleIds.length} TikTok usernames!`, 'success');
+  showToast(`Copied ${ttSharersMap.size} TikTok usernames!`, 'success');
 }
 
 function copySingleTikTokUser(uniqueId) {
@@ -3150,440 +703,29 @@ function copySingleTikTokUser(uniqueId) {
   showToast(`Copied @${uniqueId}`, 'success');
 }
 
-async function cancelTikTokJob() {
-  if (!activeTikTokJobId) {
-    return;
-  }
-  try {
-    await fetch(`${BACKEND_URL}/api/tiktok/jobs/${activeTikTokJobId}`, {
-      method: 'DELETE',
-    });
-    showToast('Stopping TikTok block job…', 'info');
-  } catch (_e) {
-    showToast('Could not cancel TikTok job.', 'error');
-  }
-}
-
-async function runTikTokBlockJobWithProgress(usernames) {
-  if (activeTikTokJobId) {
-    showToast('A TikTok block job is already running.', 'warn');
-    return;
-  }
-  try {
-    // Instant 0ms optimistic removal from UI
-    usernames.forEach((u) => ttBlacklistSet.add(u.toLowerCase()));
-    queueRender();
-
-    const res = await fetch(`${BACKEND_URL}/api/tiktok/jobs/block`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ usernames }),
-    });
-    const job = await res.json();
-    if (!res.ok) {
-      showToast(job.error || 'Could not start TikTok block job.', 'error');
-      return;
-    }
-
-    activeTikTokJobId = job.id;
-    showToast(
-      `Fast-blocking ${job.total} users on TikTok (6x parallel lanes)…`,
-      'info'
-    );
-
-    const poll = setInterval(async () => {
-      try {
-        const r = await fetch(`${BACKEND_URL}/api/tiktok/jobs/${job.id}`);
-        if (!r.ok) {
-          clearInterval(poll);
-          activeTikTokJobId = null;
-          return;
-        }
-        const state = await r.json();
-
-        const bar = ensureProgressBar();
-        const cancelBtn = document.getElementById('jp-cancel');
-        if (cancelBtn) {
-          cancelBtn.style.display = state.status === 'running' ? '' : 'none';
-          cancelBtn.onclick = cancelTikTokJob;
-        }
-
-        const pct = Math.round(
-          (state.processed / Math.max(1, state.total)) * 100
-        );
-        document.getElementById('jp-label').innerText =
-          `TikTok Fast-Block — ${state.processed} / ${state.total}` +
-          (state.currentUsername ? ` (@${state.currentUsername})` : '');
-        document.getElementById('jp-fill').style.width = `${pct}%`;
-        document.getElementById('jp-meta').innerHTML =
-          `<span class="jp-rate">${state.blockedOnTikTokCount} blocked on TikTok</span> · ${state.failedCount} failed` +
-          (state.lastNote ? ` · ${esc(state.lastNote)}` : '');
-
-        if (state.status !== 'running') {
-          clearInterval(poll);
-          activeTikTokJobId = null;
-          if (cancelBtn) {
-            cancelBtn.onclick = cancelJob;
-          }
-          setTimeout(hideProgress, 2200);
-          fetchTikTokSnapshot();
-          const secs = ((Date.now() - state.startedAt) / 1000).toFixed(1);
-          showToast(
-            `Blocked ${state.blockedOnTikTokCount}/${state.total} users on TikTok in ${secs}s!`,
-            state.blockedOnTikTokCount > 0 ? 'success' : 'warn'
-          );
-        }
-      } catch (_e) {
-        clearInterval(poll);
-        activeTikTokJobId = null;
-      }
-    }, TT_JOB_POLL_MS);
-  } catch (_e) {
-    activeTikTokJobId = null;
-    showToast('Could not reach backend.', 'error');
-  }
-}
-
-async function blockSingleTikTokUser(uniqueId) {
-  const clean = String(uniqueId || '').trim().replace(/^@+/, '');
-  if (!clean) {
-    return;
-  }
-
-  // Instant 0ms UI removal
-  ttBlacklistSet.add(clean.toLowerCase());
-  queueRender();
-
-  try {
-    const t0 = performance.now();
-    const res = await fetch(`${BACKEND_URL}/api/tiktok/block`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ usernames: [clean] }),
-    });
-    const data = await res.json();
-    if (res.ok && data.success) {
-      const ms = Math.round(performance.now() - t0);
-      if (data.blockedOnTikTokCount > 0) {
-        showToast(`Blocked @${clean} on TikTok (${ms}ms)`, 'success');
-      } else {
-        showToast(
-          `Blacklisted @${clean}${data.note ? ' (' + data.note + ')' : ''}`,
-          'info'
-        );
-      }
-    }
-  } catch (_e) {
-    showToast('Could not reach backend.', 'error');
-  }
-}
-
-async function quickBlockTikTokInput() {
-  const inp = document.getElementById('tt-quick-block-input');
-  const uname = inp.value.trim().replace(/^@+/, '');
-  if (!uname) {
-    showToast('Enter a TikTok @username to block.', 'warn');
-    return;
-  }
-  inp.value = '';
-  await blockSingleTikTokUser(uname);
-}
-
-async function blockAllTikTokSharers() {
-  if (visibleIds.length === 0) {
-    showToast('No sharers in the queue to block.', 'warn');
-    return;
-  }
-  const targets = [...visibleIds];
-  await runTikTokBlockJobWithProgress(targets);
-}
-
-async function toggleTikTokAutoBlock() {
-  const enabled = document.getElementById('tt-autoblock-toggle').checked;
-  try {
-    await fetch(`${BACKEND_URL}/api/tiktok/auto-block`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ enabled }),
-    });
-    ttAuth.autoBlockSharers = enabled;
-    setTargetCount();
-    showToast(
-      enabled
-        ? 'Instant Auto-Block ON — sharers are blocked in real-time.'
-        : 'Auto-Block Sharers OFF.',
-      enabled ? 'success' : 'info'
-    );
-  } catch (_e) {
-    showToast('Could not update Auto-Block setting.', 'error');
-  }
-}
-
-// Background Pre-Warmer: resolves TikTok userIds/secUids while typing/pasting
-if (ttBlacklistTa) {
-  ttBlacklistTa.addEventListener('input', () => {
-    clearTimeout(ttPrewarmDebounce);
-    ttPrewarmDebounce = setTimeout(() => {
-      const lines = ttBlacklistTa.value
-        .split(/\r?\n/)
-        .map((s) => s.trim().replace(/^@+/, ''))
-        .filter(Boolean);
-      if (lines.length > 0) {
-        fetch(`${BACKEND_URL}/api/tiktok/prewarm`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ usernames: lines }),
-        }).catch(() => {});
-      }
-    }, 300);
-  });
-}
-
-async function openTikTokBlacklistModal() {
-  ttBlacklistModal.style.display = 'flex';
-  try {
-    const res = await fetch(`${BACKEND_URL}/api/tiktok/blacklist`);
-    const data = await res.json();
-    ttBlacklistTa.value = data.text || '';
-  } catch (_e) {
-    ttBlacklistTa.value = Array.from(ttBlacklistSet).join('\n');
-  }
-}
-
-function closeTikTokBlacklistModal() {
-  ttBlacklistModal.style.display = 'none';
-}
-
-function copyTikTokBlacklistText() {
-  ttBlacklistTa.select();
-  navigator.clipboard?.writeText(ttBlacklistTa.value);
-  showToast('Copied TikTok blacklist to clipboard!', 'success');
-}
-
-async function saveTikTokBlacklistText() {
-  const text = ttBlacklistTa.value;
-  try {
-    const res = await fetch(`${BACKEND_URL}/api/tiktok/blacklist/save`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text }),
-    });
-    const data = await res.json();
-    if (res.ok && data.success) {
-      ttBlacklistSet = new Set(
-        (data.usernames || []).map((u) => u.toLowerCase())
-      );
-      queueRender();
-      showToast(
-        `Saved & pre-warmed ${data.total} usernames!`,
-        'success'
-      );
-      closeTikTokBlacklistModal();
-    }
-  } catch (_e) {
-    showToast('Could not save TikTok blacklist.', 'error');
-  }
-}
-
-async function blockAllListedTikTokUsers() {
-  const lines = ttBlacklistTa.value
-    .split(/\r?\n/)
-    .map((s) => s.trim().replace(/^@+/, ''))
-    .filter(Boolean);
-
-  if (lines.length === 0) {
-    showToast('Type at least one username in the list first.', 'warn');
-    return;
-  }
-  if (!ttAuth.loggedIn) {
-    showToast(
-      'Log in via "TikTok Account" first so the site can block them on TikTok.',
-      'warn'
-    );
-    return;
-  }
-
-  closeTikTokBlacklistModal();
-  await runTikTokBlockJobWithProgress(lines);
-}
-
-// ============================================================================
-// 8. TIKTOK LOGIN & DIAGNOSTICS MODALS
-// ============================================================================
-
-function openTikTokLoginModal() {
-  ttLoginModal.style.display = 'flex';
-  document.getElementById('tt-account-name-input').value =
-    localStorage.getItem('nexusTikTokAccountName') || ttAuth.accountName || '';
-  document.getElementById('tt-cookie-input').value =
-    localStorage.getItem('nexusTikTokCookie') || '';
-}
-
-function closeTikTokLoginModal() {
-  ttLoginModal.style.display = 'none';
-}
-
-async function saveTikTokLogin() {
-  const accountName = document
-    .getElementById('tt-account-name-input')
-    .value.trim();
-  const cookie = document.getElementById('tt-cookie-input').value.trim();
-  if (!cookie) {
-    showToast('Paste your TikTok sessionid or Cookie header first.', 'warn');
-    return;
-  }
-
-  localStorage.setItem('nexusTikTokAccountName', accountName);
-  localStorage.setItem('nexusTikTokCookie', cookie);
-
-  try {
-    const res = await fetch(`${BACKEND_URL}/api/tiktok/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ accountName, cookie }),
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      showToast(data.error || 'Failed to log in to TikTok.', 'error');
-      return;
-    }
-    ttAuth = data.auth;
-    updateTikTokStatusUI();
-    closeTikTokLoginModal();
-    showToast(
-      `Logged into TikTok as @${ttAuth.accountName || 'Account'}!`,
-      'success'
-    );
-  } catch (_e) {
-    showToast('Could not reach backend.', 'error');
-  }
-}
-
-async function logoutTikTokAccount() {
-  localStorage.removeItem('nexusTikTokCookie');
-  localStorage.removeItem('nexusTikTokAccountName');
-  try {
-    await fetch(`${BACKEND_URL}/api/tiktok/logout`, { method: 'POST' });
-    ttAuth = {
-      loggedIn: false,
-      accountName: '',
-      autoBlockSharers: false,
-    };
-    updateTikTokStatusUI();
-    closeTikTokLoginModal();
-    showToast('Disconnected TikTok account.', 'info');
-  } catch (_e) {
-    // Ignore logout error
-  }
-}
-
-async function restoreTikTokLocalAuth() {
-  const savedCookie = localStorage.getItem('nexusTikTokCookie');
-  const savedName =
-    localStorage.getItem('nexusTikTokAccountName') || 'Account';
-  if (!savedCookie) {
-    return;
-  }
-  try {
-    const res = await fetch(`${BACKEND_URL}/api/tiktok/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ accountName: savedName, cookie: savedCookie }),
-    });
-    const data = await res.json();
-    if (res.ok && data.auth) {
-      ttAuth = data.auth;
-      updateTikTokStatusUI();
-    }
-  } catch (_e) {
-    // Ignore restore error
-  }
-}
-
-async function openTikTokDiagnosticsModal() {
-  ttDiagModal.style.display = 'flex';
-  await refreshTikTokDiagnostics();
-}
-
-function closeTikTokDiagnosticsModal() {
-  ttDiagModal.style.display = 'none';
-}
-
-async function refreshTikTokDiagnostics() {
-  const tbody = document.getElementById('tt-diag-tbody');
-  const summary = document.getElementById('tt-diag-summary');
-  try {
-    const res = await fetch(`${BACKEND_URL}/api/tiktok/diagnostics`);
-    if (!res.ok) {
-      return;
-    }
-    const data = await res.json();
-    if (summary && data.auth) {
-      summary.innerText =
-        `Session: ${data.auth.loggedIn ? '@' + data.auth.accountName : 'Not Logged In'} · ` +
-        `Cached Profiles: ${data.cachedProfilesCount || 0} · ` +
-        `Target IDC: ${data.auth.ttTargetIdc || 'useast1a'}`;
-    }
-    const rows = data.recentAttempts || [];
-    if (rows.length === 0) {
-      tbody.innerHTML =
-        '<tr><td colspan="6" style="text-align:center; color:var(--muted);">No block attempts recorded in this session yet.</td></tr>';
-      return;
-    }
-    tbody.innerHTML = rows
-      .map((r) => {
-        const timeStr = r.timestamp
-          ? new Date(r.timestamp).toLocaleTimeString()
-          : '—';
-        const statusHtml = r.success
-          ? '<span class="diag-badge-ok">BLOCKED</span>'
-          : `<span class="diag-badge-fail">${esc(r.note || 'FAILED')}</span>`;
-        return `
-          <tr>
-            <td>${esc(timeStr)}</td>
-            <td style="color:var(--cyan);">@${esc(r.username || '')}</td>
-            <td>${esc(r.userId || '—')}</td>
-            <td>${esc(r.vector || '—')}</td>
-            <td>${r.elapsedMs != null ? r.elapsedMs + 'ms' : '—'}</td>
-            <td>${statusHtml}</td>
-          </tr>
-        `;
-      })
-      .join('');
-  } catch (_e) {
-    // Ignore diagnostics fetch error
-  }
-}
-
 function buildTikTokCard(uniqueId) {
   const u = ttSharersMap.get(uniqueId);
   const card = document.createElement('div');
   card.className = 'user-card';
-  if (!u) {
-    return card;
-  }
+  if (!u) return card;
 
   card.innerHTML = `
-    <span class="tt-time-pill">${esc(u.lastSharedAt || '')}</span>
     <span class="tt-share-pill">${u.shareCount}× SHARED</span>
+    <div class="card-reticle"></div>
     <div class="pfp-wrap">
       <img src="${esc(u.profilePictureUrl)}" class="pfp" alt="" loading="lazy" decoding="async">
     </div>
     <div class="names">
       <h2 title="${esc(u.nickname)}">${esc(u.nickname)}</h2>
-      <p title="Click to copy @${esc(u.uniqueId)}" style="cursor:pointer;" onclick="copySingleTikTokUser('${esc(u.uniqueId)}')">@${esc(u.uniqueId)}</p>
+      <p title="@${esc(u.uniqueId)}">@${esc(u.uniqueId)}</p>
     </div>
     <div class="actions">
       <button class="btn btn-accept" onclick="copySingleTikTokUser('${esc(u.uniqueId)}')">Copy @User</button>
-      <button class="btn btn-reject" onclick="blockSingleTikTokUser('${esc(u.uniqueId)}')">Fast Block</button>
     </div>`;
   return card;
 }
 
-// ============================================================================
-// 9. BOT FILTER V2 & MM2 BADGE HYDRATION
-// ============================================================================
-
+// ---- BOT FILTER V2 HYDRATION ----
 function toggleBotFilterV2() {
   botFilterV2Enabled = botFilterV2Toggle.checked;
   localStorage.setItem('nexusBotFilterV2', botFilterV2Enabled ? '1' : '0');
@@ -3594,55 +736,45 @@ function toggleBotFilterV2() {
     render();
     hydrateBotFilterV2(currentIds, ++botFilterV2Token);
   } else {
-    botFilterV2Token += 1;
+    botFilterV2Token++; 
     render();
   }
 }
 
 async function hydrateBotFilterV2(ids, token) {
-  const needed = ids.filter((id) => !botFilterV2Map.has(id));
-  if (needed.length === 0) {
-    return;
-  }
+  const needed = ids.filter(id => !botFilterV2Map.has(id));
+  if (needed.length === 0) return;
 
-  const pageIds = visibleIds.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE
-  );
+  const pageIds = visibleIds.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
   const onScreen = new Set(pageIds);
   needed.sort((a, b) => (onScreen.has(b) ? 1 : 0) - (onScreen.has(a) ? 1 : 0));
 
   let next = 0;
   const lane = async () => {
     while (next < needed.length) {
-      if (token !== botFilterV2Token) {
-        return;
-      }
+      if (token !== botFilterV2Token) return;
       const id = needed[next++];
       try {
         const res = await fetch(`https://avatar.roproxy.com/v1/users/${id}/avatar`);
         if (res.ok) {
           const data = await res.json();
-          const wearsBotItem =
-            data.assets &&
-            data.assets.some((a) => BOT_ITEM_IDS.includes(a.id));
+          const wearsBotItem = data.assets && data.assets.some(a => BOT_ITEM_IDS.includes(a.id));
           botFilterV2Map.set(id, wearsBotItem);
-          if (wearsBotItem) {
-            queueRender();
-          }
+          if (wearsBotItem) queueRender(); 
         } else {
-          botFilterV2Map.set(id, false);
+          botFilterV2Map.set(id, false); 
         }
-      } catch (_e) {
+      } catch (e) {
         botFilterV2Map.set(id, false);
       }
-      await new Promise((r) => setTimeout(r, 150));
+      await new Promise(r => setTimeout(r, 150));
     }
   };
 
   await Promise.all(Array.from({ length: 3 }, lane));
 }
 
+// ---- MM2 HYDRATION ----
 function renderMm2Note(pending, total) {
   mm2Pending = pending;
   mm2Total = total;
@@ -3655,29 +787,19 @@ function renderMm2Note(pending, total) {
 }
 
 async function loadMm2Icons() {
-  if (mm2Icons) {
-    return mm2Icons;
-  }
+  if (mm2Icons) return mm2Icons;
   try {
     const res = await fetch(`${BACKEND_URL}/api/mm2/badge-icons`);
     mm2Icons = await res.json();
-  } catch (_e) {
-    mm2Icons = [];
-  }
+  } catch (e) { mm2Icons = []; }
   return mm2Icons;
 }
 
 async function hydrateMm2Levels(ids, token) {
-  const needed = ids.filter((id) => !mm2LevelMap.has(id));
-  if (needed.length === 0) {
-    renderMm2Note(0, 0);
-    return;
-  }
+  const needed = ids.filter(id => !mm2LevelMap.has(id));
+  if (needed.length === 0) { renderMm2Note(0, 0); return; }
 
-  const pageIds = visibleIds.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE
-  );
+  const pageIds = visibleIds.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
   const onScreen = new Set(pageIds);
   needed.sort((a, b) => (onScreen.has(b) ? 1 : 0) - (onScreen.has(a) ? 1 : 0));
 
@@ -3685,49 +807,31 @@ async function hydrateMm2Levels(ids, token) {
   renderMm2Note(remaining, needed.length);
 
   const chunks = [];
-  for (let i = 0; i < needed.length; i += MM2_CHUNK) {
-    chunks.push(needed.slice(i, i + MM2_CHUNK));
-  }
+  for (let i = 0; i < needed.length; i += MM2_CHUNK) chunks.push(needed.slice(i, i + MM2_CHUNK));
 
   let next = 0;
   const lane = async () => {
     while (next < chunks.length) {
-      if (token !== mm2Token) {
-        return;
-      }
+      if (token !== mm2Token) return;
       const chunk = chunks[next++];
       try {
         const res = await fetch(`${BACKEND_URL}/api/mm2/levels`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'roblox-cookie': session(),
-          },
-          body: JSON.stringify({ userIds: chunk }),
+          headers: { 'Content-Type': 'application/json', 'roblox-cookie': session() },
+          body: JSON.stringify({ userIds: chunk })
         });
         if (res.status === 401) {
-          remaining -= chunk.length;
-          renderMm2Note(Math.max(0, remaining), needed.length);
+          remaining -= chunk.length; renderMm2Note(Math.max(0, remaining), needed.length);
           return;
         }
-        if (!res.ok) {
-          remaining -= chunk.length;
-          renderMm2Note(Math.max(0, remaining), needed.length);
-          continue;
-        }
+        if (!res.ok) { remaining -= chunk.length; renderMm2Note(Math.max(0, remaining), needed.length); continue; }
         const data = await res.json();
-        if (token !== mm2Token) {
-          return;
-        }
-        data.forEach((d) => {
-          if (d.level !== null) {
-            mm2LevelMap.set(d.id, d.level);
-          }
-        });
+        if (token !== mm2Token) return;
+        data.forEach(d => { if (d.level !== null) mm2LevelMap.set(d.id, d.level); });
         remaining -= chunk.length;
         renderMm2Note(Math.max(0, remaining), needed.length);
         queueRender();
-      } catch (_e) {
+      } catch (e) {
         remaining -= chunk.length;
         renderMm2Note(Math.max(0, remaining), needed.length);
       }
@@ -3735,9 +839,7 @@ async function hydrateMm2Levels(ids, token) {
   };
 
   await Promise.all(Array.from({ length: MM2_LANES }, lane));
-  if (token === mm2Token) {
-    renderMm2Note(0, 0);
-  }
+  if (token === mm2Token) renderMm2Note(0, 0);
 }
 
 async function toggleMm2Filter() {
@@ -3746,51 +848,38 @@ async function toggleMm2Filter() {
 
   if (mm2Enabled) {
     await loadMm2Icons();
-    render();
+    render(); 
     hydrateMm2Levels(currentIds, ++mm2Token);
   } else {
-    mm2Token += 1;
+    mm2Token++; 
     renderMm2Note(0, 0);
     render();
   }
 }
 
 function mm2BadgeHtml(id) {
-  if (!mm2Enabled) {
-    return '';
-  }
+  if (!mm2Enabled) return '';
   if (!mm2LevelMap.has(id)) {
-    return '<span class="mm2-badge mm2-loading" title="Checking MM2 level…">⋯</span>';
+    return `<span class="mm2-badge mm2-loading" title="Checking MM2 level…">⋯</span>`;
   }
   const level = mm2LevelMap.get(id);
 
   if (level === -1) {
-    return '<span class="mm2-badge mm2-text" style="color:var(--faint); border-color:var(--line-2);" title="Inventory is Private">🔒</span>';
+    return `<span class="mm2-badge mm2-text" style="color:var(--faint); border-color:var(--line-2);" title="Inventory is Private">🔒</span>`;
   }
 
-  if (!level) {
-    return '';
-  }
-  const meta = (mm2Icons || []).find((x) => x.level === level);
+  if (!level) return ''; 
+  const meta = (mm2Icons || []).find(x => x.level === level);
   if (meta && meta.icon) {
     return `<img class="mm2-badge" src="${esc(meta.icon)}" title="MM2 level ${level}" alt="Lvl ${level}" loading="lazy">`;
   }
   return `<span class="mm2-badge mm2-text" title="MM2 level ${level}">${level}</span>`;
 }
 
-// ============================================================================
-// 10. GRID RENDERING & CARD BUILDERS
-// ============================================================================
-
 function queueRender() {
-  if (renderQueued) {
-    return;
-  }
+  if (renderQueued) return;
   renderQueued = true;
-  requestAnimationFrame(() => {
-    renderQueued = false;
-    render();
-  });
+  requestAnimationFrame(() => { renderQueued = false; render(); });
 }
 
 function render() {
@@ -3810,19 +899,14 @@ function render() {
   container.style.display = 'grid';
   emptyState.style.display = 'none';
 
-  const pageIds = visibleIds.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE
-  );
+  const pageIds = visibleIds.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
   const frag = document.createDocumentFragment();
   for (const id of pageIds) {
-    frag.appendChild(
-      currentView === 'tiktok' ? buildTikTokCard(id) : buildCard(id)
-    );
+    frag.appendChild(currentView === 'tiktok' ? buildTikTokCard(id) : buildCard(id));
   }
   container.replaceChildren(frag);
 
-  pageIndicator.innerHTML = `PAGE <b>${String(currentPage).padStart(2, '0')}</b> / ${String(totalPages).padStart(2, '0')}`;
+  pageIndicator.innerHTML = `PAGE <b>${String(currentPage).padStart(2,'0')}</b> / ${String(totalPages).padStart(2,'0')}`;
   btnPrev.disabled = currentPage <= 1;
   btnNext.disabled = currentPage >= totalPages;
   paginationBar.style.display = totalPages > 1 ? 'flex' : 'none';
@@ -3832,35 +916,34 @@ function buildCard(id) {
   const card = document.createElement('div');
   card.className = 'user-card';
   card.id = `user-${id}`;
-
+  
   const isChecked = markedIds.has(id) ? 'checked' : '';
 
   const d = loadedDetailsMap.get(id);
   if (!d) {
     card.classList.add('is-loading');
-    card.innerHTML =
-      '<div class="sk sk-pfp"></div><div class="sk sk-line"></div><div class="sk sk-line short"></div>';
+    card.innerHTML = `<div class="sk sk-pfp"></div><div class="sk sk-line"></div><div class="sk sk-line short"></div>`;
     return card;
   }
 
-  const actionsHtml =
-    currentView === 'blocked'
-      ? `<button class="btn btn-unblock" onclick="handleAction(${id}, 'unblock')">Unblock</button>`
-      : `<button class="btn btn-accept" onclick="handleAction(${id}, 'accept')">Accept</button>
-         <button class="btn btn-reject" onclick="handleAction(${id}, 'decline')">Decline</button>`;
+  const actionsHtml = currentView === 'blocked'
+    ? `<button class="btn btn-unblock" onclick="handleAction(${id}, 'unblock')">Unblock</button>`
+    : `<button class="btn btn-accept" onclick="handleAction(${id}, 'accept')">Accept</button>
+       <button class="btn btn-reject" onclick="handleAction(${id}, 'decline')">Decline</button>`;
 
   card.innerHTML = `
     <label class="card-checkbox" title="Select for blacklisting">
       <input type="checkbox" class="user-check" onchange="toggleMark(${id}, this.checked)" ${isChecked}>
       <span class="check-box"></span>
     </label>
+    <div class="card-reticle"></div>
     <div class="pfp-wrap">
       <img src="${esc(d.pfp)}" class="pfp" alt="" loading="lazy" decoding="async">
       ${mm2BadgeHtml(id)}
     </div>
     <div class="names">
       <h2 title="${esc(d.displayName)}">${esc(d.displayName)}</h2>
-      <p title="Click to copy @${esc(d.username)}" style="cursor:pointer;" onclick="copySingleTikTokUser('${esc(d.username)}')">@${esc(d.username)}</p>
+      <p title="${esc(d.username)}">@${esc(d.username)}</p>
     </div>
     <div class="actions">${actionsHtml}</div>`;
   return card;
@@ -3872,42 +955,27 @@ function changePage(direction) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// ============================================================================
-// 11. ROBLOX ACTIONS & BACKGROUND JOB RUNNER
-// ============================================================================
-
 async function handleAction(userId, action) {
   const card = document.getElementById(`user-${userId}`);
-  if (card) {
-    card.classList.add('is-pending');
-  }
+  if (card) card.classList.add('is-pending');
 
   const index = currentIds.indexOf(userId);
-  currentIds = currentIds.filter((id) => id !== userId);
+  currentIds = currentIds.filter(id => id !== userId);
   markedIds.delete(userId);
   render();
 
   try {
     const response = await fetch(`${BACKEND_URL}/api/action`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'roblox-cookie': session(),
-      },
-      body: JSON.stringify({ userId, action }),
+      headers: { 'Content-Type': 'application/json', 'roblox-cookie': session() },
+      body: JSON.stringify({ userId, action })
     });
     const result = await response.json();
-    if (result.success) {
-      return true;
-    }
+    if (result.success) return true;
     showToast(result.error || 'Roblox rejected that.', 'error');
-  } catch (_e) {
-    showToast('Could not reach the backend.', 'error');
-  }
+  } catch (e) { showToast('Could not reach the backend.', 'error'); }
 
-  if (index >= 0 && !currentIds.includes(userId)) {
-    currentIds.splice(index, 0, userId);
-  }
+  if (index >= 0 && !currentIds.includes(userId)) currentIds.splice(index, 0, userId);
   render();
   return false;
 }
@@ -3918,9 +986,7 @@ let pollTimer = null;
 
 function ensureProgressBar() {
   let bar = document.getElementById('job-progress');
-  if (bar) {
-    return bar;
-  }
+  if (bar) return bar;
   bar = document.createElement('div');
   bar.id = 'job-progress';
   bar.innerHTML = `
@@ -3938,15 +1004,11 @@ function ensureProgressBar() {
 
 function hideProgress() {
   const bar = document.getElementById('job-progress');
-  if (bar) {
-    bar.remove();
-  }
+  if (bar) bar.remove();
 }
 
 function fmtEta(ms) {
-  if (!ms || ms < 1000) {
-    return '—';
-  }
+  if (!ms || ms < 1000) return '—';
   const s = Math.round(ms / 1000);
   return s < 60 ? `${s}s` : `${Math.floor(s / 60)}m ${s % 60}s`;
 }
@@ -3960,40 +1022,22 @@ function renderProgress(job) {
   bar.classList.toggle('is-paused', breathing);
 
   const prefix = activeJobIsAuto ? 'auto ' : '';
-  document.getElementById('jp-label').innerText =
-    `${prefix}${job.action} — ${job.processed} / ${job.total}` +
-    (breathing ? ' — breather' : '');
+  document.getElementById('jp-label').innerText = `${prefix}${job.action} — ${job.processed} / ${job.total}` + (breathing ? ' — breather' : '');
   document.getElementById('jp-fill').style.width = `${job.percent}%`;
 
   const bits = [];
-  if (breathing) {
-    bits.push(
-      `<span class="jp-breather">resuming in ${Math.ceil(job.pauseInMs / 1000)}s</span>`
-    );
-  }
+  if (breathing) bits.push(`<span class="jp-breather">resuming in ${Math.ceil(job.pauseInMs / 1000)}s</span>`);
   bits.push(`${job.succeeded} done`);
-  if (job.skipped) {
-    bits.push(`${job.skipped} already done`);
-  }
-  if (job.failed) {
-    bits.push(`${job.failed} failed`);
-  }
+  if (job.skipped) bits.push(`${job.skipped} already done`);
+  if (job.failed)  bits.push(`${job.failed} failed`);
   if (job.status === 'running') {
     bits.push(`eta ${fmtEta(job.etaMs)}`);
     bits.push(`<span class="jp-rate">${job.ratePerMin || 0}/min</span>`);
     bits.push(`${job.paceMs ?? '—'}ms × ${job.concurrency ?? 1}`);
-    if (job.batchSize) {
-      bits.push(
-        `batch ${job.batchSize}/${Math.round(job.batchPauseMs / 1000)}s`
-      );
-    }
+    if (job.batchSize) bits.push(`batch ${job.batchSize}/${Math.round(job.batchPauseMs / 1000)}s`);
   }
-  if (job.rateLimited) {
-    bits.push(`${job.rateLimited} throttled`);
-  }
-  if (job.retries) {
-    bits.push(`${job.retries} retried`);
-  }
+  if (job.rateLimited) bits.push(`${job.rateLimited} throttled`);
+  if (job.retries) bits.push(`${job.retries} retried`);
   document.getElementById('jp-meta').innerHTML = bits.join(' · ');
 
   const verifyEl = document.getElementById('jp-verify');
@@ -4002,79 +1046,50 @@ function renderProgress(job) {
     const noun = job.verifiedLabel || 'Friends';
     verifyEl.innerText = `${noun} ${job.verified.before} → ${job.verified.after} (${job.verified.removed} actually removed)`;
     verifyEl.classList.toggle('bad', job.verified.removed === 0);
-  } else {
-    verifyEl.style.display = 'none';
-  }
+  } else { verifyEl.style.display = 'none'; }
 
   const errEl = document.getElementById('jp-error');
-  const kinds =
-    job.errorKinds && Object.keys(job.errorKinds).length
-      ? Object.entries(job.errorKinds)
-          .map(([k, n]) => `${k} ×${n}`)
-          .join(' · ')
-      : null;
+  const kinds = job.errorKinds && Object.keys(job.errorKinds).length
+    ? Object.entries(job.errorKinds).map(([k, n]) => `${k} ×${n}`).join(' · ') : null;
   const detail = job.reason || job.lastError;
   if (kinds || detail) {
     errEl.style.display = '';
     errEl.innerText = [kinds, detail].filter(Boolean).join(' — ');
-  } else {
-    errEl.style.display = 'none';
-  }
+  } else { errEl.style.display = 'none'; }
 
   const cancelBtn = document.getElementById('jp-cancel');
-  if (cancelBtn) {
-    cancelBtn.style.display = job.status === 'running' ? '' : 'none';
-    cancelBtn.onclick = cancelJob;
-  }
+  if (cancelBtn) cancelBtn.style.display = job.status === 'running' ? '' : 'none';
 }
 
 async function startJob(action, userIds, { auto = false } = {}) {
-  if (activeJobId) {
-    showToast('A job is already running.', 'warn');
-    return;
-  }
+  if (activeJobId) { showToast('A job is already running.', 'warn'); return; }
   const batch = BATCH_CONFIGS[action] || false;
   try {
     const res = await fetch(`${BACKEND_URL}/api/jobs`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'roblox-cookie': session(),
-      },
-      body: JSON.stringify({ action, userIds, batch }),
+      headers: { 'Content-Type': 'application/json', 'roblox-cookie': session() },
+      body: JSON.stringify({ action, userIds, batch })
     });
     const job = await res.json();
-    if (!res.ok) {
-      showToast(job.error || 'Could not start job.', 'error');
-      return;
-    }
+    if (!res.ok) { showToast(job.error || 'Could not start job.', 'error'); return; }
     activeJobId = job.id;
     activeJobIsAuto = auto;
     isProcessingMassAction = true;
     updateControls();
     renderProgress(job);
     pollJob();
-  } catch (_e) {
-    showToast('Could not reach the backend.', 'error');
-  }
+  } catch (e) { showToast('Could not reach the backend.', 'error'); }
 }
 
 async function pollJob() {
-  if (!activeJobId) {
-    return;
-  }
+  if (!activeJobId) return;
   try {
     const res = await fetch(`${BACKEND_URL}/api/jobs/${activeJobId}`);
     const job = await res.json();
-    if (!res.ok) {
-      throw new Error(job.error);
-    }
+    if (!res.ok) throw new Error(job.error);
 
     renderProgress(job);
-    if (job.status === 'running') {
-      pollTimer = setTimeout(pollJob, POLL_MS);
-      return;
-    }
+    if (job.status === 'running') { pollTimer = setTimeout(pollJob, POLL_MS); return; }
 
     const wasAuto = activeJobIsAuto;
     activeJobId = null;
@@ -4085,10 +1100,7 @@ async function pollJob() {
     const secs = Math.max(1, Math.round(job.elapsedMs / 1000));
     if (job.status === 'done') {
       const extra = job.skipped ? `, ${job.skipped} already done` : '';
-      showToast(
-        `Finished ${job.succeeded}${extra} in ${secs}s (${job.ratePerMin}/min).`,
-        'success'
-      );
+      showToast(`Finished ${job.succeeded}${extra} in ${secs}s (${job.ratePerMin}/min).`, 'success');
     } else if (job.status === 'cancelled') {
       showToast(`Cancelled after ${job.processed}.`, 'info');
     } else {
@@ -4108,31 +1120,21 @@ async function pollJob() {
       }
     }
     renderAutoStatus();
-  } catch (_e) {
-    pollTimer = setTimeout(pollJob, 1500);
-  }
+  } catch (e) { pollTimer = setTimeout(pollJob, 1500); }
 }
 
 async function cancelJob() {
-  if (!activeJobId) {
-    return;
-  }
+  if (!activeJobId) return;
   try {
     await fetch(`${BACKEND_URL}/api/jobs/${activeJobId}`, { method: 'DELETE' });
     showToast('Stopping…', 'info');
-  } catch (_e) {
-    showToast('Could not cancel.', 'error');
-  }
+  } catch (e) { showToast('Could not cancel.', 'error'); }
 }
 
 async function resumeActiveJob() {
-  if (!session()) {
-    return;
-  }
+  if (!session()) return;
   try {
-    const res = await fetch(`${BACKEND_URL}/api/jobs/active`, {
-      headers: { 'roblox-cookie': session() },
-    });
+    const res = await fetch(`${BACKEND_URL}/api/jobs/active`, { headers: { 'roblox-cookie': session() } });
     const job = await res.json();
     if (job && job.status === 'running') {
       activeJobId = job.id;
@@ -4141,235 +1143,121 @@ async function resumeActiveJob() {
       renderProgress(job);
       pollJob();
     }
-  } catch (_e) {
-    // Ignore resume error
-  }
+  } catch (e) {}
 }
 
 async function massActionAll(action) {
-  if (isProcessingMassAction || visibleIds.length === 0) {
-    return;
-  }
+  if (isProcessingMassAction || visibleIds.length === 0) return;
   const targets = [...visibleIds];
   const scope = targets.length === currentIds.length ? '' : ' (filtered)';
-  if (
-    !confirm(
-      `${action.toUpperCase()} all ${targets.length} requests${scope}?\n\nRuns in the background — you can keep using the page.`
-    )
-  ) {
-    return;
-  }
+  if (!confirm(`${action.toUpperCase()} all ${targets.length} requests${scope}?\n\nRuns in the background — you can keep using the page.`)) return;
   markedIds.clear();
   startJob(action, targets);
 }
 
 async function removeAllFriends() {
-  if (isProcessingMassAction) {
-    return;
-  }
+  if (isProcessingMassAction) return;
   showToast('Fetching your friends list…');
   try {
-    const res = await fetch(`${BACKEND_URL}/api/friends`, {
-      headers: { 'roblox-cookie': session() },
-    });
+    const res = await fetch(`${BACKEND_URL}/api/friends`, { headers: { 'roblox-cookie': session() } });
     const friendIds = await res.json();
-    if (!res.ok) {
-      showToast(friendIds.error || 'Could not load friends.', 'error');
-      return;
-    }
-    if (!Array.isArray(friendIds) || friendIds.length === 0) {
-      showToast('You have 0 friends to remove.', 'info');
-      return;
-    }
-    if (
-      !confirm(
-        `Unfriend all ${friendIds.length} people on your Roblox friends list?\n\nThis cannot be undone.`
-      )
-    ) {
-      return;
-    }
+    if (!res.ok) { showToast(friendIds.error || 'Could not load friends.', 'error'); return; }
+    if (!Array.isArray(friendIds) || friendIds.length === 0) { showToast('You have 0 friends to remove.', 'info'); return; }
+    if (!confirm(`Unfriend all ${friendIds.length} people on your Roblox friends list?\n\nThis cannot be undone.`)) return;
     startJob('unfriend', friendIds);
-  } catch (_e) {
-    showToast('Could not load friends.', 'error');
-  }
+  } catch (e) { showToast('Could not load friends.', 'error'); }
 }
 
 async function blacklistAllFriends() {
-  if (isProcessingMassAction) {
-    return;
-  }
+  if (isProcessingMassAction) return;
   showToast('Fetching your friends list…');
   try {
-    const res = await fetch(`${BACKEND_URL}/api/friends`, {
-      headers: { 'roblox-cookie': session() },
-    });
+    const res = await fetch(`${BACKEND_URL}/api/friends`, { headers: { 'roblox-cookie': session() } });
     const friendIds = await res.json();
-    if (!res.ok) {
-      showToast(friendIds.error || 'Could not load friends.', 'error');
-      return;
-    }
-    if (!Array.isArray(friendIds) || friendIds.length === 0) {
-      showToast('You have 0 friends to blacklist.', 'info');
-      return;
-    }
-
-    if (
-      !confirm(
-        `Add all ${friendIds.length} friends to your local blocklist?\n\nThis prevents them from showing up in your queue if they send a request later.`
-      )
-    ) {
-      return;
-    }
-
+    if (!res.ok) { showToast(friendIds.error || 'Could not load friends.', 'error'); return; }
+    if (!Array.isArray(friendIds) || friendIds.length === 0) { showToast('You have 0 friends to blacklist.', 'info'); return; }
+    
+    if (!confirm(`Add all ${friendIds.length} friends to your local blocklist?\n\nThis prevents them from showing up in your queue if they send a request later.`)) return;
+    
     const response = await fetch(`${BACKEND_URL}/api/blocklist/add`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userIds: friendIds }),
+      body: JSON.stringify({ userIds: friendIds })
     });
-
+    
     const result = await response.json();
     if (result.success) {
-      showToast(
-        `Blacklisted ${result.addedCount ?? friendIds.length} friends locally.`,
-        'success'
-      );
-      if (transferMode === 'export' && exportModal.style.display === 'flex') {
-        fetchExportData();
-      }
+      showToast(`Blacklisted ${result.addedCount ?? friendIds.length} friends locally.`, 'success');
+      if (transferMode === 'export' && exportModal.style.display === 'flex') fetchExportData();
       const gone = new Set(friendIds);
-      currentIds = currentIds.filter((id) => !gone.has(id));
-      markedIds.forEach((id) => {
-        if (gone.has(id)) {
-          markedIds.delete(id);
-        }
-      });
+      currentIds = currentIds.filter(id => !gone.has(id));
+      markedIds.forEach(id => { if (gone.has(id)) markedIds.delete(id); });
       render();
     } else {
       showToast('Failed to add friends to blocklist.', 'error');
     }
-  } catch (_e) {
-    showToast('Could not reach the backend.', 'error');
-  }
+  } catch (e) { showToast('Could not reach the backend.', 'error'); }
 }
 
 async function unblockEveryone() {
-  if (isProcessingMassAction) {
-    return;
-  }
+  if (isProcessingMassAction) return;
   try {
-    let blockedIds =
-      currentView === 'blocked' && currentIds.length
-        ? [...currentIds]
-        : null;
+    let blockedIds = (currentView === 'blocked' && currentIds.length) ? [...currentIds] : null;
     if (!blockedIds) {
       showToast('Fetching your blocked list…');
-      const res = await fetch(`${BACKEND_URL}/api/blocked/ids`, {
-        headers: { 'roblox-cookie': session() },
-      });
+      const res = await fetch(`${BACKEND_URL}/api/blocked/ids`, { headers: { 'roblox-cookie': session() } });
       blockedIds = await res.json();
-      if (!res.ok) {
-        showToast(
-          blockedIds.error || 'Could not load blocked users.',
-          'error'
-        );
-        return;
-      }
+      if (!res.ok) { showToast(blockedIds.error || 'Could not load blocked users.', 'error'); return; }
     }
-    if (!Array.isArray(blockedIds) || blockedIds.length === 0) {
-      showToast('You have 0 blocked users.', 'info');
-      return;
-    }
-    if (
-      !confirm(
-        `Unblock all ${blockedIds.length} users?\n\nRuns in the background — you can keep using the page.`
-      )
-    ) {
-      return;
-    }
+    if (!Array.isArray(blockedIds) || blockedIds.length === 0) { showToast('You have 0 blocked users.', 'info'); return; }
+    if (!confirm(`Unblock all ${blockedIds.length} users?\n\nRuns in the background — you can keep using the page.`)) return;
     startJob('unblock', blockedIds);
-  } catch (_e) {
-    showToast('Could not load blocked users.', 'error');
-  }
+  } catch (e) { showToast('Could not load blocked users.', 'error'); }
 }
 
 async function blacklistAll() {
-  if (visibleIds.length === 0) {
-    return;
-  }
+  if (visibleIds.length === 0) return;
   const targets = [...visibleIds];
-  if (
-    !confirm(
-      `Hide ${targets.length} targets locally? (This does not decline them on Roblox)`
-    )
-  ) {
-    return;
-  }
+  if (!confirm(`Hide ${targets.length} targets locally? (This does not decline them on Roblox)`)) return;
   try {
     const response = await fetch(`${BACKEND_URL}/api/blocklist/add`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userIds: targets }),
+      body: JSON.stringify({ userIds: targets })
     });
     const result = await response.json();
     if (result.success) {
-      showToast(
-        `Blacklisted ${result.addedCount ?? targets.length} targets`,
-        'success'
-      );
+      showToast(`Blacklisted ${result.addedCount ?? targets.length} targets`, 'success');
       const gone = new Set(targets);
-      currentIds = currentIds.filter((id) => !gone.has(id));
+      currentIds = currentIds.filter(id => !gone.has(id));
       markedIds.clear();
       render();
     }
-  } catch (_err) {
-    showToast('Failed to communicate with backend', 'error');
-  }
+  } catch (err) { showToast('Failed to communicate with backend', 'error'); }
 }
 
 async function blacklistPage() {
-  const pageIds = visibleIds.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE
-  );
-  if (pageIds.length === 0) {
-    return;
-  }
-  if (
-    !confirm(
-      `Hide ${pageIds.length} targets on THIS PAGE locally? (This does not decline them on Roblox)`
-    )
-  ) {
-    return;
-  }
-
+  const pageIds = visibleIds.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  if (pageIds.length === 0) return;
+  if (!confirm(`Hide ${pageIds.length} targets on THIS PAGE locally? (This does not decline them on Roblox)`)) return;
+  
   try {
     const response = await fetch(`${BACKEND_URL}/api/blocklist/add`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userIds: pageIds }),
+      body: JSON.stringify({ userIds: pageIds })
     });
     const result = await response.json();
     if (result.success) {
-      showToast(
-        `Blacklisted ${result.addedCount ?? pageIds.length} targets from this page`,
-        'success'
-      );
+      showToast(`Blacklisted ${result.addedCount ?? pageIds.length} targets from this page`, 'success');
       const gone = new Set(pageIds);
-      currentIds = currentIds.filter((id) => !gone.has(id));
+      currentIds = currentIds.filter(id => !gone.has(id));
       const maxPage = Math.max(1, Math.ceil(currentIds.length / PAGE_SIZE));
-      if (currentPage > maxPage) {
-        currentPage = maxPage;
-      }
-      markedIds.forEach((id) => {
-        if (gone.has(id)) {
-          markedIds.delete(id);
-        }
-      });
+      if (currentPage > maxPage) currentPage = maxPage;
+      markedIds.forEach(id => { if (gone.has(id)) markedIds.delete(id); });
       render();
     }
-  } catch (_err) {
-    showToast('Failed to communicate with backend', 'error');
-  }
+  } catch (err) { showToast('Failed to communicate with backend', 'error'); }
 }
 
 async function blacklistFiltered() {
@@ -4378,72 +1266,44 @@ async function blacklistFiltered() {
     showToast('No users are currently hidden by the Bot Filters.', 'warn');
     return;
   }
-  if (
-    !confirm(
-      `Hide ${filteredIds.length} bot-filtered targets locally? (This does not decline them on Roblox)`
-    )
-  ) {
-    return;
-  }
-
+  if (!confirm(`Hide ${filteredIds.length} bot-filtered targets locally? (This does not decline them on Roblox)`)) return;
+  
   try {
     const response = await fetch(`${BACKEND_URL}/api/blocklist/add`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userIds: filteredIds }),
+      body: JSON.stringify({ userIds: filteredIds })
     });
     const result = await response.json();
     if (result.success) {
-      showToast(
-        `Blacklisted ${result.addedCount ?? filteredIds.length} bot-filtered targets`,
-        'success'
-      );
+      showToast(`Blacklisted ${result.addedCount ?? filteredIds.length} bot-filtered targets`, 'success');
       const gone = new Set(filteredIds);
-      currentIds = currentIds.filter((id) => !gone.has(id));
-      markedIds.forEach((id) => {
-        if (gone.has(id)) {
-          markedIds.delete(id);
-        }
-      });
+      currentIds = currentIds.filter(id => !gone.has(id));
+      markedIds.forEach(id => { if (gone.has(id)) markedIds.delete(id); });
       render();
     }
-  } catch (_err) {
-    showToast('Failed to communicate with backend', 'error');
-  }
+  } catch (err) { showToast('Failed to communicate with backend', 'error'); }
 }
 
 async function blacklistMarked() {
-  if (markedIds.size === 0) {
-    return;
-  }
+  if (markedIds.size === 0) return;
   const targets = Array.from(markedIds);
-  if (
-    !confirm(
-      `Hide ${targets.length} manually marked targets locally? (This does not decline them on Roblox)`
-    )
-  ) {
-    return;
-  }
+  if (!confirm(`Hide ${targets.length} manually marked targets locally? (This does not decline them on Roblox)`)) return;
   try {
     const response = await fetch(`${BACKEND_URL}/api/blocklist/add`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userIds: targets }),
+      body: JSON.stringify({ userIds: targets })
     });
     const result = await response.json();
     if (result.success) {
-      showToast(
-        `Blacklisted ${result.addedCount ?? targets.length} marked targets`,
-        'success'
-      );
+      showToast(`Blacklisted ${result.addedCount ?? targets.length} marked targets`, 'success');
       const gone = new Set(targets);
-      currentIds = currentIds.filter((id) => !gone.has(id));
+      currentIds = currentIds.filter(id => !gone.has(id));
       markedIds.clear();
       render();
     }
-  } catch (_err) {
-    showToast('Failed to communicate with backend', 'error');
-  }
+  } catch (err) { showToast('Failed to communicate with backend', 'error'); }
 }
 
 async function addSingleBlacklist() {
@@ -4458,56 +1318,42 @@ async function addSingleBlacklist() {
     const response = await fetch(`${BACKEND_URL}/api/blocklist/add`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userIds: [id] }),
+      body: JSON.stringify({ userIds: [id] })
     });
     const result = await response.json();
     if (result.success) {
       showToast(`Added ${id} to the blocklist.`, 'success');
       input.value = '';
-      currentIds = currentIds.filter((cid) => cid != id);
+      currentIds = currentIds.filter(cid => cid != id);
       markedIds.delete(Number(id));
-      if (transferMode === 'export') {
-        fetchExportData();
-      }
-      if (currentView === 'requests') {
-        render();
-      }
+      if (transferMode === 'export') fetchExportData();
+      if (currentView === 'requests') render();
     }
-  } catch (_err) {
-    showToast('Failed to communicate with backend', 'error');
-  }
+  } catch (err) { showToast('Failed to communicate with backend', 'error'); }
 }
 
-// ============================================================================
-// 12. ROBLOX BLOCKLIST IMPORT / EXPORT MODAL
-// ============================================================================
-
+// ---- IMPORT & EXPORT LOGIC ----
 let transferMode = 'export';
 
 function toggleTransferMode(mode) {
   transferMode = mode;
-  document
-    .getElementById('tab-export')
-    .classList.toggle('is-active', mode === 'export');
-  document
-    .getElementById('tab-import')
-    .classList.toggle('is-active', mode === 'import');
-
+  document.getElementById('tab-export').classList.toggle('is-active', mode === 'export');
+  document.getElementById('tab-import').classList.toggle('is-active', mode === 'import');
+  
   const btn = document.getElementById('btn-copy-import');
   const ta = document.getElementById('export-textarea');
-
+  
   if (mode === 'export') {
     btn.innerText = 'Copy';
     btn.onclick = copyExportText;
     ta.readOnly = true;
-    fetchExportData();
+    fetchExportData(); 
   } else {
     btn.innerText = 'Import Data';
     btn.onclick = importBlocklistData;
     ta.readOnly = false;
     ta.value = '';
-    ta.placeholder =
-      'Paste your previously exported data here to import...';
+    ta.placeholder = 'Paste your previously exported data here to import...';
   }
 }
 
@@ -4515,10 +1361,8 @@ async function fetchExportData() {
   try {
     const response = await fetch(`${BACKEND_URL}/api/blocklist`);
     const data = await response.json();
-    exportTextarea.value = data.ids.map((id) => `"${id}",`).join('\n');
-  } catch (_err) {
-    showToast('Blocklist fetch failed', 'error');
-  }
+    exportTextarea.value = data.ids.map(id => `"${id}",`).join('\n');
+  } catch (err) { showToast('Blocklist fetch failed', 'error'); }
 }
 
 function openBlocklistModal() {
@@ -4529,156 +1373,96 @@ function openBlocklistModal() {
 async function importBlocklistData() {
   const text = document.getElementById('export-textarea').value;
   const matches = text.match(/\d+/g);
-
+  
   if (!matches || matches.length === 0) {
     showToast('No valid IDs found in the text.', 'warn');
     return;
   }
-
+  
   const uniqueIds = [...new Set(matches)];
-  if (
-    !confirm(
-      `Found ${uniqueIds.length} unique IDs. Import them to the server?`
-    )
-  ) {
-    return;
-  }
+  if (!confirm(`Found ${uniqueIds.length} unique IDs. Import them to the server?`)) return;
 
   try {
     const response = await fetch(`${BACKEND_URL}/api/blocklist/add`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userIds: uniqueIds }),
+      body: JSON.stringify({ userIds: uniqueIds })
     });
     const result = await response.json();
     if (result.success) {
-      showToast(
-        `Successfully imported ${result.addedCount} new IDs.`,
-        'success'
-      );
+      showToast(`Successfully imported ${result.addedCount} new IDs.`, 'success');
       document.getElementById('export-textarea').value = '';
-      toggleTransferMode('export');
-      if (currentView === 'requests') {
-        manualRefresh();
-      }
+      toggleTransferMode('export'); 
+      if (currentView === 'requests') manualRefresh();
     } else {
       showToast('Failed to import IDs.', 'error');
     }
-  } catch (_err) {
+  } catch (err) {
     showToast('Failed to communicate with backend.', 'error');
   }
 }
 
-function closeModal() {
-  exportModal.style.display = 'none';
-}
+function closeModal() { exportModal.style.display = 'none'; }
 
 function copyExportText() {
   exportTextarea.select();
-  navigator.clipboard
-    ?.writeText(exportTextarea.value)
-    .catch(() => document.execCommand('copy'));
+  navigator.clipboard?.writeText(exportTextarea.value).catch(() => document.execCommand('copy'));
   showToast('Copied to clipboard', 'success');
 }
 
 async function removeLastBlacklisted() {
   const countInput = document.getElementById('pop-blocklist-input');
   const count = parseInt(countInput.value, 10);
-
-  if (!count || count <= 0) {
-    showToast('Enter a valid number to remove.', 'warn');
-    return;
-  }
-  if (
-    !confirm(
-      `Are you sure you want to un-blacklist the last ${count} added users?`
-    )
-  ) {
-    return;
-  }
+  
+  if (!count || count <= 0) { showToast('Enter a valid number to remove.', 'warn'); return; }
+  if (!confirm(`Are you sure you want to un-blacklist the last ${count} added users?`)) return;
 
   try {
     const response = await fetch(`${BACKEND_URL}/api/blocklist/remove-last`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ count }),
+      body: JSON.stringify({ count })
     });
-
+    
     const result = await response.json();
     if (result.success) {
-      showToast(
-        `Removed ${result.removedCount} users from the blocklist.`,
-        'success'
-      );
+      showToast(`Removed ${result.removedCount} users from the blocklist.`, 'success');
       countInput.value = '';
-      if (transferMode === 'export') {
-        fetchExportData();
-      }
-      if (currentView === 'requests') {
-        manualRefresh();
-      }
-    } else {
-      showToast(result.error || 'Failed to remove users.', 'error');
-    }
-  } catch (_err) {
-    showToast('Failed to communicate with backend.', 'error');
-  }
+      if (transferMode === 'export') fetchExportData(); 
+      if (currentView === 'requests') manualRefresh();
+    } else { showToast(result.error || 'Failed to remove users.', 'error'); }
+  } catch (err) { showToast('Failed to communicate with backend.', 'error'); }
 }
-
-// ============================================================================
-// 13. ROBLOX AUTO-ACCEPT & AUTO-SYNC SCHEDULERS
-// ============================================================================
 
 let autoAccept = false;
 let autoSync = false;
 let autoAcceptTimer = null;
 let autoSyncTimer = null;
 let autoAcceptTotal = 0;
-let autoNextAt = 0;
-let autoPhase = 'off';
+let autoNextAt = 0;         
+let autoPhase = 'off';      
 
-function setAutoPhase(phase, note = '') {
-  autoPhase = phase;
-  renderAutoStatus(note);
-}
+function setAutoPhase(phase, note = '') { autoPhase = phase; renderAutoStatus(note); }
 
 function renderAutoStatus(note = '') {
   const live = autoAccept || autoSync;
   autoStatus.classList.toggle('is-live', live && autoPhase !== 'waiting');
   autoStatus.classList.toggle('is-waiting', autoPhase === 'waiting');
 
-  if (!live) {
-    autoStatusText.innerText = 'Both off';
-    return;
-  }
+  if (!live) { autoStatusText.innerText = 'Both off'; return; }
   const parts = [];
   if (autoAccept) {
-    if (note) {
-      parts.push(note);
-    } else if (autoPhase === 'working') {
-      parts.push('accepting…');
-    } else if (autoPhase === 'scanning') {
-      parts.push('checking for requests…');
-    } else if (autoNextAt) {
-      parts.push(
-        `next sweep in ${Math.max(0, Math.ceil((autoNextAt - Date.now()) / 1000))}s`
-      );
-    }
-    if (autoAcceptTotal) {
-      parts.push(`${autoAcceptTotal} accepted`);
-    }
+    if (note) parts.push(note);
+    else if (autoPhase === 'working') parts.push('accepting…');
+    else if (autoPhase === 'scanning') parts.push('checking for requests…');
+    else if (autoNextAt) parts.push(`next sweep in ${Math.max(0, Math.ceil((autoNextAt - Date.now()) / 1000))}s`);
+    if (autoAcceptTotal) parts.push(`${autoAcceptTotal} accepted`);
   }
-  if (autoSync) {
-    parts.push(`sync every ${Math.round(AUTO_SYNC_MS / 1000)}s`);
-  }
+  if (autoSync) parts.push(`sync every ${Math.round(AUTO_SYNC_MS / 1000)}s`);
   autoStatusText.innerText = parts.join(' · ') || 'idle';
 }
 
-setInterval(() => {
-  if (autoAccept || autoSync) {
-    renderAutoStatus();
-  }
-}, 1000);
+setInterval(() => { if (autoAccept || autoSync) renderAutoStatus(); }, 1000);
 
 function toggleAutoAccept() {
   autoAccept = autoAcceptToggle.checked;
@@ -4688,28 +1472,19 @@ function toggleAutoAccept() {
   if (autoAccept) {
     autoAcceptTotal = 0;
     const cfg = BATCH_CONFIGS.accept;
-    showToast(
-      `Auto accept on — ${cfg.size} at a time, ${cfg.pauseMs / 1000}s between batches.`,
-      'success'
-    );
+    showToast(`Auto accept on — ${cfg.size} at a time, ${cfg.pauseMs / 1000}s between batches.`, 'success');
     autoAcceptSweep();
   } else {
     autoNextAt = 0;
     setAutoPhase('off');
-    if (activeJobId && activeJobIsAuto) {
-      cancelJob();
-      showToast('Auto accept off — stopping current batch.', 'info');
-    } else {
-      showToast('Auto accept off.', 'info');
-    }
+    if (activeJobId && activeJobIsAuto) { cancelJob(); showToast('Auto accept off — stopping current batch.', 'info'); }
+    else showToast('Auto accept off.', 'info');
   }
   renderAutoStatus();
 }
 
 function scheduleAutoAccept(ms) {
-  if (!autoAccept) {
-    return;
-  }
+  if (!autoAccept) return;
   autoNextAt = Date.now() + ms;
   setAutoPhase('waiting');
   clearTimeout(autoAcceptTimer);
@@ -4717,51 +1492,31 @@ function scheduleAutoAccept(ms) {
 }
 
 async function autoAcceptSweep() {
-  if (!autoAccept) {
-    return;
-  }
-  if (activeJobId) {
-    return scheduleAutoAccept(AUTO_ACCEPT_GAP_MS);
-  }
-  if (document.hidden) {
-    return scheduleAutoAccept(AUTO_ACCEPT_IDLE_MS);
-  }
+  if (!autoAccept) return;
+  if (activeJobId) return scheduleAutoAccept(AUTO_ACCEPT_GAP_MS);
+  if (document.hidden) return scheduleAutoAccept(AUTO_ACCEPT_IDLE_MS);
 
   autoNextAt = 0;
   setAutoPhase('scanning');
   try {
-    const res = await fetch(`${BACKEND_URL}/api/requests/ids?fresh=1`, {
-      headers: { 'roblox-cookie': session() },
-    });
+    const res = await fetch(`${BACKEND_URL}/api/requests/ids?fresh=1`, { headers: { 'roblox-cookie': session() } });
     if (!res.ok) {
-      if (res.status === 401) {
-        autoAcceptToggle.checked = false;
-        toggleAutoAccept();
-        return;
-      }
+      if (res.status === 401) { autoAcceptToggle.checked = false; toggleAutoAccept(); return; }
       return scheduleAutoAccept(AUTO_ACCEPT_IDLE_MS);
     }
     const ids = await res.json();
-    if (!Array.isArray(ids) || ids.length === 0) {
-      return scheduleAutoAccept(AUTO_ACCEPT_IDLE_MS);
-    }
+    if (!Array.isArray(ids) || ids.length === 0) return scheduleAutoAccept(AUTO_ACCEPT_IDLE_MS);
 
     if (currentView === 'requests') {
       currentIds = ids;
       render();
       hydrateAll(ids, hydrateToken);
-      if (mm2Enabled) {
-        hydrateMm2Levels(ids, ++mm2Token);
-      }
-      if (botFilterV2Enabled) {
-        hydrateBotFilterV2(ids, ++botFilterV2Token);
-      }
+      if (mm2Enabled) hydrateMm2Levels(ids, ++mm2Token);
+      if (botFilterV2Enabled) hydrateBotFilterV2(ids, ++botFilterV2Token);
     }
     setAutoPhase('working');
     await startJob('accept', ids, { batch: true, auto: true });
-  } catch (_e) {
-    scheduleAutoAccept(AUTO_ACCEPT_IDLE_MS);
-  }
+  } catch (e) { scheduleAutoAccept(AUTO_ACCEPT_IDLE_MS); }
 }
 
 function toggleAutoSync() {
@@ -4770,65 +1525,32 @@ function toggleAutoSync() {
   clearTimeout(autoSyncTimer);
 
   if (autoSync) {
-    showToast(
-      `Auto sync on — every ${Math.round(AUTO_SYNC_MS / 1000)}s.`,
-      'success'
-    );
+    showToast(`Auto sync on — every ${Math.round(AUTO_SYNC_MS / 1000)}s.`, 'success');
     autoSyncTimer = setTimeout(autoSyncTick, AUTO_SYNC_MS);
-  } else {
-    showToast('Auto sync off.', 'info');
-  }
+  } else { showToast('Auto sync off.', 'info'); }
   renderAutoStatus();
 }
 
 async function autoSyncTick() {
-  if (!autoSync) {
-    return;
-  }
-  if (
-    !isProcessingMassAction &&
-    !document.hidden &&
-    session() &&
-    currentView !== 'tiktok'
-  ) {
-    await loadList({ fresh: true, quiet: true });
-  }
+  if (!autoSync) return;
+  if (!isProcessingMassAction && !document.hidden && session() && currentView !== 'tiktok') await loadList({ fresh: true, quiet: true });
   autoSyncTimer = setTimeout(autoSyncTick, AUTO_SYNC_MS);
 }
 
-// ============================================================================
-// 14. LIFECYCLE INITIALIZATION & KEYBOARD SHORTCUTS
-// ============================================================================
-
 document.addEventListener('visibilitychange', () => {
-  if (document.hidden) {
-    return;
-  }
-  if (autoSync && !isProcessingMassAction && currentView !== 'tiktok') {
-    loadList({ fresh: true, quiet: true });
-  }
-  if (autoAccept && !activeJobId) {
-    scheduleAutoAccept(500);
-  }
+  if (document.hidden) return;
+  if (autoSync && !isProcessingMassAction && currentView !== 'tiktok') loadList({ fresh: true, quiet: true });
+  if (autoAccept && !activeJobId) scheduleAutoAccept(500);
 });
 
 function restoreFilters() {
-  if (localStorage.getItem('nexusCompactMode') === '1') {
-    compactViewToggle.checked = true;
-    container.classList.add('compact-mode');
-  }
-
   mm2FilterToggle.checked = localStorage.getItem('nexusMm2Filter') === '1';
   if (mm2FilterToggle.checked) {
     mm2Enabled = true;
-    loadMm2Icons().then(() => {
-      render();
-      hydrateMm2Levels(currentIds, ++mm2Token);
-    });
+    loadMm2Icons().then(() => { render(); hydrateMm2Levels(currentIds, ++mm2Token); });
   }
 
-  botFilterV2Toggle.checked =
-    localStorage.getItem('nexusBotFilterV2') === '1';
+  botFilterV2Toggle.checked = localStorage.getItem('nexusBotFilterV2') === '1';
   if (botFilterV2Toggle.checked) {
     botFilterV2Enabled = true;
     hydrateBotFilterV2(currentIds, ++botFilterV2Token);
@@ -4838,44 +1560,20 @@ function restoreFilters() {
 function restoreAutomation() {
   autoSyncToggle.checked = localStorage.getItem('nexusAutoSync') === '1';
   autoAcceptToggle.checked = localStorage.getItem('nexusAutoAccept') === '1';
-  if (autoSyncToggle.checked) {
-    autoSync = true;
-    autoSyncTimer = setTimeout(autoSyncTick, AUTO_SYNC_MS);
-  }
-  if (autoAcceptToggle.checked) {
-    autoAccept = true;
-    autoAcceptTotal = 0;
-    scheduleAutoAccept(2000);
-  }
-  if (autoAccept || autoSync) {
-    showToast('Automation resumed from last session.', 'info');
-  }
+  if (autoSyncToggle.checked) { autoSync = true; autoSyncTimer = setTimeout(autoSyncTick, AUTO_SYNC_MS); }
+  if (autoAcceptToggle.checked) { autoAccept = true; autoAcceptTotal = 0; scheduleAutoAccept(2000); }
+  if (autoAccept || autoSync) showToast('Automation resumed from last session.', 'info');
   renderAutoStatus();
 }
 
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') {
-    if (exportModal.style.display === 'flex') {
-      closeModal();
-    }
-    if (ttBlacklistModal.style.display === 'flex') {
-      closeTikTokBlacklistModal();
-    }
-    if (ttLoginModal.style.display === 'flex') {
-      closeTikTokLoginModal();
-    }
-    if (ttDiagModal.style.display === 'flex') {
-      closeTikTokDiagnosticsModal();
-    }
-  }
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && exportModal.style.display === 'flex') closeModal();
 });
 
 checkAuth();
 resumeActiveJob();
-if (session()) {
-  restoreAutomation();
-  restoreFilters();
-}
+if (session()) restoreAutomation();
+if (session()) restoreFilters();
 </script>
 </body>
 </html>
